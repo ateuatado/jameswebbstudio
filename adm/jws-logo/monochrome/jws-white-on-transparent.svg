@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- James Webb Studio - Monochrome White on Transparent -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300&amp;display=swap');
+      .logo-text { font-family: 'Inter', sans-serif; font-weight: 300; fill: #FFFFFF; }
+    </style>
+  </defs>
+
+  <!-- Hex 1 (topo) -->
+  <polygon points="320.78,92 320.78,116 300,128 279.22,116 279.22,92 300,80"
+           fill="none" stroke="#FFFFFF" stroke-width="1.5"/>
+  <!-- Hex 2 (base esquerda) -->
+  <polygon points="298.23,131 298.23,155 277.45,167 256.67,155 256.67,131 277.45,119"
+           fill="none" stroke="#FFFFFF" stroke-width="1.5"/>
+  <!-- Hex 3 (base direita) -->
+  <polygon points="343.33,131 343.33,155 322.55,167 301.77,155 301.77,131 322.55,119"
+           fill="none" stroke="#FFFFFF" stroke-width="1.5"/>
+
+  <text x="300" y="230" text-anchor="middle" class="logo-text"
+        font-size="32" letter-spacing="10">JAMES WEBB</text>
+  <text x="300" y="265" text-anchor="middle" class="logo-text"
+        font-size="17" letter-spacing="14">STUDIO</text>
+</svg>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- James Webb Studio Favicon - 3 Hexagons Cluster -->
+  <!-- R=5, G=0.75, flat-top -->
+  <rect width="32" height="32" fill="#000000"/>
+  <!-- Hex 1 (topo) - centro (16, 10) -->
+  <polygon points="20.33,7.5 20.33,12.5 16,15 11.67,12.5 11.67,7.5 16,5"
+           fill="none" stroke="#C5A059" stroke-width="0.8"/>
+  <!-- Hex 2 (base esq.) - centro (12.5, 18) -->
+  <polygon points="16.83,15.5 16.83,20.5 12.5,23 8.17,20.5 8.17,15.5 12.5,13"
+           fill="none" stroke="#C5A059" stroke-width="0.8"/>
+  <!-- Hex 3 (base dir.) - centro (19.5, 18) -->
+  <polygon points="23.83,15.5 23.83,20.5 19.5,23 15.17,20.5 15.17,15.5 19.5,13"
+           fill="none" stroke="#C5A059" stroke-width="0.8"/>
+</svg>

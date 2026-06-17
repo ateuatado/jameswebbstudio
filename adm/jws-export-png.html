@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>JWS - Exportar PNGs</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300&display=swap" rel="stylesheet">
+    <style>
+        body { background: #111; color: #ccc; font-family: 'Inter', sans-serif; padding: 40px; }
+        h1 { color: #C5A059; font-weight: 300; letter-spacing: 0.15em; }
+        .preview { display: inline-block; margin: 20px; padding: 20px; border: 1px solid #333; text-align: center; }
+        .preview img { max-width: 300px; display: block; margin: 0 auto 10px; }
+        .preview canvas { display: none; }
+        a { color: #C5A059; text-decoration: none; display: inline-block; margin-top: 8px;
+            border: 1px solid #C5A059; padding: 6px 16px; font-size: 11px; letter-spacing: 0.1em; }
+        a:hover { background: #C5A059; color: #000; }
+        .label { font-size: 10px; color: #666; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+    <h1>James Webb Studio — Exportar PNGs</h1>
+    <p style="color:#666;margin-bottom:30px;">Clique em "Baixar PNG" para salvar cada versão em alta resolução (2x).</p>
+
+    <div id="exports"></div>
+
+    <script>
+    const logos = [
+        { src: 'jws-logo/primary/jws-vertical-gold-on-black.svg', name: 'jws-vertical-gold-on-black', label: 'Primário Vertical', w: 1200, h: 800 },
+        { src: 'jws-logo/horizontal/jws-horizontal-gold-on-black.svg', name: 'jws-horizontal-gold-on-black', label: 'Horizontal', w: 1400, h: 240 },
+        { src: 'jws-logo/icon/jws-symbol-gold.svg', name: 'jws-symbol-gold', label: 'Ícone (símbolo)', w: 400, h: 400 },
+        { src: 'jws-logo/monochrome/jws-white-on-transparent.svg', name: 'jws-white-on-transparent', label: 'Monocromático Branco', w: 1200, h: 800 },
+        { src: 'jws-logo/monochrome/jws-black-on-transparent.svg', name: 'jws-black-on-transparent', label: 'Monocromático Preto', w: 1200, h: 800 },
+        { src: 'jws-logo/watermark/jws-watermark-white-20pct.svg', name: 'jws-watermark-white-20pct', label: 'Marca d\'água', w: 400, h: 400 },
+    ];
+
+    const container = document.getElementById('exports');
+
+    logos.forEach(logo => {
+        const div = document.createElement('div');
+        div.className = 'preview';
+
+        const label = document.createElement('div');
+        label.className = 'label';
+        label.textContent = logo.label;
+        div.appendChild(label);
+
+        const img = document.createElement('img');
+        img.src = logo.src;
+        div.appendChild(img);
+
+        const canvas = document.createElement('canvas');
+        canvas.width = logo.w;
+        canvas.height = logo.h;
+        div.appendChild(canvas);
+
+        const link = document.createElement('a');
+        link.textContent = 'Baixar PNG';
+        link.href = '#';
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const ctx = canvas.getContext('2d');
+            const svgImg = new Image();
+            svgImg.onload = () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(svgImg, 0, 0, canvas.width, canvas.height);
+                const pngUrl = canvas.toDataURL('image/png');
+                const a = document.createElement('a');
+                a.href = pngUrl;
+                a.download = logo.name + '.png';
+                a.click();
+            };
+            svgImg.src = logo.src;
+        });
+        div.appendChild(link);
+
+        container.appendChild(div);
+    });
+    </script>
+</body>
+</html>

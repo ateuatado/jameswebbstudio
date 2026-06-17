@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- James Webb Studio - Navbar Logo (Horizontal, compact) -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" width="36" height="36">
+  <!-- 3 Hexagons, R=7, G=1.05 -->
+  <!-- Hex 1 (topo) - centro (18, 10.5) -->
+  <polygon points="24.06,7 24.06,14 18,17.5 11.94,14 11.94,7 18,3.5"
+           fill="none" stroke="#C5A059" stroke-width="1"/>
+  <!-- Hex 2 (base esq.) - centro (13, 21.5) -->
+  <polygon points="19.06,18 19.06,25 13,28.5 6.94,25 6.94,18 13,14.5"
+           fill="none" stroke="#C5A059" stroke-width="1"/>
+  <!-- Hex 3 (base dir.) - centro (23, 21.5) -->
+  <polygon points="29.06,18 29.06,25 23,28.5 16.94,25 16.94,18 23,14.5"
+           fill="none" stroke="#C5A059" stroke-width="1"/>
+</svg>
