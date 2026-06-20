@@ -52,6 +52,18 @@
                     <li class="nav-item">
                         <a class="nav-link text-info" href="<?= site_url('admin/studio') ?>">Estúdio</a>
                     </li>
+                    <?php if (auth()->user()->inGroup('admin','superadmin') || auth()->user()->can('search.global')): ?>
+                    <li class="nav-item">
+                        <a class="nav-link text-warning fw-semibold" href="<?= site_url('admin/busca') ?>">
+                            🔍 Busca
+                        </a>
+                    </li>
+                    <?php endif ?>
+                    <?php if (auth()->user()->inGroup('admin','superadmin')): ?>
+                    <li class="nav-item">
+                        <a class="nav-link" href="<?= site_url('admin/usuarios') ?>">Usuários</a>
+                    </li>
+                    <?php endif ?>
                 </ul>
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">

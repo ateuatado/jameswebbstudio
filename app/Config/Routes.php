@@ -92,6 +92,13 @@ $routes->group('admin', ['filter' => 'group:admin,superadmin'], static function 
     // Dados do Estúdio
     $routes->get( 'studio',        'Admin\StudioSettingController::index');
     $routes->post('studio/update', 'Admin\StudioSettingController::update');
+
+    // Busca Global de Fotos por IA
+    $routes->get('busca', 'Admin\PhotoSearchController::index');
+
+    // Gerenciamento de Usuários & Permissões
+    $routes->get( 'usuarios',                           'Admin\UserManagementController::index');
+    $routes->post('usuarios/(:num)/toggle-search',      'Admin\UserManagementController::toggleSearchPermission/$1');
 });
 
 // ─── Agenda Proxy (resolve CORS/SSL server-side) ──────────────────────────────
