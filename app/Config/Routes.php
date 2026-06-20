@@ -10,6 +10,11 @@ $routes->get('sitemap.xml', 'Sitemap::index');
 
 service('auth')->routes($routes);
 
+// ─── Portal Routes (usuários externos com permissão search.global) ────────────
+$routes->group('portal', ['filter' => 'session'], static function ($routes) {
+    $routes->get('busca', 'Portal\SearchController::index');
+});
+
 // ─── Admin Routes ─────────────────────────────────────────────────────────────
 $routes->group('admin', ['filter' => 'group:admin,superadmin'], static function ($routes) {
     $routes->get('/', 'Admin\Dashboard::index');
