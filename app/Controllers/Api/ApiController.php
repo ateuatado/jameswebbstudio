@@ -46,16 +46,40 @@ class ApiController extends BaseController
         $photo = $photoModel->where('proxy_url', $s3Key)->first();
 
         if (!$photo) {
-            // Tenta também buscar removendo ou adicionando proxies/ se necessário, mas o correto e ser exato
-            // Vamos logar para debug se nao encontrar
-            log_message('warning', "ApiController: Foto não encontrada para a chave S3: {$s3Key}");
+            // Pode ser que o webhook chegou antes do fotógrafo abrir o painel para sincronizar.
+            // Nesse caso, nós mesmos inserimos a foto no banco!
+            $parts = explode('/', $s3Key);
+            if (count($parts) >= 3) {
+                $folderName = $parts[1];
+                $filename = basename($s3Key);
+                
+                $projectModel = new \App\Models\ClientProjectModel();
+                $project = $projectModel->where('s3_folder', $folderName)->orWhere('id', (int)$folderName)->first();
+                
+                if ($project) {
+                    $photoModel->insert([
+                        'project_id'        => $project->id,
+                        'original_filename' => $filename,
+                        'proxy_url'         => $s3Key,
+                        'status'            => 'pending',
+                        'is_loved'          => false,
+                        'rating'            => 0,
+                        'ai_description'    => $aiDescription,
+                        'ai_tags'           => $aiTags,
+                    ]);
+                    log_message('info', "ApiController: Foto inserida pelo webhook S3 Key: {$s3Key}");
+                    return $this->response->setJSON(['success' => true, 'message' => 'Criado e tagueado com sucesso.']);
+                }
+            }
+
+            log_message('warning', "ApiController: Foto e Projeto não encontrados para a chave S3: {$s3Key}");
             return $this->response->setStatusCode(404)->setJSON([
                 'success' => false,
                 'message' => 'Foto não encontrada no banco de dados.',
             ]);
         }
 
-        // 4. Atualiza os campos de IA na foto
+        // 4. Atualiza os campos de IA na foto existente
         $photoModel->update($photo->id, [
             'ai_description' => $aiDescription,
             'ai_tags'        => $aiTags,

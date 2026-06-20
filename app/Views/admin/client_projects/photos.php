@@ -34,6 +34,7 @@
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
         gap: 1.25rem;
+        align-items: start;
     }
 
     .photo-item-admin {
@@ -53,15 +54,17 @@
     .photo-wrapper-admin {
         position: relative;
         width: 100%;
-        height: 180px;
         background: #000;
         overflow: hidden;
+        border-radius: 10px 10px 0 0;
     }
 
     .photo-wrapper-admin img {
         width: 100%;
-        height: 100%;
-        object-fit: cover;
+        height: auto;
+        max-height: 500px;
+        object-fit: contain;
+        display: block;
         opacity: 0.85;
         transition: opacity 0.3s ease;
     }
