@@ -80,11 +80,19 @@
                         <td class="text-muted">Agendamento</td>
                         <td>
                             <?php if (!empty($order->agenda_link)): ?>
-                            <a href="<?= esc($order->agenda_link) ?>" target="_blank" class="text-info">
-                                📅 Abrir link do agendamento
-                            </a>
+                            <div class="d-flex align-items-center gap-2">
+                                <a href="<?= esc($order->agenda_link) ?>" target="_blank" class="text-info">
+                                    📅 Abrir link do agendamento
+                                </a>
+                                <form action="<?= site_url('admin/orders/' . $order->id . '/mark-scheduled') ?>" method="post" class="m-0">
+                                    <?= csrf_field() ?>
+                                    <button type="submit" class="btn btn-outline-success btn-sm py-0 px-2" style="font-size:0.75rem;" title="Marcar como já agendado para o cliente não conseguir agendar novamente">
+                                        ✅ Já Agendado
+                                    </button>
+                                </form>
+                            </div>
                             <?php elseif ($order->status === 'approved'): ?>
-                            <span class="text-warning">⏳ Link ainda não gerado</span>
+                            <span class="text-warning">⏳ Já agendado (link removido)</span>
                             <?php else: ?>
                             <span class="text-muted">—</span>
                             <?php endif; ?>

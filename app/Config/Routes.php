@@ -57,6 +57,7 @@ $routes->group('admin', ['filter' => 'group:admin,superadmin'], static function 
     $routes->get('orders',               'Admin\OrderController::index');
     $routes->get('orders/testar-email',  'Admin\OrderController::testEmail');
     $routes->get('orders/(:num)',        'Admin\OrderController::show/$1');
+    $routes->post('orders/(:num)/mark-scheduled', 'Admin\OrderController::markScheduled/$1');
     $routes->post('orders/(:num)/contract', 'Admin\OrderController::updateContract/$1');
     $routes->get('orders/(:num)/contract',  'Admin\OrderController::generateContract/$1');
 

@@ -143,5 +143,18 @@ class OrderController extends BaseController
                      ->setHeader('Content-Disposition', 'inline; filename="' . $filename . '"')
                      ->setBody($pdf);
     }
+
+    /**
+     * Marca o pedido como agendado (remove o link da agenda para evitar múltiplos agendamentos).
+     */
+    public function markScheduled($id)
+    {
+        $orderModel = new OrderModel();
+        $order = $orderModel->find($id);
+        if (!$order) return redirect()->to('/admin/orders');
+
+        $orderModel->update($id, ['agenda_link' => null]);
+        return redirect()->to('/admin/orders/' . $id)->with('message', 'Pedido marcado como agendado. O link da agenda foi removido.');
+    }
 }
 
