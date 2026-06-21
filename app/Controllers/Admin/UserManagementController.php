@@ -106,4 +106,4 @@ class UserManagementController extends BaseController
             'face_id' => $result['face_id'] ?? null,
         ]);
     }
-
+}
