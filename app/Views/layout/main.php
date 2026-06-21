@@ -196,8 +196,9 @@
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNav">
         <div class="container">
             <a class="navbar-brand" href="<?= site_url('/') ?>">
-                <img src="<?= base_url('assets/img/jws-logo.svg') ?>" alt="James Webb Studio" style="height:28px;margin-right:10px;">
-                James Webb <span class="nav-sub">Studio</span>
+                <img src="<?= base_url('assets/img/jws-logo-horizontal.png') ?>"
+                     alt="James Webb Studio"
+                     style="height:36px; width:auto;">
             </a>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navPublic" aria-controls="navPublic" aria-expanded="false" aria-label="Toggle navigation">
