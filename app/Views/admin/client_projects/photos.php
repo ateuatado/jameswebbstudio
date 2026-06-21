@@ -403,7 +403,13 @@
                     <option value="">— Selecione o cliente —</option>
                     <?php if (!empty($clientUsers)): ?>
                         <?php foreach ($clientUsers as $cu): ?>
-                            <option value="<?= $cu->id ?>"><?= esc($cu->email) ?><?= !empty($cu->rekognition_face_id) ? ' ✅' : '' ?></option>
+                            <?php
+                                $dbExtra  = \Config\Database::connect()->table('users')->select('display_name, nicknames')->where('id', $cu->id)->get()->getRow();
+                                $label    = !empty($dbExtra->display_name) ? $dbExtra->display_name : $cu->email;
+                                $nicks    = !empty($dbExtra->nicknames) ? ' (' . $dbExtra->nicknames . ')' : '';
+                                $faceIcon = !empty($cu->rekognition_face_id) ? ' ✅' : '';
+                            ?>
+                            <option value="<?= $cu->id ?>"><?= esc($label . $nicks) ?><?= $faceIcon ?></option>
                         <?php endforeach ?>
                     <?php endif ?>
                 </select>

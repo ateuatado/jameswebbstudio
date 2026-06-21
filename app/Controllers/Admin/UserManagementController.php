@@ -106,4 +106,19 @@ class UserManagementController extends BaseController
             'face_id' => $result['face_id'] ?? null,
         ]);
     }
+
+    /**
+     * Salva display_name e nicknames do usuário.
+     * POST /admin/usuarios/{userId}/update-profile
+     */
+    public function updateProfile($userId)
+    {
+        $db = \Config\Database::connect();
+        $db->table('users')->where('id', $userId)->update([
+            'display_name' => trim($this->request->getPost('display_name') ?? ''),
+            'nicknames'    => trim($this->request->getPost('nicknames') ?? ''),
+        ]);
+
+        return redirect()->to('/admin/usuarios')->with('message', 'Perfil atualizado com sucesso!');
+    }
 }
