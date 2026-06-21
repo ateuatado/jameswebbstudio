@@ -442,10 +442,28 @@ class Auth extends ShieldAuth
     public function loginRedirect(): string
     {
         $session = session();
-        $url     = $session->getTempdata('beforeLoginUrl') ?? setting('Auth.redirects')['login'];
+        $url     = $session->getTempdata('beforeLoginUrl');
 
-        return $this->getUrl($url);
+        // Se havia uma URL específica antes do login, usa ela
+        if ($url) {
+            return $this->getUrl($url);
+        }
+
+        // Redireciona baseado no perfil do usuário
+        $user = auth()->user();
+
+        if ($user?->inGroup('admin', 'superadmin')) {
+            return site_url('admin');
+        }
+
+        if ($user?->can('search.global')) {
+            return site_url('portal/busca');
+        }
+
+        // Usuário comum (cliente) vai para seus ensaios
+        return site_url('meus-ensaios');
     }
+
 
     /**
      * Returns the URL that a user should be redirected
