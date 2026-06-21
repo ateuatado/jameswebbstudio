@@ -342,6 +342,32 @@
                                     </div>
                                 </div>
                             <?php endif; ?>
+
+                            <?php
+                                // Badge de rosto identificado
+                                if (!empty($photo->face_client_id) && is_numeric($photo->face_client_id)):
+                            ?>
+                                <div class="mt-1 d-flex align-items-center gap-1" style="font-size:0.62rem;">
+                                    <span class="badge" style="background:rgba(40,167,69,0.2);color:#4dbd74;border:1px solid rgba(40,167,69,0.3);">
+                                        <i class="fas fa-user-check me-1"></i>Rosto ID <?= (int)$photo->face_client_id ?>
+                                        <?php if (!empty($photo->face_confidence)): ?>
+                                            (<?= number_format($photo->face_confidence, 0) ?>%)
+                                        <?php endif ?>
+                                    </span>
+                                </div>
+                            <?php endif ?>
+
+                            <!-- Botão Cadastrar Rosto -->
+                            <div class="mt-2">
+                                <button type="button"
+                                    class="btn btn-sm w-100 btn-register-face"
+                                    style="background:rgba(197,160,89,0.1);border:1px solid rgba(197,160,89,0.3);color:#c5a059;font-size:0.68rem;"
+                                    data-photo-id="<?= $photo->id ?>"
+                                    data-filename="<?= esc($photo->original_filename) ?>"
+                                    onclick="openFaceModal(this)">
+                                    <i class="fas fa-user-tag me-1"></i>Cadastrar Rosto do Cliente
+                                </button>
+                            </div>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -355,12 +381,95 @@
     </div>
 </div>
 
+<!-- Modal: Selecionar cliente para cadastrar rosto -->
+<div class="modal fade" id="faceModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background:#111;border:1px solid rgba(197,160,89,0.3);">
+            <div class="modal-header" style="border-bottom:1px solid rgba(255,255,255,0.07);">
+                <h5 class="modal-title text-white" style="font-family:'Outfit',sans-serif;">
+                    <i class="fas fa-user-tag me-2 text-gold"></i>Cadastrar Rosto do Cliente
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted" style="font-size:0.85rem;">
+                    Foto selecionada: <strong id="faceModalFilename" class="text-white"></strong>
+                </p>
+                <p style="font-size:0.82rem;color:#aaa;">
+                    Escolha o cliente cujo rosto aparece nesta foto. O Rekognition aprenderá o rosto e reconhecerá automaticamente em ensaios futuros.
+                </p>
+                <label class="form-label text-white" style="font-size:0.85rem;">Cliente:</label>
+                <select id="faceClientSelect" class="form-select" style="background:#1a1a1a;border:1px solid rgba(197,160,89,0.3);color:#fff;">
+                    <option value="">— Selecione o cliente —</option>
+                    <?php if (!empty($clientUsers)): ?>
+                        <?php foreach ($clientUsers as $cu): ?>
+                            <option value="<?= $cu->id ?>"><?= esc($cu->email) ?><?= !empty($cu->rekognition_face_id) ? ' ✅' : '' ?></option>
+                        <?php endforeach ?>
+                    <?php endif ?>
+                </select>
+                <div id="faceRegisterResult" class="mt-3" style="display:none;"></div>
+            </div>
+            <div class="modal-footer" style="border-top:1px solid rgba(255,255,255,0.07);">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-gold" id="btnConfirmFace" onclick="confirmFaceRegister()">
+                    <i class="fas fa-check me-1"></i>Cadastrar Rosto
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
 <script>
     const projectId = <?= (int)$project->id ?>;
+    const clientUsers = <?= json_encode(array_map(fn($u) => ['id' => $u->id, 'email' => $u->email], $clientUsers ?? [])) ?>;
     let localPhotoIds = new Set();
+    let facePhotoId   = null;
+
+    function openFaceModal(btn) {
+        facePhotoId = btn.dataset.photoId;
+        document.getElementById('faceModalFilename').textContent = btn.dataset.filename;
+        document.getElementById('faceRegisterResult').style.display = 'none';
+        document.getElementById('faceClientSelect').value = '';
+        document.getElementById('btnConfirmFace').disabled = false;
+        new bootstrap.Modal(document.getElementById('faceModal')).show();
+    }
+
+    async function confirmFaceRegister() {
+        const userId = document.getElementById('faceClientSelect').value;
+        if (!userId) { alert('Selecione um cliente.'); return; }
+
+        const btn = document.getElementById('btnConfirmFace');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Cadastrando...';
+
+        const resultDiv = document.getElementById('faceRegisterResult');
+        resultDiv.style.display = 'none';
+
+        try {
+            const resp = await fetch(`/admin/usuarios/${userId}/cadastrar-rosto`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                body: JSON.stringify({ photo_id: parseInt(facePhotoId) })
+            });
+            const data = await resp.json();
+
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = data.success
+                ? `<div class="alert alert-success py-2" style="font-size:0.82rem;"><i class="fas fa-check-circle me-1"></i>${data.message}</div>`
+                : `<div class="alert alert-danger py-2" style="font-size:0.82rem;"><i class="fas fa-times-circle me-1"></i>${data.message}</div>`;
+
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-check me-1"></i>Cadastrar Rosto';
+        } catch (e) {
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<div class="alert alert-danger py-2" style="font-size:0.82rem;">Erro de comunicação com o servidor.</div>';
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-check me-1"></i>Cadastrar Rosto';
+        }
+    }
     
     // Armazena os IDs locais iniciais
     document.querySelectorAll('.photo-item-admin').forEach(el => {

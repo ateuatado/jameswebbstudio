@@ -124,11 +124,24 @@ class ClientProjectController extends BaseController
         }
         unset($photo);
 
+        // Lista todos os usuários clientes (não-admins) para o modal de cadastro de rosto
+        $allUsers    = auth()->getProvider()->findAll();
+        $clientUsers = array_filter($allUsers, fn($u) => !$u->inGroup('admin', 'superadmin'));
+
+        // Busca dados extras (rekognition_face_id) direto no banco para cada usuário
+        $db = \Config\Database::connect();
+        foreach ($clientUsers as &$cu) {
+            $extra = $db->table('users')->select('rekognition_face_id')->where('id', $cu->id)->get()->getRow();
+            $cu->rekognition_face_id = $extra->rekognition_face_id ?? null;
+        }
+        unset($cu);
+
         return view('admin/client_projects/photos', [
-            'title'   => 'Acompanhamento — ' . esc($project->name),
-            'project' => $project,
-            'package' => $package,
-            'photos'  => $photos,
+            'title'       => 'Acompanhamento — ' . esc($project->name),
+            'project'     => $project,
+            'package'     => $package,
+            'photos'      => $photos,
+            'clientUsers' => array_values($clientUsers),
         ]);
     }
 
