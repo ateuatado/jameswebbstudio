@@ -32,13 +32,22 @@ class ApiController extends BaseController
             ]);
         }
 
-        $s3Key         = $json->s3_key;
-        $aiDescription = $json->ai_description ?? '';
-        $aiTags        = $json->ai_tags ?? '';
+        $s3Key          = $json->s3_key;
+        $aiDescription  = $json->ai_description ?? '';
+        $aiTags         = $json->ai_tags ?? '';
+        $faceClientId   = $json->face_client_id ?? null;
+        $faceConfidence = isset($json->face_confidence) ? (float) $json->face_confidence : null;
 
         // Se as tags vierem como array, formata para string separada por virgula
         if (is_array($aiTags)) {
             $aiTags = implode(', ', array_map('trim', $aiTags));
+        }
+
+        // face_client_id "unknown" significa rosto detectado mas não cadastrado
+        // null significa que não havia rosto na foto
+        $faceClientIdInt = null;
+        if (is_numeric($faceClientId)) {
+            $faceClientIdInt = (int) $faceClientId;
         }
 
         // 3. Busca a foto pelo proxy_url (que armazena a S3 Key)
@@ -66,8 +75,10 @@ class ApiController extends BaseController
                         'rating'            => 0,
                         'ai_description'    => $aiDescription,
                         'ai_tags'           => $aiTags,
+                        'face_client_id'    => $faceClientIdInt,
+                        'face_confidence'   => $faceConfidence,
                     ]);
-                    log_message('info', "ApiController: Foto inserida pelo webhook S3 Key: {$s3Key}");
+                    log_message('info', "ApiController: Foto inserida pelo webhook S3 Key: {$s3Key}" . ($faceClientIdInt ? " | Cliente ID: {$faceClientIdInt}" : ''));
                     return $this->response->setJSON(['success' => true, 'message' => 'Criado e tagueado com sucesso.']);
                 }
             }
@@ -79,11 +90,16 @@ class ApiController extends BaseController
             ]);
         }
 
-        // 4. Atualiza os campos de IA na foto existente
-        $photoModel->update($photo->id, [
+        // 4. Atualiza os campos de IA + reconhecimento facial na foto existente
+        $updateData = [
             'ai_description' => $aiDescription,
             'ai_tags'        => $aiTags,
-        ]);
+        ];
+        if ($faceClientIdInt !== null) {
+            $updateData['face_client_id']  = $faceClientIdInt;
+            $updateData['face_confidence'] = $faceConfidence;
+        }
+        $photoModel->update($photo->id, $updateData);
 
         log_message('info', "ApiController: Metadados salvos para a foto ID {$photo->id} (S3 Key: {$s3Key})");
 

@@ -12,7 +12,8 @@ class ProjectPhotoModel extends Model
     protected $returnType       = 'object';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['project_id', 'original_filename', 'proxy_url', 'final_url', 'status', 'is_loved', 'rating', 'ai_description', 'ai_tags'];
+    protected $allowedFields    = ['project_id', 'original_filename', 'proxy_url', 'final_url', 'status', 'is_loved', 'rating', 'ai_description', 'ai_tags', 'face_client_id', 'face_confidence'];
+
 
     // Dates
     protected $useTimestamps = true;
