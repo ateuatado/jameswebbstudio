@@ -29,7 +29,7 @@ class CouponGift extends BaseController
         // Pacote mais caro disponível (para exibir o "valor do presente")
         $pkgModel   = new PackageModel();
         $maxPackage = $pkgModel
-            ->where('active', 1)
+            ->where('is_active', 1)
             ->orderBy('base_price', 'DESC')
             ->first();
 
