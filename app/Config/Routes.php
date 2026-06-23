@@ -137,6 +137,7 @@ $routes->post('comprar-ensaio',        'PackageCheckout::buy');
 $routes->post('validar-cupom',         'PackageCheckout::validateCoupon');
 $routes->post('verificar-cupom-pagina','PackageCheckout::checkPageCoupon');
 $routes->post('quero-falar',           'PackageCheckout::talkFirst');
+$routes->get( 'cortesia/(:segment)',   'CouponGift::show/$1');
 $routes->post('mp/webhook',      'PackageCheckout::webhook');
 $routes->get( 'ensaio/obrigado', 'PackageCheckout::thanks');
 $routes->get( 'ensaio/falha',    'PackageCheckout::failure');
