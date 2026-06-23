@@ -10,8 +10,11 @@
   <!-- Open Graph para preview no WhatsApp -->
   <meta property="og:title"       content="🎁 Um presente especial para você">
   <meta property="og:description" content="Ensaio fotográfico exclusivo — cortesia do James Webb Studio.">
-  <meta property="og:image"       content="<?= base_url('assets/img/jws-logo-horizontal.png') ?>">
+  <meta property="og:image"       content="<?= base_url('assets/img/og-gift.png') ?>">
+  <meta property="og:image:width"  content="1200">
+  <meta property="og:image:height" content="630">
   <meta property="og:url"         content="<?= current_url() ?>">
+  <meta property="og:type"        content="website">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
