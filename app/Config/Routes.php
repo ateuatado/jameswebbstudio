@@ -148,6 +148,7 @@ $routes->get( 'ensaio/status/(:num)', 'PackageCheckout::orderStatus/$1');
 // ─── Portal do Cliente (autenticado) ──────────────────────────────────────────
 $routes->group('client', ['filter' => 'session'], static function ($routes) {
     $routes->get( 'meus-ensaios',                   'Client\MeusEnsaiosController::index');
+    $routes->get( 'buscar',                         'Client\MeusEnsaiosController::buscar');
     $routes->get( 'galeria',                       'Client\GaleriaController::index');
     $routes->get( 'galeria/(:num)',                'Client\GaleriaController::view/$1');
     $routes->get( 'galeria/(:num)/poll',           'Client\GaleriaController::pollPhotos/$1');
@@ -158,6 +159,7 @@ $routes->group('client', ['filter' => 'session'], static function ($routes) {
     $routes->get( 'galeria/(:num)/checkout',       'Client\GaleriaController::checkout/$1');
     $routes->get( 'guia-pre-ensaio/(:num)',         'Client\MeusEnsaiosController::downloadGuide/$1');
     $routes->get( 'contrato/(:num)',                'Client\MeusEnsaiosController::downloadContract/$1');
+    $routes->post('perfil/salvar',                  'Client\MeusEnsaiosController::updatePerfil');
 });
 
 // ─── Landing page de copy — /{slug}/agendar ───────────────────────────────────

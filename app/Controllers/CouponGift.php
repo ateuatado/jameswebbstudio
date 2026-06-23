@@ -26,21 +26,21 @@ class CouponGift extends BaseController
             ]);
         }
 
-        // Pacote mais caro disponível (para exibir o "valor do presente")
-        $pkgModel   = new PackageModel();
-        $maxPackage = $pkgModel
+        // Todos os pacotes ativos ordenados por preço
+        $pkgModel  = new PackageModel();
+        $packages  = $pkgModel
             ->where('is_active', 1)
-            ->orderBy('base_price', 'DESC')
-            ->first();
+            ->orderBy('base_price', 'ASC')
+            ->findAll();
 
-        // URL de destino para o checkout
-        $checkoutUrl = site_url('investimento?cupom=' . $code);
+        // Pacote mais caro (referência de valor do presente)
+        $maxPackage = !empty($packages) ? end($packages) : null;
 
         return view('coupon_gift', [
-            'coupon'       => $coupon,
-            'maxPackage'   => $maxPackage,
-            'checkoutUrl'  => $checkoutUrl,
-            'code'         => $code,
+            'coupon'      => $coupon,
+            'packages'    => $packages,
+            'maxPackage'  => $maxPackage,
+            'code'        => $code,
         ]);
     }
 }

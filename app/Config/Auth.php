@@ -456,12 +456,8 @@ class Auth extends ShieldAuth
             return site_url('admin');
         }
 
-        if ($user?->can('search.global')) {
-            return site_url('portal/busca');
-        }
-
-        // Usuário comum (cliente) vai para seus ensaios
-        return site_url('meus-ensaios');
+        // Todo cliente (incluindo search.global) vai para o hub de ensaios
+        return site_url('client/meus-ensaios');
     }
 
 
