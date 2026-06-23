@@ -629,4 +629,35 @@ class PackageCheckout extends BaseController
             'message'          => "Cupom aplicado! {$coupon->discount_percent}% de desconto.",
         ]);
     }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // AJAX: Verifica se o código de cupom da URL é válido (sem email)
+    // Usado para efeito visual de marketing ao abrir a página
+    // POST /verificar-cupom-pagina
+    // ─────────────────────────────────────────────────────────────────────────
+    public function checkPageCoupon()
+    {
+        $code = strtoupper(trim($this->request->getPost('coupon_code') ?? ''));
+
+        if (empty($code)) {
+            return $this->response->setJSON(['valid' => false]);
+        }
+
+        $couponModel = new CouponModel();
+        $coupon = $couponModel
+            ->where('code', $code)
+            ->where('used', 0)
+            ->first();
+
+        if (!$coupon) {
+            return $this->response->setJSON(['valid' => false]);
+        }
+
+        return $this->response->setJSON([
+            'valid'            => true,
+            'discount_percent' => (int) $coupon->discount_percent,
+            'is_free'          => (int) $coupon->discount_percent === 100,
+            'email_hint'       => substr($coupon->email, 0, 3) . '***', // hint sem expor email completo
+        ]);
+    }
 }

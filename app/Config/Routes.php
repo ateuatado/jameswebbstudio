@@ -133,9 +133,10 @@ $routes->post('api/photo/metadata', 'Api\ApiController::saveMetadata');
 $routes->get('investimento', 'Pricing::index');
 
 // ─── Checkout de Pacotes (público) ───────────────────────────────────────────
-$routes->post('comprar-ensaio',  'PackageCheckout::buy');
-$routes->post('validar-cupom',   'PackageCheckout::validateCoupon');
-$routes->post('quero-falar',     'PackageCheckout::talkFirst');
+$routes->post('comprar-ensaio',        'PackageCheckout::buy');
+$routes->post('validar-cupom',         'PackageCheckout::validateCoupon');
+$routes->post('verificar-cupom-pagina','PackageCheckout::checkPageCoupon');
+$routes->post('quero-falar',           'PackageCheckout::talkFirst');
 $routes->post('mp/webhook',      'PackageCheckout::webhook');
 $routes->get( 'ensaio/obrigado', 'PackageCheckout::thanks');
 $routes->get( 'ensaio/falha',    'PackageCheckout::failure');

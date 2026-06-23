@@ -330,6 +330,78 @@
     font-size: .7rem; letter-spacing: .15em;
     color: rgba(255,255,255,.3);
 }
+/* ── Efeito Cupom 100% Cortesia ─────────────────────────────────────── */
+.pkg-card.pkg-is-free .pkg-price-wrap .pkg-price-original {
+    text-decoration: line-through;
+    color: rgba(255,255,255,.28);
+    font-size: 70%;
+    display: block;
+    line-height: 1.2;
+    margin-bottom: 2px;
+}
+.pkg-card.pkg-is-free .pkg-price-free-label {
+    display: block !important;
+    font-family: 'Inter', sans-serif;
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: #6bcb77;
+    margin-bottom: 4px;
+    animation: pkgFreeGlow 2s ease-in-out infinite;
+}
+.pkg-card.pkg-is-free .pkg-price-free-value {
+    display: block !important;
+    font-family: 'EB Garamond', Georgia, serif;
+    font-size: clamp(2.4rem,5vw,3.4rem);
+    color: #6bcb77;
+    font-weight: 400;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+.pkg-price-free-label,
+.pkg-price-free-value { display: none; }
+@keyframes pkgFreeGlow {
+    0%,100% { text-shadow: 0 0 8px rgba(107,203,119,0); }
+    50%      { text-shadow: 0 0 16px rgba(107,203,119,.6); }
+}
+.pkg-card.pkg-is-free { border-color: rgba(107,203,119,.5) !important; }
+.pkg-card.pkg-is-free .pkg-badge-free {
+    display: block !important;
+    position: absolute; top: -1px; left: 50%; transform: translateX(-50%);
+    background: linear-gradient(90deg, #2e7d32, #66bb6a);
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: .6rem; font-weight: 700;
+    letter-spacing: .12em; padding: 4px 16px;
+    white-space: nowrap;
+}
+.pkg-badge-free { display: none; }
+
+/* Banner de cortesia no topo da section */
+#couponPageBanner {
+    display: none;
+    background: linear-gradient(135deg, rgba(46,125,50,.15), rgba(102,187,106,.08));
+    border: 1px solid rgba(107,203,119,.3);
+    border-radius: 2px;
+    padding: 20px 28px;
+    margin-bottom: 32px;
+    text-align: center;
+    animation: bannerFadeIn .6s ease;
+}
+@keyframes bannerFadeIn { from { opacity:0; transform:translateY(-12px); } to { opacity:1; transform:translateY(0); } }
+#couponPageBanner.visible { display: block; }
+#couponPageBanner .banner-emoji { font-size: 2rem; display: block; margin-bottom: 8px; }
+#couponPageBanner .banner-title {
+    font-family: 'EB Garamond', Georgia, serif;
+    font-size: clamp(1.3rem,3vw,1.8rem);
+    color: #6bcb77; margin-bottom: 6px;
+}
+#couponPageBanner .banner-sub {
+    font-family: 'Inter', sans-serif;
+    font-size: .75rem; letter-spacing: .12em;
+    text-transform: uppercase; color: rgba(255,255,255,.45);
+}
 </style>
 <?= $this->endSection() ?>
 
@@ -505,14 +577,35 @@
       <h2 style="font-family:'EB Garamond',Georgia,serif;font-size:clamp(2rem,5vw,3.2rem);color:#fff;font-weight:400;margin:0;">Pacotes de <?= esc($heroCatName) ?></h2>
     </div>
 
+    <!-- Banner de cortesia (aparece quando cupom 100% detectado) -->
+    <div id="couponPageBanner">
+      <span class="banner-emoji">🎉</span>
+      <p class="banner-title">Você tem uma cortesia exclusiva!</p>
+      <p class="banner-sub">O pacote premium está reservado para você — sem nenhum custo.</p>
+    </div>
+
     <?php if (!empty($heroPackages)): ?>
     <div class="row justify-content-center g-4 mb-5">
+      <?php
+        // ── Marca o pacote mais caro da categoria do herói ──
+        $heroMaxPrice = 0;
+        foreach ($heroPackages as $p) {
+            if ($p->base_price > $heroMaxPrice) $heroMaxPrice = $p->base_price;
+        }
+      ?>
       <?php foreach ($heroPackages as $pkg): ?>
       <div class="col-md-4">
-        <div class="pkg-card <?= $pkg->is_preferred ? 'pkg-preferred' : '' ?>">
+        <?php $isMax = ($pkg->base_price == $heroMaxPrice); ?>
+        <div class="pkg-card <?= $pkg->is_preferred ? 'pkg-preferred' : '' ?>" data-pkg-price="<?= $pkg->base_price ?>" data-pkg-id="<?= $pkg->id ?>" <?= $isMax ? 'data-pkg-max="1"' : '' ?>>
+          <?php if ($isMax): ?><div class="pkg-badge-free">CORTESIA EXCLUSIVA 🎉</div><?php endif; ?>
           <?php if ($pkg->is_preferred): ?><div class="pkg-badge">MAIS ESCOLHIDO</div><?php endif; ?>
           <div class="pkg-name"><?= esc($pkg->name) ?></div>
-          <div class="pkg-price"><span class="pkg-currency">R$</span><?= number_format($pkg->base_price, 0, ',', '.') ?></div>
+          <div class="pkg-price-wrap">
+            <span class="pkg-price-original"><?php /* preenchido via JS */ ?></span>
+            <span class="pkg-price-free-label">CORTESIA TOTAL</span>
+            <span class="pkg-price-free-value">GRATUITO</span>
+            <div class="pkg-price"><span class="pkg-currency">R$</span><?= number_format($pkg->base_price, 0, ',', '.') ?></div>
+          </div>
           <div class="pkg-photos"><?= (int)$pkg->included_photos ?> fotos tratadas</div>
 
           <?php if (!empty($pkg->services)): ?>
@@ -538,7 +631,7 @@
           <?php endif; ?>
 
           <?php if ($pkg->extra_photo_price > 0): ?><div class="pkg-extra">+ fotos por R$ <?= number_format($pkg->extra_photo_price, 0, ',', '.') ?> cada</div><?php endif; ?>
-          <button class="pkg-btn-buy" onclick="openCheckout(<?= $pkg->id ?>,'<?= esc($pkg->name) ?>',<?= $pkg->base_price ?>,<?= $hero['id'] ?>)">ESCOLHER ESTE PACOTE</button>
+          <button class="pkg-btn-buy" onclick="openCheckout(<?= $pkg->id ?>, '<?= esc($pkg->name) ?>', <?= $pkg->base_price ?>, <?= $hero['id'] ?>)"><?= $isMax ? 'RESGATAR MINHA CORTESIA 🎉' : 'ESCOLHER ESTE PACOTE' ?></button>
         </div>
       </div>
       <?php endforeach; ?>
@@ -810,6 +903,74 @@
     }
 </script>
 <script>
+    // ── Detecção de Cupom na URL (?cupom=JWS-XXXXX) ───────────────────────
+    const _urlCoupon = new URLSearchParams(window.location.search).get('cupom') || '';
+    let   _activeCoupon = null; // guarda dados do cupom ativo
+
+    function applyFreeCouponEffect(couponCode) {
+        // 1. Marca todos os pacotes max com classe pkg-is-free
+        document.querySelectorAll('[data-pkg-max="1"]').forEach(card => {
+            const price = card.querySelector('.pkg-price');
+            const origSpan = card.querySelector('.pkg-price-original');
+            if (price && origSpan) {
+                origSpan.textContent = 'R$ ' + Number(card.dataset.pkgPrice).toLocaleString('pt-BR', {minimumFractionDigits: 0});
+            }
+            card.classList.add('pkg-is-free');
+        });
+
+        // 2. Mostra banner de cortesia
+        const banner = document.getElementById('couponPageBanner');
+        if (banner) banner.classList.add('visible');
+
+        // 3. Pre-preenche o campo de cupom em todos os forms
+        document.querySelectorAll('input[name="coupon_code"]').forEach(i => {
+            i.value = couponCode;
+            i.readOnly = true;
+            i.style.borderColor = 'rgba(107,203,119,.4)';
+        });
+
+        // 4. Atualiza texto do botão nos pacotes max
+        document.querySelectorAll('[data-pkg-max="1"] .pkg-btn-buy').forEach(btn => {
+            btn.textContent = 'RESGATAR MINHA CORTESIA 🎉';
+            btn.style.background = 'linear-gradient(135deg,#2e7d32,#66bb6a)';
+            btn.style.backgroundSize = '200%';
+        });
+    }
+
+    function applyPartialCouponEffect(couponCode, discountPct) {
+        // Para desconto parcial: mostra campo cupom já preenchido
+        document.querySelectorAll('input[name="coupon_code"]').forEach(i => {
+            i.value = couponCode;
+        });
+        // Mostra a área do cupom automaticamente
+        const area = document.getElementById('couponArea');
+        if (area) area.style.display = 'block';
+    }
+
+    // Verifica cupom da URL ao carregar a página
+    if (_urlCoupon) {
+        const fd = new FormData();
+        fd.append('coupon_code', _urlCoupon);
+        fd.append('<?= csrf_token() ?>', '<?= csrf_hash() ?>');
+
+        fetch('<?= base_url('verificar-cupom-pagina') ?>', {
+            method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (!data.valid) return;
+            _activeCoupon = { code: _urlCoupon, discount: data.discount_percent, free: data.is_free };
+
+            if (data.is_free) {
+                applyFreeCouponEffect(_urlCoupon);
+            } else {
+                applyPartialCouponEffect(_urlCoupon, data.discount_percent);
+            }
+        })
+        .catch(() => {});
+    }
+</script>
+<script>
     var swiper = new Swiper(".mySwiper", {
         loop: true, speed: 700,
         navigation: { nextEl: ".swiper-button-next", prevEl: ".swiper-button-prev" },
@@ -860,11 +1021,35 @@
     }
 
     function openCheckout(pkgId, pkgName, price, heroId) {
-        document.getElementById('checkoutPkgName').textContent  = pkgName;
-        document.getElementById('checkoutPkgPrice').textContent = 'R\u00a0' + Number(price).toLocaleString('pt-BR', {minimumFractionDigits:0});
+        const priceEl = document.getElementById('checkoutPkgPrice');
+        priceEl.dataset.original = 'R\u00a0' + Number(price).toLocaleString('pt-BR', {minimumFractionDigits:0});
+        document.getElementById('checkoutPkgName').textContent = pkgName;
         document.getElementById('chk_package_id').value = pkgId;
-        document.getElementById('chk_hero_id').value    = heroId;
+        document.getElementById('chk_hero_id').value    = heroId || 0;
         document.getElementById('checkoutError').style.display = 'none';
+
+        // Se cupom 100% ativo via URL, aplica efeito automático no modal
+        if (_activeCoupon && _activeCoupon.free) {
+            priceEl.innerHTML =
+                '<del style="color:rgba(197,160,89,.4);font-size:.8em;">R\u00a0' +
+                Number(price).toLocaleString('pt-BR', {minimumFractionDigits:0}) +
+                '</del> <span style="color:#6bcb77;font-size:.95em;">CORTESIA TOTAL 🎉</span>';
+            const submitBtn = document.getElementById('checkoutSubmitBtn');
+            submitBtn.textContent = 'CONFIRMAR ENSAIO GRATUITO →';
+            submitBtn.style.background = 'linear-gradient(135deg,#2e7d32,#66bb6a)';
+            // Oculta bloco de cupom manual (já está aplicado)
+            const couponBlock = document.getElementById('couponToggle')?.closest('div');
+            if (couponBlock) couponBlock.style.display = 'none';
+            // Feedback visual
+            const fb = document.getElementById('couponFeedback');
+            if (fb) { fb.style.display = 'block'; fb.style.color = '#6bcb77'; fb.textContent = '✅ Cortesia exclusiva aplicada automaticamente!'; }
+        } else {
+            priceEl.textContent = 'R\u00a0' + Number(price).toLocaleString('pt-BR', {minimumFractionDigits:0});
+            const submitBtn = document.getElementById('checkoutSubmitBtn');
+            submitBtn.textContent = 'PAGAR COM PIX OU CARTÃO →';
+            submitBtn.style.background = 'linear-gradient(135deg,#C5A059,#F5E27A,#C5A059)';
+        }
+
         new bootstrap.Modal(document.getElementById('checkoutModal')).show();
     }
 
