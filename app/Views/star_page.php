@@ -713,6 +713,31 @@
             </label>
           </div>
 
+          <!-- ── Cupom de Desconto ────────────────────────────────────── -->
+          <div style="border-top:1px solid rgba(197,160,89,.12);padding-top:16px;margin-bottom:16px;">
+            <button type="button" id="couponToggle"
+                    style="background:transparent;border:none;padding:0;font-family:'Inter',sans-serif;font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:rgba(197,160,89,.5);cursor:pointer;display:flex;align-items:center;gap:6px;transition:color .2s;"
+                    onmouseover="this.style.color='rgba(197,160,89,.9)'" onmouseout="if(!document.getElementById('couponArea').style.display||document.getElementById('couponArea').style.display==='none')this.style.color='rgba(197,160,89,.5)'">
+              <span id="couponToggleIcon">🎟️</span> Tenho um cupom de desconto/cortesia
+            </button>
+            <div id="couponArea" style="display:none;margin-top:12px;">
+              <div style="display:flex;gap:8px;align-items:flex-end;">
+                <div style="flex:1;">
+                  <label style="font-family:'Inter',sans-serif;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.35);display:block;margin-bottom:6px;">CÓDIGO DO CUPOM</label>
+                  <input type="text" id="couponCodeInput" name="coupon_code" placeholder="JWS-XXXXX"
+                         style="width:100%;background:#000;border:1px solid rgba(197,160,89,.25);color:#fff;padding:10px 14px;font-size:.9rem;outline:none;text-transform:uppercase;letter-spacing:.08em;font-variant-numeric:tabular-nums;"
+                         oninput="this.value=this.value.toUpperCase()">
+                </div>
+                <button type="button" id="couponApplyBtn"
+                        style="background:rgba(197,160,89,.1);border:1px solid rgba(197,160,89,.35);color:#C5A059;padding:10px 20px;font-family:'Inter',sans-serif;font-size:.68rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;white-space:nowrap;transition:all .2s;"
+                        onmouseover="this.style.background='rgba(197,160,89,.2)'" onmouseout="this.style.background='rgba(197,160,89,.1)'">
+                  Aplicar
+                </button>
+              </div>
+              <div id="couponFeedback" style="margin-top:8px;font-family:'Inter',sans-serif;font-size:.78rem;display:none;"></div>
+            </div>
+          </div>
+
           <button type="submit" id="checkoutSubmitBtn" style="width:100%;background:linear-gradient(135deg,#C5A059,#F5E27A,#C5A059);background-size:200%;color:#000;border:none;padding:16px;font-family:'Inter',sans-serif;font-size:.75rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;transition:background-position .4s;">PAGAR COM PIX OU CARTÃO →</button>
           <p id="checkoutError" style="display:none;color:#ff6b6b;font-size:.8rem;text-align:center;margin-top:12px;"></p>
         </form>
@@ -851,6 +876,85 @@
         new bootstrap.Modal(document.getElementById('talkModal')).show();
     }
 
+    // ── Cupom de Desconto ─────────────────────────────────────────────────
+    let couponApplied = false;
+
+    document.getElementById('couponToggle').addEventListener('click', function() {
+        const area = document.getElementById('couponArea');
+        const open = area.style.display === 'block';
+        area.style.display = open ? 'none' : 'block';
+        this.style.color = open ? 'rgba(197,160,89,.5)' : 'rgba(197,160,89,.9)';
+        if (!open) document.getElementById('couponCodeInput').focus();
+    });
+
+    document.getElementById('couponApplyBtn').addEventListener('click', function() {
+        const code  = document.getElementById('couponCodeInput').value.trim();
+        const email = document.querySelector('#checkoutForm input[name="email"]').value.trim();
+        const pkgId = document.getElementById('chk_package_id').value;
+        const fb    = document.getElementById('couponFeedback');
+
+        if (!code) { showCouponFeedback('Insira o código do cupom.', false); return; }
+        if (!email) { showCouponFeedback('Preencha seu e-mail primeiro.', false); return; }
+
+        this.textContent = '...';
+        this.disabled = true;
+
+        const fd = new FormData();
+        fd.append('coupon_code', code);
+        fd.append('email', email);
+        fd.append('package_id', pkgId);
+        fd.append('<?= csrf_token() ?>', '<?= csrf_hash() ?>');
+
+        fetch('<?= base_url('validar-cupom') ?>', {
+            method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.valid) {
+                couponApplied = true;
+                showCouponFeedback('✅ ' + data.message, true);
+                // Atualiza preço exibido no header do modal
+                if (data.is_free) {
+                    document.getElementById('checkoutPkgPrice').innerHTML =
+                        '<del style="color:rgba(197,160,89,.4);font-size:.8em;">' +
+                        document.getElementById('checkoutPkgPrice').textContent + '</del>' +
+                        ' <span style="color:#6bcb77;font-size:.95em;">CORTESIA TOTAL 🎉</span>';
+                    document.getElementById('checkoutSubmitBtn').textContent = 'CONFIRMAR ENSAIO GRATUITO →';
+                    document.getElementById('checkoutSubmitBtn').style.background = 'linear-gradient(135deg,#2e7d32,#66bb6a)';
+                } else if (data.final_price !== null) {
+                    const original = document.getElementById('checkoutPkgPrice').dataset.original ||
+                                     document.getElementById('checkoutPkgPrice').textContent;
+                    document.getElementById('checkoutPkgPrice').dataset.original = original;
+                    document.getElementById('checkoutPkgPrice').innerHTML =
+                        '<del style="color:rgba(197,160,89,.4);font-size:.8em;">' + original + '</del>' +
+                        ' R\u00a0' + data.final_price.toLocaleString('pt-BR', {minimumFractionDigits: 0}) +
+                        ' <span style="color:#6bcb77;font-size:.8em;">(' + data.discount_percent + '% OFF)</span>';
+                }
+                document.getElementById('couponApplyBtn').textContent = '✓';
+                document.getElementById('couponApplyBtn').disabled = false;
+                document.getElementById('couponCodeInput').readOnly = true;
+                document.getElementById('couponCodeInput').style.borderColor = 'rgba(107,203,119,.4)';
+            } else {
+                couponApplied = false;
+                showCouponFeedback('❌ ' + data.message, false);
+                document.getElementById('couponApplyBtn').textContent = 'Aplicar';
+                document.getElementById('couponApplyBtn').disabled = false;
+            }
+        })
+        .catch(() => {
+            showCouponFeedback('❌ Erro ao validar. Tente novamente.', false);
+            document.getElementById('couponApplyBtn').textContent = 'Aplicar';
+            document.getElementById('couponApplyBtn').disabled = false;
+        });
+    });
+
+    function showCouponFeedback(msg, success) {
+        const fb = document.getElementById('couponFeedback');
+        fb.style.display = 'block';
+        fb.style.color = success ? '#6bcb77' : '#ff6b6b';
+        fb.textContent = msg;
+    }
+
     document.getElementById('checkoutForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const btn = document.getElementById('checkoutSubmitBtn');
@@ -862,7 +966,10 @@
         })
         .then(r => r.json())
         .then(data => {
-            if (data.success && data.checkout_url) {
+            if (data.success && data.free && data.redirect_url) {
+                // Cupom 100% — redireciona para página de obrigado
+                window.location.href = data.redirect_url;
+            } else if (data.success && data.checkout_url) {
                 window.location.href = data.checkout_url;
             } else {
                 errEl.textContent = data.message || 'Erro ao processar. Tente novamente.';

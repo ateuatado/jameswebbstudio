@@ -50,6 +50,9 @@
                         <a class="nav-link text-info" href="<?= site_url('admin/client-projects') ?>">Projetos de Clientes</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link text-success fw-semibold" href="<?= site_url('admin/coupons') ?>">🎟️ Cupons</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link text-info" href="<?= site_url('admin/studio') ?>">Estúdio</a>
                     </li>
                     <?php if (auth()->user()->inGroup('admin','superadmin') || auth()->user()->can('search.global')): ?>

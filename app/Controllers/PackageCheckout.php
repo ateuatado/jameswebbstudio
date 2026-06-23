@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use App\Models\PackageModel;
 use App\Models\OrderModel;
 use App\Models\Intention;
+use App\Models\CouponModel;
 
 class PackageCheckout extends BaseController
 {
@@ -15,11 +16,12 @@ class PackageCheckout extends BaseController
     // ─────────────────────────────────────────────────────────────────────────
     public function buy()
     {
-        $packageId = (int) $this->request->getPost('package_id');
-        $heroId    = (int) $this->request->getPost('hero_id');
-        $name      = trim($this->request->getPost('name'));
-        $email     = trim($this->request->getPost('email'));
-        $phone     = trim($this->request->getPost('phone'));
+        $packageId   = (int) $this->request->getPost('package_id');
+        $heroId      = (int) $this->request->getPost('hero_id');
+        $name        = trim($this->request->getPost('name'));
+        $email       = trim($this->request->getPost('email'));
+        $phone       = trim($this->request->getPost('phone'));
+        $couponCode  = strtoupper(trim($this->request->getPost('coupon_code') ?? ''));
 
         if (!$packageId || !$name || !$email) {
             return $this->response->setJSON(['success' => false, 'message' => 'Preencha nome e e-mail.']);
@@ -33,6 +35,71 @@ class PackageCheckout extends BaseController
         }
 
         log_message('info', "Nova intenção de compra: {$name} <{$email}> ({$phone}) → Pacote #{$packageId} ({$package->name}) | Hero #{$heroId}");
+
+        // ── Valida cupom (se informado) ───────────────────────────────────────────
+        $couponModel   = new CouponModel();
+        $coupon        = null;
+        $discountPct   = 0;
+        $finalPrice    = (float) $package->base_price;
+
+        if (!empty($couponCode)) {
+            $coupon = $couponModel->findValidCoupon($couponCode, $email);
+            if (!$coupon) {
+                return $this->response->setJSON(['success' => false, 'message' => 'Cupom inválido ou não pertence a este e-mail.']);
+            }
+            $discountPct = (int) $coupon->discount_percent;
+            $finalPrice  = round($package->base_price * (1 - $discountPct / 100), 2);
+            log_message('info', "Cupom {$couponCode} aplicado: {$discountPct}% off. Valor original: R{$package->base_price} → R{$finalPrice}");
+        }
+
+        // ── Campos comuns da order ────────────────────────────────────────────────
+        $orderData = [
+            'mp_preference_id'       => '',
+            'package_id'             => $packageId,
+            'hero_id'                => $heroId ?: null,
+            'buyer_name'             => $name,
+            'buyer_email'            => $email,
+            'buyer_phone'            => $phone,
+            'amount'                 => $finalPrice,
+            'status'                 => 'pending',
+            'coupon_id'              => $coupon ? $coupon->id : null,
+            'discount_percent'       => $discountPct,
+            'cpf'                    => trim($this->request->getPost('cpf') ?? ''),
+            'rg'                     => trim($this->request->getPost('rg') ?? ''),
+            'marital_status'         => trim($this->request->getPost('marital_status') ?? ''),
+            'address'                => trim($this->request->getPost('address') ?? ''),
+            'city'                   => trim($this->request->getPost('city') ?? ''),
+            'state'                  => trim($this->request->getPost('state') ?? ''),
+            'zip_code'               => trim($this->request->getPost('zip_code') ?? ''),
+            'accepted_terms_at'      => $this->request->getPost('accept_terms') ? date('Y-m-d H:i:s') : null,
+            'image_usage_authorized' => $this->request->getPost('image_usage') ? 1 : 0,
+        ];
+
+        // ── BYPASS: cupom 100% — confirma sem pagamento ───────────────────────────
+        if ($discountPct === 100) {
+            $orderModel = new OrderModel();
+            $orderData['status']            = 'approved';
+            $orderData['mp_preference_id']  = 'COUPON-100PCT-' . time();
+            $orderModel->insert($orderData);
+            $orderId = $orderModel->getInsertID();
+
+            // Marca cupom como usado
+            $couponModel->markAsUsed($coupon->id, $orderId);
+
+            // Gera link de agendamento e envia e-mails
+            $fakeOrder = (object) array_merge($orderData, ['id' => $orderId]);
+            $this->sendNotificationEmail($fakeOrder, ['id' => null, 'status' => 'cortesia_100pct']);
+            $agendaLink = $this->generateAgendaToken($fakeOrder);
+            $orderModel->update($orderId, ['agenda_link' => $agendaLink]);
+            $this->sendClientBookingEmail($fakeOrder, $agendaLink);
+
+            $redirectUrl = site_url("ensaio/obrigado?order={$orderId}&pacote=" . urlencode($package->name) . "&nome=" . urlencode($name));
+            return $this->response->setJSON([
+                'success'      => true,
+                'free'         => true,
+                'redirect_url' => $redirectUrl,
+            ]);
+        }
 
         // ── Lê o token MP ────────────────────────────────────────────────────
         $token = getenv('MERCADOPAGO_ACCESS_TOKEN') ?: env('MERCADOPAGO_ACCESS_TOKEN');
@@ -77,11 +144,12 @@ class PackageCheckout extends BaseController
             ]);
             $orderId = $orderModel->getInsertID();
 
+            $titleSuffix = $discountPct > 0 ? " ({$discountPct}% OFF)" : '';
             $preferenceData = [
                 'items' => [[
-                    'title'       => 'Ensaio Fotografico - ' . $package->name,
+                    'title'       => 'Ensaio Fotografico - ' . $package->name . $titleSuffix,
                     'quantity'    => 1,
-                    'unit_price'  => (float) $package->base_price,
+                    'unit_price'  => $finalPrice > 0 ? $finalPrice : 0.01,
                     'currency_id' => 'BRL',
                 ]],
                 'payer' => [
@@ -103,6 +171,11 @@ class PackageCheckout extends BaseController
 
             // Atualiza a order com o preference_id gerado
             $orderModel->update($orderId, ['mp_preference_id' => $preference->id]);
+
+            // Marca cupom como usado (desconto parcial)
+            if ($coupon) {
+                $couponModel->markAsUsed($coupon->id, $orderId);
+            }
 
             return $this->response->setJSON([
                 'success'      => true,
@@ -516,6 +589,44 @@ class PackageCheckout extends BaseController
         return $this->response->setJSON([
             'status'      => $order->status,
             'agenda_link' => $order->agenda_link ?? null,
+        ]);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // AJAX: Valida cupom em tempo real
+    // POST /validar-cupom
+    // ─────────────────────────────────────────────────────────────────────────
+    public function validateCoupon()
+    {
+        $code      = strtoupper(trim($this->request->getPost('coupon_code') ?? ''));
+        $email     = strtolower(trim($this->request->getPost('email') ?? ''));
+        $packageId = (int) ($this->request->getPost('package_id') ?? 0);
+
+        if (empty($code) || empty($email)) {
+            return $this->response->setJSON(['valid' => false, 'message' => 'Informe o código e o e-mail.']);
+        }
+
+        $couponModel = new CouponModel();
+        $coupon      = $couponModel->findValidCoupon($code, $email);
+
+        if (!$coupon) {
+            return $this->response->setJSON(['valid' => false, 'message' => 'Cupom inválido ou não pertence a este e-mail.']);
+        }
+
+        $finalPrice = null;
+        if ($packageId) {
+            $pkg = (new PackageModel())->find($packageId);
+            if ($pkg) {
+                $finalPrice = round($pkg->base_price * (1 - $coupon->discount_percent / 100), 2);
+            }
+        }
+
+        return $this->response->setJSON([
+            'valid'            => true,
+            'discount_percent' => (int) $coupon->discount_percent,
+            'final_price'      => $finalPrice,
+            'is_free'          => (int) $coupon->discount_percent === 100,
+            'message'          => "Cupom aplicado! {$coupon->discount_percent}% de desconto.",
         ]);
     }
 }

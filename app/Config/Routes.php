@@ -107,6 +107,11 @@ $routes->group('admin', ['filter' => 'group:admin,superadmin'], static function 
     $routes->post('usuarios/(:num)/cadastrar-rosto',    'Admin\UserManagementController::registerFace/$1');
     $routes->post('usuarios/(:num)/update-profile',     'Admin\UserManagementController::updateProfile/$1');
 
+    // Cupons de Desconto
+    $routes->get( 'coupons',              'Admin\CouponController::index');
+    $routes->get( 'coupons/create',       'Admin\CouponController::create');
+    $routes->post('coupons/store',        'Admin\CouponController::store');
+    $routes->post('coupons/(:num)/delete','Admin\CouponController::delete/$1');
 
 });
 
@@ -129,6 +134,7 @@ $routes->get('investimento', 'Pricing::index');
 
 // ─── Checkout de Pacotes (público) ───────────────────────────────────────────
 $routes->post('comprar-ensaio',  'PackageCheckout::buy');
+$routes->post('validar-cupom',   'PackageCheckout::validateCoupon');
 $routes->post('quero-falar',     'PackageCheckout::talkFirst');
 $routes->post('mp/webhook',      'PackageCheckout::webhook');
 $routes->get( 'ensaio/obrigado', 'PackageCheckout::thanks');
