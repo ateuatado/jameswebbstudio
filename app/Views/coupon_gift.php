@@ -228,21 +228,21 @@
       position: absolute;
       top: calc(100% + 10px);
       left: 0; transform: translateY(-4px);
-      width: 260px;
-      background: rgba(12,12,12,.98);
-      border: 1px solid rgba(197,160,89,.35);
-      color: rgba(255,255,255,.8);
+      width: 280px;
+      background: rgba(10,10,10,.98);
+      border: 1px solid rgba(197,160,89,.4);
+      color: var(--gold);
       font-family: 'Inter', sans-serif;
-      font-size: .72rem; font-weight: 400;
-      line-height: 1.7;
-      padding: 12px 14px;
+      font-size: .78rem; font-weight: 400;
+      line-height: 1.8;
+      padding: 14px 16px;
       border-radius: 6px;
       pointer-events: none;
       white-space: normal;
       opacity: 0;
       transition: opacity .25s ease, transform .25s ease;
       z-index: 200;
-      box-shadow: 0 8px 32px rgba(0,0,0,.7);
+      box-shadow: 0 8px 32px rgba(0,0,0,.7), 0 0 0 1px rgba(197,160,89,.08);
     }
     .pkg-name[data-tooltip]::before {
       content: '';
@@ -250,7 +250,7 @@
       top: calc(100% + 4px);
       left: 20px; transform: translateY(-4px);
       border: 6px solid transparent;
-      border-bottom-color: rgba(197,160,89,.35);
+      border-bottom-color: rgba(197,160,89,.4);
       pointer-events: none;
       opacity: 0;
       transition: opacity .25s ease, transform .25s ease;
@@ -261,9 +261,24 @@
       opacity: 1;
       transform: translateY(0);
     }
-    /* Em mobile toca para ver */
+    /* Mobile — tooltip mais largo e legível */
     @media (max-width: 520px) {
-      .pkg-name[data-tooltip]::after { width: 200px; font-size: .68rem; }
+      .pkg-name[data-tooltip]::after {
+        width: min(320px, 88vw);
+        font-size: .82rem;
+        padding: 16px 18px;
+        line-height: 1.85;
+        left: 50%; transform: translateX(-50%) translateY(-4px);
+      }
+      .pkg-name[data-tooltip]:hover::after {
+        transform: translateX(-50%) translateY(0);
+      }
+      .pkg-name[data-tooltip]::before {
+        left: 50%; transform: translateX(-50%) translateY(-4px);
+      }
+      .pkg-name[data-tooltip]:hover::before {
+        transform: translateX(-50%) translateY(0);
+      }
     }
 
     /* Descrição */
