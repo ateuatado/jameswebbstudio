@@ -192,14 +192,16 @@
     .pkg-card {
       background: rgba(255,255,255,.025);
       border: 1px solid rgba(255,255,255,.07);
-      border-radius: 6px; overflow: hidden;
+      border-radius: 6px;
       display: flex; flex-direction: column;
       transition: border-color .3s, transform .3s, box-shadow .3s;
+      position: relative;
     }
     .pkg-card:hover {
       border-color: rgba(197,160,89,.4);
       transform: translateY(-5px);
       box-shadow: 0 16px 48px rgba(0,0,0,.6);
+      z-index: 10;
     }
     .pkg-featured-badge {
       background: linear-gradient(90deg, #C5A059, #F5E27A);
@@ -207,6 +209,7 @@
       font-size: .55rem; font-weight: 700;
       letter-spacing: .2em; text-transform: uppercase;
       padding: 5px 0; text-align: center;
+      border-radius: 5px 5px 0 0;
     }
     .pkg-card.featured { border-color: rgba(197,160,89,.25); }
 
@@ -223,12 +226,12 @@
     .pkg-name[data-tooltip]::after {
       content: attr(data-tooltip);
       position: absolute;
-      bottom: calc(100% + 10px);
-      left: 50%; transform: translateX(-50%) translateY(6px);
+      top: calc(100% + 10px);
+      left: 0; transform: translateY(-4px);
       width: 260px;
-      background: rgba(15,15,15,.97);
-      border: 1px solid rgba(197,160,89,.3);
-      color: rgba(255,255,255,.75);
+      background: rgba(12,12,12,.98);
+      border: 1px solid rgba(197,160,89,.35);
+      color: rgba(255,255,255,.8);
       font-family: 'Inter', sans-serif;
       font-size: .72rem; font-weight: 400;
       line-height: 1.7;
@@ -238,25 +241,25 @@
       white-space: normal;
       opacity: 0;
       transition: opacity .25s ease, transform .25s ease;
-      z-index: 100;
-      box-shadow: 0 8px 32px rgba(0,0,0,.6);
+      z-index: 200;
+      box-shadow: 0 8px 32px rgba(0,0,0,.7);
     }
     .pkg-name[data-tooltip]::before {
       content: '';
       position: absolute;
-      bottom: calc(100% + 4px);
-      left: 50%; transform: translateX(-50%) translateY(6px);
+      top: calc(100% + 4px);
+      left: 20px; transform: translateY(-4px);
       border: 6px solid transparent;
-      border-top-color: rgba(197,160,89,.3);
+      border-bottom-color: rgba(197,160,89,.35);
       pointer-events: none;
       opacity: 0;
       transition: opacity .25s ease, transform .25s ease;
-      z-index: 101;
+      z-index: 201;
     }
     .pkg-name[data-tooltip]:hover::after,
     .pkg-name[data-tooltip]:hover::before {
       opacity: 1;
-      transform: translateX(-50%) translateY(0);
+      transform: translateY(0);
     }
     /* Em mobile toca para ver */
     @media (max-width: 520px) {
