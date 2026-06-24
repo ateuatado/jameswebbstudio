@@ -3,7 +3,6 @@
 namespace App\Controllers;
 
 use App\Models\CouponModel;
-use App\Models\PackageModel;
 
 class CouponGift extends BaseController
 {
@@ -26,21 +25,23 @@ class CouponGift extends BaseController
             ]);
         }
 
-        // Todos os pacotes ativos ordenados por preço
-        $pkgModel  = new PackageModel();
-        $packages  = $pkgModel
-            ->where('is_active', 1)
-            ->orderBy('base_price', 'ASC')
-            ->findAll();
+        // Pacotes ativos com descrição da categoria via JOIN
+        $db = \Config\Database::connect();
+        $packages = $db->table('packages p')
+            ->select('p.*, c.description AS category_description, c.name AS category_name')
+            ->join('categories c', 'c.id = p.category_id', 'left')
+            ->where('p.is_active', 1)
+            ->orderBy('p.base_price', 'ASC')
+            ->get()->getResult();
 
-        // Pacote mais caro (referência de valor do presente)
+        // Pacote mais caro (destaque)
         $maxPackage = !empty($packages) ? end($packages) : null;
 
         return view('coupon_gift', [
-            'coupon'      => $coupon,
-            'packages'    => $packages,
-            'maxPackage'  => $maxPackage,
-            'code'        => $code,
+            'coupon'     => $coupon,
+            'packages'   => $packages,
+            'maxPackage' => $maxPackage,
+            'code'       => $code,
         ]);
     }
 }

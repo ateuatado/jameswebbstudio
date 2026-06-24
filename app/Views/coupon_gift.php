@@ -212,11 +212,55 @@
 
     .pkg-card-top { padding: 28px 26px 0; flex: 1; }
 
-    /* Nome */
+    /* Nome + tooltip de categoria */
     .pkg-name {
       font-family: 'EB Garamond', Georgia, serif;
       font-size: 1.45rem; font-weight: 400;
       color: #fff; margin-bottom: 12px;
+      position: relative; display: inline-block;
+    }
+    .pkg-name[data-tooltip] { cursor: help; }
+    .pkg-name[data-tooltip]::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: calc(100% + 10px);
+      left: 50%; transform: translateX(-50%) translateY(6px);
+      width: 260px;
+      background: rgba(15,15,15,.97);
+      border: 1px solid rgba(197,160,89,.3);
+      color: rgba(255,255,255,.75);
+      font-family: 'Inter', sans-serif;
+      font-size: .72rem; font-weight: 400;
+      line-height: 1.7;
+      padding: 12px 14px;
+      border-radius: 6px;
+      pointer-events: none;
+      white-space: normal;
+      opacity: 0;
+      transition: opacity .25s ease, transform .25s ease;
+      z-index: 100;
+      box-shadow: 0 8px 32px rgba(0,0,0,.6);
+    }
+    .pkg-name[data-tooltip]::before {
+      content: '';
+      position: absolute;
+      bottom: calc(100% + 4px);
+      left: 50%; transform: translateX(-50%) translateY(6px);
+      border: 6px solid transparent;
+      border-top-color: rgba(197,160,89,.3);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .25s ease, transform .25s ease;
+      z-index: 101;
+    }
+    .pkg-name[data-tooltip]:hover::after,
+    .pkg-name[data-tooltip]:hover::before {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    /* Em mobile toca para ver */
+    @media (max-width: 520px) {
+      .pkg-name[data-tooltip]::after { width: 200px; font-size: .68rem; }
     }
 
     /* Descrição */
@@ -377,8 +421,12 @@
 
           <div class="pkg-card-top">
 
-            <!-- Nome -->
-            <div class="pkg-name"><?= esc($pkg->name) ?></div>
+            <!-- Nome (tooltip com descrição da categoria no hover) -->
+            <?php $catDesc = !empty($pkg->category_description) ? esc($pkg->category_description) : ''; ?>
+            <div class="pkg-name" <?= $catDesc ? 'data-tooltip="' . strip_tags($catDesc) . '"' : '' ?>>
+              <?= esc($pkg->name) ?>
+              <?php if ($catDesc): ?><span style="font-size:.65rem;color:rgba(197,160,89,.5);margin-left:5px;vertical-align:middle;">ⓘ</span><?php endif ?>
+            </div>
 
             <!-- Descrição do ensaio -->
             <?php if (!empty($pkg->description)): ?>
