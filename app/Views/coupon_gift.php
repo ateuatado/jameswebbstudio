@@ -453,12 +453,23 @@
 
             <!-- Valor original em dourado grande -->
             <?php if ($pkg->base_price > 0): ?>
-              <div class="pkg-value-label">Valor do presente</div>
+              <div class="pkg-value-label">Valor do ensaio</div>
               <div class="pkg-original-price">R$&nbsp;<?= number_format($pkg->base_price, 0, ',', '.') ?></div>
             <?php endif ?>
 
-            <!-- Tag gratuito -->
-            <div class="pkg-free-label">100% Gratuito</div>
+            <!-- Tag de desconto — dinâmica conforme o cupom -->
+            <?php
+              $pct = (int)($coupon->discount_percent ?? 0);
+              if ($pct >= 100):
+            ?>
+              <div class="pkg-free-label">100% Gratuito 🎁</div>
+            <?php elseif ($pct > 0):
+              $precoFinal = $pkg->base_price * (1 - $pct / 100);
+            ?>
+              <div class="pkg-free-label" style="background:rgba(197,160,89,.12);border-color:rgba(197,160,89,.3);color:var(--gold);">
+                <?= $pct ?>% OFF → R$&nbsp;<?= number_format($precoFinal, 0, ',', '.') ?>
+              </div>
+            <?php endif ?>
 
             <!-- Detalhes -->
             <?php
