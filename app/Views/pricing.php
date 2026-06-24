@@ -173,6 +173,17 @@
             <div class="pkg-price"><span class="pkg-currency">R$</span><?= number_format($pkg->base_price, 0, ',', '.') ?></div>
             <div class="pkg-photos"><?= (int)$pkg->included_photos ?> fotos tratadas</div>
 
+            <!-- Acordeão de descrição do pacote — logo após o preço -->
+            <?php if (!empty($pkgDesc)): ?>
+            <button class="pkg-acc-toggle" data-target="<?= $pkgAccId ?>">
+              <span class="pkg-acc-label">sobre este pacote</span>
+              <i class="pkg-acc-icon">&#8964;</i>
+            </button>
+            <div class="pkg-acc-body" id="<?= $pkgAccId ?>">
+              <p><?= esc($pkgDesc) ?></p>
+            </div>
+            <?php endif; ?>
+
             <?php if (!empty($pkg->services)): ?>
             <ul class="pkg-services">
               <?php
@@ -197,17 +208,6 @@
 
             <?php if ($pkg->extra_photo_price > 0): ?>
               <div class="pkg-extra">+ fotos por R$ <?= number_format($pkg->extra_photo_price, 0, ',', '.') ?> cada</div>
-            <?php endif; ?>
-
-            <!-- Acordeão de descrição do pacote -->
-            <?php if (!empty($pkgDesc)): ?>
-            <button class="pkg-acc-toggle" data-target="<?= $pkgAccId ?>">
-              <span class="pkg-acc-label">sobre este pacote</span>
-              <i class="pkg-acc-icon">&#8964;</i>
-            </button>
-            <div class="pkg-acc-body" id="<?= $pkgAccId ?>">
-              <p><?= esc($pkgDesc) ?></p>
-            </div>
             <?php endif; ?>
 
             <button class="pkg-btn-buy" onclick="openCheckout(<?= $pkg->id ?>,'<?= esc($pkg->name) ?>',<?= $pkg->base_price ?>)">ESCOLHER ESTE PACOTE</button>
