@@ -478,7 +478,7 @@
           </div>
 
           <div class="pkg-card-footer">
-            <a href="<?= site_url('investimento?cupom=' . esc($code)) ?>"
+            <a href="<?= site_url('investimento?cupom=' . esc($code) . '&abrir=' . $pkg->id) ?>"
                class="btn-escolher"
                onclick="this.textContent='CARREGANDO...'; this.style.opacity='.7';">
               Escolher este ensaio →

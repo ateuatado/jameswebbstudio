@@ -391,6 +391,40 @@ function openCheckout(pkgId, pkgName, price) {
     new bootstrap.Modal(document.getElementById('checkoutModal')).show();
 }
 
+// Mapa de pacotes para auto-abertura via URL
+const JWS_PKGS = <?php
+    $pkgMap = [];
+    foreach ($grouped as $catPkgs) {
+        foreach ($catPkgs as $p) {
+            $pkgMap[(int)$p->id] = ['name' => $p->name, 'price' => (float)$p->base_price];
+        }
+    }
+    echo json_encode($pkgMap);
+?>;
+
+// Auto-abrir quando vindo da página de cortesia (?abrir=ID&cupom=CODE)
+(function() {
+    const params  = new URLSearchParams(window.location.search);
+    const pkgId   = parseInt(params.get('abrir'));
+    const coupon  = (params.get('cupom') || '').toUpperCase();
+    if (pkgId && JWS_PKGS[pkgId]) {
+        const pkg = JWS_PKGS[pkgId];
+        setTimeout(function() {
+            openCheckout(pkgId, pkg.name, pkg.price);
+            if (coupon) {
+                // Expande a área de cupom e pré-preenche
+                const area   = document.getElementById('couponArea');
+                const input  = document.getElementById('couponCodeInput');
+                const toggle = document.getElementById('couponToggle');
+                area.style.display  = 'block';
+                toggle.style.color  = 'rgba(197,160,89,.9)';
+                input.value = coupon;
+            }
+        }, 350);
+    }
+})();
+
+
 function openTalk(pkgId, pkgName) {
     document.getElementById('talkPkgName').textContent = pkgName;
     document.getElementById('talk_package_id').value   = pkgId;
