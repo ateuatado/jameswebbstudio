@@ -238,6 +238,9 @@
       font-size: clamp(2rem, 6vw, 2.8rem); font-weight: 400;
       color: var(--gold); line-height: 1;
       text-shadow: 0 0 24px rgba(197,160,89,.2);
+      text-decoration: line-through;
+      text-decoration-color: rgba(197,160,89,.5);
+      text-decoration-thickness: 2px;
       margin-bottom: 4px;
     }
     .pkg-free-label {
