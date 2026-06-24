@@ -122,26 +122,9 @@ class PackageCheckout extends BaseController
             $lastName  = $nameParts[1] ?? $nameParts[0];
 
             // ── Salva order local ANTES de criar preference (para ter o ID) ──
+            // Usa $orderData que já contém finalPrice, discount_percent e coupon_id
             $orderModel = new OrderModel();
-            $orderModel->insert([
-                'mp_preference_id' => '', // será atualizado logo abaixo
-                'package_id'       => $packageId,
-                'hero_id'          => $heroId ?: null,
-                'buyer_name'       => $name,
-                'buyer_email'      => $email,
-                'buyer_phone'      => $phone,
-                'amount'           => (float) $package->base_price,
-                'status'           => 'pending',
-                'cpf'              => trim($this->request->getPost('cpf') ?? ''),
-                'rg'               => trim($this->request->getPost('rg') ?? ''),
-                'marital_status'   => trim($this->request->getPost('marital_status') ?? ''),
-                'address'          => trim($this->request->getPost('address') ?? ''),
-                'city'             => trim($this->request->getPost('city') ?? ''),
-                'state'            => trim($this->request->getPost('state') ?? ''),
-                'zip_code'         => trim($this->request->getPost('zip_code') ?? ''),
-                'accepted_terms_at'      => $this->request->getPost('accept_terms') ? date('Y-m-d H:i:s') : null,
-                'image_usage_authorized' => $this->request->getPost('image_usage') ? 1 : 0,
-            ]);
+            $orderModel->insert($orderData);
             $orderId = $orderModel->getInsertID();
 
             $titleSuffix = $discountPct > 0 ? " ({$discountPct}% OFF)" : '';
@@ -164,7 +147,8 @@ class PackageCheckout extends BaseController
                 ],
                 'auto_return'        => 'approved',
                 'notification_url'   => site_url("mp/webhook"),
-                'external_reference' => "PKG{$packageId}_HERO{$heroId}",
+                // orderId como external_reference: lookup direto e confiável no webhook
+                'external_reference' => (string) $orderId,
             ];
 
             $preference = $client->create($preferenceData);
@@ -369,17 +353,28 @@ class PackageCheckout extends BaseController
                 }
             }
 
-            // Fallback: parseia external_reference no formato PKG{n}_HERO{n}
+            // Fallback 1: external_reference = orderId numérico (novo padrão)
+            if (!$order && $extRef && ctype_digit((string) $extRef)) {
+                $order = $orderModel->find((int) $extRef);
+                if ($order) {
+                    log_message('info', "Webhook: order encontrada por orderId={$extRef}");
+                }
+            }
+
+            // Fallback 2: external_reference no formato legado PKG{n}_HERO{n}
             if (!$order && preg_match('/^PKG(\d+)_HERO(\d+)$/', $extRef, $m)) {
                 $row = $orderModel
                     ->where('package_id', (int) $m[1])
-                    ->where('hero_id', (int) $m[2])
+                    ->groupStart()
+                        ->where('hero_id', (int) $m[2])
+                        ->orWhere('hero_id IS NULL', null, false)
+                    ->groupEnd()
                     ->where('status', 'pending')
                     ->orderBy('created_at', 'DESC')
                     ->first();
                 if ($row) {
                     $order = (object) $row;
-                    log_message('info', "Webhook: order encontrada via ext_ref parsing: #{$order->id}");
+                    log_message('info', "Webhook: order encontrada via ext_ref legado: #{$order->id}");
                 }
             }
 
