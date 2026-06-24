@@ -1,0 +1,106 @@
+/* ── Acordeão de Categoria (cabeçalho da seção) ──────────────────────── */
+.cat-accordion-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-size: .6rem;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: rgba(197,160,89,.4);
+    padding: 6px 0 0;
+    margin: 0 auto;
+    transition: color .25s;
+}
+.cat-accordion-toggle:hover {
+    color: rgba(197,160,89,.75);
+}
+.cat-accordion-toggle .acc-icon {
+    display: inline-block;
+    transition: transform .3s ease;
+    font-style: normal;
+    font-size: .7rem;
+    line-height: 1;
+}
+.cat-accordion-toggle.open .acc-icon {
+    transform: rotate(180deg);
+}
+.cat-accordion-body {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height .4s ease, opacity .35s ease, padding .3s ease;
+    opacity: 0;
+}
+.cat-accordion-body.open {
+    max-height: 200px;
+    opacity: 1;
+    padding-bottom: 20px;
+}
+.cat-accordion-body p {
+    font-family: 'EB Garamond', Georgia, serif;
+    font-style: italic;
+    font-size: clamp(.88rem, 1.8vw, 1.05rem);
+    color: rgba(255,255,255,.35);
+    text-align: center;
+    max-width: 580px;
+    margin: 14px auto 0;
+    line-height: 1.65;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(197,160,89,.1);
+}
+
+/* ── Acordeão de Pacote (descrição do pacote) ────────────────────────── */
+.pkg-acc-toggle {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: none;
+    border: none;
+    border-top: 1px solid rgba(255,255,255,.05);
+    width: 100%;
+    padding: 10px 0 4px;
+    margin-top: auto;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-size: .6rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.22);
+    transition: color .2s;
+    text-align: left;
+}
+.pkg-acc-toggle:hover {
+    color: rgba(197,160,89,.6);
+}
+.pkg-acc-toggle .pkg-acc-icon {
+    display: inline-block;
+    transition: transform .3s ease;
+    margin-left: auto;
+    font-size: .65rem;
+}
+.pkg-acc-toggle.open .pkg-acc-icon {
+    transform: rotate(180deg);
+}
+.pkg-acc-body {
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height .35s ease, opacity .3s ease;
+}
+.pkg-acc-body.open {
+    max-height: 300px;
+    opacity: 1;
+}
+.pkg-acc-body p {
+    font-family: 'EB Garamond', Georgia, serif;
+    font-style: italic;
+    font-size: .92rem;
+    color: rgba(255,255,255,.35);
+    line-height: 1.65;
+    padding: 10px 0 6px;
+    margin: 0;
+    border-top: 1px solid rgba(255,255,255,.05);
+}

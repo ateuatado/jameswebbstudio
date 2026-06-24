@@ -117,6 +117,7 @@
 }
 .pricing-cta-btn:hover { border-color: rgba(197,160,89,.4); color: rgba(197,160,89,.8); }
 </style>
+<link rel="stylesheet" href="<?= base_url('assets/css/pricing-accordion.css') ?>">
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
@@ -140,14 +141,32 @@
 
     <?php foreach ($grouped as $catName => $packages): ?>
     <div class="cat-section">
-      <h2 class="cat-title"><?= esc($catName) ?></h2>
-      <?php if (!empty($catDescMap[$catName] ?? '')): ?>
-        <p class="cat-desc"><?= esc($catDescMap[$catName]) ?></p>
-      <?php endif; ?>
-
+      <!-- Cabeçalho da categoria com acordeão de descrição -->
+      <div class="text-center">
+        <h2 class="cat-title"><?= esc($catName) ?></h2>
+        <?php
+          $catDesc = trim($catDescMap[$catName] ?? '');
+          $catAccId = 'cat-acc-' . preg_replace('/[^a-z0-9]/', '-', strtolower($catName));
+        ?>
+        <?php if (!empty($catDesc)): ?>
+        <button class="cat-accordion-toggle" data-target="<?= $catAccId ?>">
+          <i class="acc-icon">&#8964;</i>
+          <span class="acc-label">saiba mais</span>
+        </button>
+        <div class="cat-accordion-body" id="<?= $catAccId ?>">
+          <p><?= esc($catDesc) ?></p>
+        </div>
+        <?php else: ?>
+        <div style="margin-bottom:28px;"></div>
+        <?php endif; ?>
+      </div>
       <div class="row justify-content-center g-4">
         <?php foreach ($packages as $pkg): ?>
         <div class="col-md-4">
+          <?php
+            $pkgDesc  = trim($pkg->description ?? '');
+            $pkgAccId = 'pkg-acc-' . $pkg->id;
+          ?>
           <div class="pkg-card <?= $pkg->is_preferred ? 'pkg-preferred' : '' ?>">
             <?php if ($pkg->is_preferred): ?><div class="pkg-badge">MAIS ESCOLHIDO</div><?php endif; ?>
             <div class="pkg-name"><?= esc($pkg->name) ?></div>
@@ -179,6 +198,18 @@
             <?php if ($pkg->extra_photo_price > 0): ?>
               <div class="pkg-extra">+ fotos por R$ <?= number_format($pkg->extra_photo_price, 0, ',', '.') ?> cada</div>
             <?php endif; ?>
+
+            <!-- Acordeão de descrição do pacote -->
+            <?php if (!empty($pkgDesc)): ?>
+            <button class="pkg-acc-toggle" data-target="<?= $pkgAccId ?>">
+              <span class="pkg-acc-label">sobre este pacote</span>
+              <i class="pkg-acc-icon">&#8964;</i>
+            </button>
+            <div class="pkg-acc-body" id="<?= $pkgAccId ?>">
+              <p><?= esc($pkgDesc) ?></p>
+            </div>
+            <?php endif; ?>
+
             <button class="pkg-btn-buy" onclick="openCheckout(<?= $pkg->id ?>,'<?= esc($pkg->name) ?>',<?= $pkg->base_price ?>)">ESCOLHER ESTE PACOTE</button>
           </div>
         </div>
@@ -532,4 +563,5 @@ document.getElementById('talkForm').addEventListener('submit', function(e) {
     .catch(() => { btn.textContent = 'ENVIAR MEU CONTATO'; btn.disabled = false; });
 });
 </script>
+<script src="<?= base_url('assets/js/pricing-accordion.js') ?>"></script>
 <?= $this->endSection() ?>
