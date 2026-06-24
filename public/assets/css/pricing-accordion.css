@@ -31,23 +31,26 @@
 .cat-accordion-body {
     overflow: hidden;
     max-height: 0;
-    transition: max-height .4s ease, opacity .35s ease, padding .3s ease;
+    transition: max-height .45s ease, opacity .35s ease, padding .3s ease;
     opacity: 0;
 }
 .cat-accordion-body.open {
-    max-height: 200px;
+    /* valor alto o suficiente para qualquer texto de categoria */
+    max-height: 600px;
     opacity: 1;
     padding-bottom: 20px;
 }
 .cat-accordion-body p {
-    font-family: 'EB Garamond', Georgia, serif;
-    font-style: italic;
-    font-size: clamp(.88rem, 1.8vw, 1.05rem);
-    color: rgba(197,160,89,.65);
+    /* Inter regular — mais legível que serifada itálica */
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: clamp(.8rem, 1.7vw, .95rem);
+    color: rgba(197,160,89,.85);
     text-align: center;
     max-width: 580px;
     margin: 14px auto 0;
-    line-height: 1.65;
+    line-height: 1.75;
     padding-bottom: 20px;
     border-bottom: 1px solid rgba(197,160,89,.1);
 }
@@ -88,18 +91,21 @@
     overflow: hidden;
     max-height: 0;
     opacity: 0;
-    transition: max-height .35s ease, opacity .3s ease;
+    transition: max-height .45s ease, opacity .35s ease;
 }
 .pkg-acc-body.open {
-    max-height: 300px;
+    /* valor generoso para acomodar qualquer descrição, incluindo mobile */
+    max-height: 1200px;
     opacity: 1;
 }
 .pkg-acc-body p {
-    font-family: 'EB Garamond', Georgia, serif;
-    font-style: italic;
-    font-size: .95rem;
-    color: rgba(197,160,89,.75);
-    line-height: 1.7;
-    padding: 0 0 14px;
+    /* Inter regular — legível, clean, sem itálico */
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: .82rem;
+    color: rgba(197,160,89,.9);
+    line-height: 1.75;
+    padding: 4px 0 16px;
     margin: 0;
 }
