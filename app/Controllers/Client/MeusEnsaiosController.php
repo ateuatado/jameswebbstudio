@@ -75,6 +75,36 @@ class MeusEnsaiosController extends BaseController
     }
 
     /**
+     * Página de agendamento do cliente para um pedido específico.
+     * GET /client/agendar/{orderId}
+     */
+    public function agendar(int $orderId)
+    {
+        $user  = auth()->user();
+        $email = $user->email;
+
+        $orderModel = new OrderModel();
+        $order = $orderModel->find($orderId);
+
+        // Verifica que o pedido existe, pertence ao cliente e está aprovado
+        if (!$order || strtolower($order->buyer_email) !== strtolower($email) || $order->status !== 'approved') {
+            return redirect()->to(site_url('client/meus-ensaios'))->with('error', 'Pedido não encontrado.');
+        }
+
+        $packageModel = new PackageModel();
+        $package = $order->package_id ? $packageModel->find($order->package_id) : null;
+
+        return view('client/agendar', [
+            'title'              => 'Agendar Ensaio',
+            'agendaPrefillName'  => $order->buyer_name,
+            'agendaPrefillEmail' => $order->buyer_email,
+            'agendaPrefillPhone' => $order->buyer_phone ?? '',
+            'agendaOrderId'      => $order->id,
+            'packageName'        => $package ? $package->name : 'Ensaio Fotográfico',
+        ]);
+    }
+
+    /**
      * Salva os dados de perfil/contrato do cliente logado.
      * POST /client/perfil/salvar
      */

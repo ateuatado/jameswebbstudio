@@ -306,7 +306,7 @@
                         <?php endif ?>
                         <div class="card-actions">
                             <?php if ($order->status === 'approved' && !empty($order->agenda_link)): ?>
-                                <a href="<?= esc($order->agenda_link) ?>" class="btn-ensaio primary" target="_blank">
+                                <a href="<?= site_url('client/agendar/' . $order->id) ?>" class="btn-ensaio primary">
                                     <i class="fas fa-calendar-alt"></i>
                                     <?= $scheduledAt ? 'Alterar Data' : 'Agendar Ensaio' ?>
                                 </a>

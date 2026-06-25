@@ -2,9 +2,15 @@
 /**
  * Widget de Agendamento — integração com agenda.test
  * Variáveis esperadas: $hero (array), $cta (array|null)
+ * Variáveis opcionais de pré-preenchimento (portal do cliente):
+ *   $agendaPrefillName, $agendaPrefillEmail, $agendaPrefillPhone, $agendaOrderId
  */
-$agendaBaseUrl = 'https://agenda.test';
-$heroContext   = esc($hero['name'] ?? '');
+$agendaBaseUrl   = 'https://agenda.test';
+$heroContext      = esc($hero['name'] ?? '');
+$agendaPrefillName  = esc($agendaPrefillName  ?? '');
+$agendaPrefillEmail = esc($agendaPrefillEmail ?? '');
+$agendaPrefillPhone = esc($agendaPrefillPhone ?? '');
+$agendaOrderId      = (int) ($agendaOrderId  ?? 0);
 ?>
 
 <!-- ========================================================
@@ -64,7 +70,8 @@ $heroContext   = esc($hero['name'] ?? '');
             <p class="agenda-modal-hint">Complete seus dados para confirmar:</p>
             <div id="agenda-form-errors" class="agenda-form-errors agenda-hidden"></div>
             <form id="agenda-booking-form" novalidate>
-                <input type="hidden" id="agenda-slot-id" name="slot_id">
+                <input type="hidden" id="agenda-slot-id"   name="slot_id">
+                <input type="hidden" id="agenda-order-id"  name="order_id" value="<?= $agendaOrderId ?>">
                 <div class="agenda-field">
                     <label for="agenda-name">Nome completo *</label>
                     <input type="text" id="agenda-name" name="name" required autocomplete="name">
@@ -470,7 +477,11 @@ $heroContext   = esc($hero['name'] ?? '');
 (function () {
     const AGENDA_BASE = '';
     // Proxy: hero.test/agenda-api/* → agenda.test/api/v1/* (server-side, sem CORS)
-    const HERO_NAME   = '<?= $heroContext ?>';
+    const HERO_NAME    = '<?= $heroContext ?>';
+    const PREFILL_NAME  = '<?= $agendaPrefillName ?>';
+    const PREFILL_EMAIL = '<?= $agendaPrefillEmail ?>';
+    const PREFILL_PHONE = '<?= $agendaPrefillPhone ?>';
+    const ORDER_ID      = <?= $agendaOrderId ?: 0 ?>;
 
     // Estado
     let currentYear  = new Date().getFullYear();
@@ -594,6 +605,12 @@ $heroContext   = esc($hero['name'] ?? '');
         };
         slotIdInput.value = selectedSlot.id;
         modalTitle.textContent = `${selectedSlot.time ? selectedSlot.time.substring(0,5) : ''} — ${selectedSlot.label}`;
+
+        // Pré-preenche o formulário se dados foram fornecidos (portal do cliente)
+        if (PREFILL_NAME)  document.getElementById('agenda-name').value  = PREFILL_NAME;
+        if (PREFILL_EMAIL) document.getElementById('agenda-email').value = PREFILL_EMAIL;
+        if (PREFILL_PHONE) document.getElementById('agenda-phone').value = PREFILL_PHONE;
+
         showStep('form');
     }
 
@@ -607,13 +624,15 @@ $heroContext   = esc($hero['name'] ?? '');
         submitSpinner.classList.remove('agenda-hidden');
 
         const body = {
-            slot_id: selectedSlot.id,
-            name:    document.getElementById('agenda-name').value,
-            email:   document.getElementById('agenda-email').value,
-            phone:   document.getElementById('agenda-phone').value,
-            notes:   (document.getElementById('agenda-notes').value || '') +
-                     (HERO_NAME ? `\n[Agendado via página do atleta: ${HERO_NAME}]` : ''),
+            slot_id:  selectedSlot.id,
+            name:     document.getElementById('agenda-name').value,
+            email:    document.getElementById('agenda-email').value,
+            phone:    document.getElementById('agenda-phone').value,
+            notes:    (document.getElementById('agenda-notes').value || '') +
+                      (HERO_NAME ? `\n[Agendado via página do atleta: ${HERO_NAME}]` : ''),
         };
+        // Inclui order_id para associar o agendamento ao pedido no banco
+        if (ORDER_ID) body.order_id = ORDER_ID;
 
         try {
             const res = await fetch(`/agenda-api/book`, {

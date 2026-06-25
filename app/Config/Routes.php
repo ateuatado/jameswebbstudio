@@ -159,6 +159,7 @@ $routes->group('client', ['filter' => 'session'], static function ($routes) {
     $routes->get( 'galeria/(:num)/checkout',       'Client\GaleriaController::checkout/$1');
     $routes->get( 'guia-pre-ensaio/(:num)',         'Client\MeusEnsaiosController::downloadGuide/$1');
     $routes->get( 'contrato/(:num)',                'Client\MeusEnsaiosController::downloadContract/$1');
+    $routes->get( 'agendar/(:num)',                 'Client\MeusEnsaiosController::agendar/$1');
     $routes->post('perfil/salvar',                  'Client\MeusEnsaiosController::updatePerfil');
 });
 
