@@ -79,6 +79,15 @@ class PackageCheckout extends BaseController
 
         // ── BYPASS: cupom 100% — confirma sem pagamento ───────────────────────────
         if ($discountPct === 100) {
+            // Validação: cessão de imagem é obrigatória para ensaios gratuitos
+            $imageUsage = (int) ($this->request->getPost('image_usage') ?? 0);
+            if ($imageUsage !== 1) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Para ensaios gratuitos (cortesia), a autorização de uso de imagens é obrigatória.',
+                ]);
+            }
+
             $orderModel = new OrderModel();
             $orderData['status']            = 'approved';
             $orderData['mp_preference_id']  = 'COUPON-100PCT-' . time();
@@ -88,7 +97,7 @@ class PackageCheckout extends BaseController
             // Marca cupom como usado
             $couponModel->markAsUsed($coupon->id, $orderId);
 
-            // Cria conta do cliente
+            // Cria conta do cliente (nova ou existente)
             $accountInfo  = $this->createClientAccountIfNeeded($email, $name);
             $tempPassword = $accountInfo['password'];
             $clientUserId = $accountInfo['user_id'];
@@ -98,30 +107,24 @@ class PackageCheckout extends BaseController
                 $orderModel->update($orderId, ['client_user_id' => $clientUserId]);
             }
 
-            // ── Auto-login: abre sessão imediatamente ──
-            try {
-                $provider   = auth()->getProvider();
-                $userEntity = $provider->findByCredentials(['email' => strtolower(trim($email))]);
-                if ($userEntity) {
-                    auth()->login($userEntity, false);
-                    log_message('info', "[AutoLogin] Sessão aberta para {$email} após cupom 100%");
-                }
-            } catch (\Throwable $e) {
-                log_message('warning', '[AutoLogin] Falha: ' . $e->getMessage());
-            }
+            // ── Auto-login via token (mais confiável que auth()->login() em resposta AJAX) ──
+            // Gera token de uso único com validade de 7 dias — igual ao fluxo do webhook
+            $autoToken = $this->generateAutoLoginToken($orderId, $orderModel, $clientUserId);
+            log_message('info', "[AutoLoginToken] Token gerado para cupom 100%: order_id={$orderId}, email={$email}");
 
             // Gera link de agendamento e envia e-mails
             $fakeOrder = (object) array_merge($orderData, ['id' => $orderId]);
             $this->sendNotificationEmail($fakeOrder, ['id' => null, 'status' => 'cortesia_100pct']);
             $agendaLink = $this->generateAgendaToken($fakeOrder);
             $orderModel->update($orderId, ['agenda_link' => $agendaLink]);
-            $this->sendClientBookingEmail($fakeOrder, $agendaLink, $tempPassword, $accountInfo['is_new']);
+            $this->sendClientBookingEmail($fakeOrder, $agendaLink, $tempPassword, $accountInfo['is_new'], $autoToken);
 
-            // Redireciona direto para o portal com flag de boas-vindas
+            // Retorna URL de auto-login via token — o browser redireciona para GET limpo
+            // que estabelece a sessão corretamente antes de ir para o portal
             return $this->response->setJSON([
                 'success'      => true,
                 'free'         => true,
-                'redirect_url' => site_url('client/meus-ensaios?bv=1'),
+                'redirect_url' => site_url('client/auto-login/' . $autoToken),
             ]);
         }
 

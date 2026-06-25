@@ -149,7 +149,7 @@ $routes->get( 'client/auto-login/(:segment)', 'PackageCheckout::autoLogin/$1');
 
 
 // ─── Portal do Cliente (autenticado) ──────────────────────────────────────────
-$routes->group('client', ['filter' => 'session'], static function ($routes) {
+$routes->group('client', ['filter' => 'group:user'], static function ($routes) {
     $routes->get( 'meus-ensaios',                   'Client\MeusEnsaiosController::index');
     $routes->get( 'buscar',                         'Client\MeusEnsaiosController::buscar');
     $routes->get( 'galeria',                       'Client\GaleriaController::index');

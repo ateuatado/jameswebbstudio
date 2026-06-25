@@ -15,6 +15,11 @@ class MeusEnsaiosController extends BaseController
      */
     public function index()
     {
+        // Guard de segurança: garante usuário autenticado (defesa em profundidade além do filtro de rota)
+        if (!auth()->loggedIn()) {
+            return redirect()->to(site_url('login'));
+        }
+
         $user    = auth()->user();
         $userId  = auth()->id();
         $email   = $user->email;

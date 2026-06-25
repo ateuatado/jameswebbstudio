@@ -809,11 +809,14 @@
               Ao contratar este serviço, você concorda com as condições de prestação de serviços fotográficos, incluindo: prazo de entrega de até 15 dias úteis; direitos autorais das imagens pertencem ao fotógrafo (Lei 9.610/98); licença de uso pessoal e profissional concedida ao contratante; arquivos RAW não fazem parte da entrega; política de cancelamento com reembolso integral se comunicado com mais de 7 dias de antecedência, retenção de 50% se menos de 7 dias; não comparecimento sem aviso de 24h configura no-show sem direito a reembolso; dados tratados conforme LGPD (Lei 13.709/18); foro da Comarca de São Paulo/SP.
             </div>
           </div>
-          <div style="margin-bottom:20px;">
+          <div style="margin-bottom:20px;" id="spImageUsageWrapper">
             <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-family:'Inter',sans-serif;font-size:.78rem;color:rgba(255,255,255,.55);line-height:1.5;">
               <input type="checkbox" name="image_usage" id="chk_image_usage" style="margin-top:3px;accent-color:#C5A059;min-width:16px;">
               Autorizo o uso das minhas imagens para portfólio e divulgação do fotógrafo.
             </label>
+            <div id="spImageUsageNotice" style="display:none;margin-top:8px;padding:10px 14px;background:rgba(197,160,89,.08);border:1px solid rgba(197,160,89,.3);border-radius:3px;font-family:'Inter',sans-serif;font-size:.72rem;color:rgba(197,160,89,.85);line-height:1.6;">
+              ⚠️ <strong>Obrigatório para ensaios gratuitos</strong> — a cortesia está condicionada à cessão de direitos de imagem para portfólio e divulgação do fotógrafo.
+            </div>
           </div>
 
           <!-- ── Cupom de Desconto ────────────────────────────────────── -->
@@ -1053,6 +1056,8 @@
             // Feedback visual
             const fb = document.getElementById('couponFeedback');
             if (fb) { fb.style.display = 'block'; fb.style.color = '#6bcb77'; fb.textContent = '✅ Cortesia exclusiva aplicada automaticamente!'; }
+            // Marca e bloqueia o checkbox de cessão de imagem
+            enforceImageUsageForFree(true);
         } else {
             priceEl.textContent = 'R\u00a0' + Number(price).toLocaleString('pt-BR', {minimumFractionDigits:0});
             const submitBtn = document.getElementById('checkoutSubmitBtn');
@@ -1116,6 +1121,7 @@
                         ' <span style="color:#6bcb77;font-size:.95em;">CORTESIA TOTAL 🎉</span>';
                     document.getElementById('checkoutSubmitBtn').textContent = 'CONFIRMAR ENSAIO GRATUITO →';
                     document.getElementById('checkoutSubmitBtn').style.background = 'linear-gradient(135deg,#2e7d32,#66bb6a)';
+                    enforceImageUsageForFree(true);
                 } else if (data.final_price !== null) {
                     const original = document.getElementById('checkoutPkgPrice').dataset.original ||
                                      document.getElementById('checkoutPkgPrice').textContent;
@@ -1148,6 +1154,29 @@
         fb.style.display = 'block';
         fb.style.color = success ? '#6bcb77' : '#ff6b6b';
         fb.textContent = msg;
+    }
+
+    // Marca/bloqueia (ou restaura) o checkbox de cessão de imagem quando cupom é 100%
+    function enforceImageUsageForFree(enforce) {
+        const chk     = document.getElementById('chk_image_usage');
+        const notice  = document.getElementById('spImageUsageNotice');
+        const wrapper = document.getElementById('spImageUsageWrapper');
+        if (!chk) return;
+        if (enforce) {
+            chk.checked  = true;
+            chk.disabled = true;
+            chk.style.accentColor = '#C5A059';
+            if (notice)  notice.style.display  = 'block';
+            if (wrapper) wrapper.style.border   = '1px solid rgba(197,160,89,.25)';
+            if (wrapper) wrapper.style.padding  = '10px 12px 6px';
+            if (wrapper) wrapper.style.borderRadius = '3px';
+        } else {
+            chk.checked  = false;
+            chk.disabled = false;
+            if (notice)  notice.style.display  = 'none';
+            if (wrapper) wrapper.style.border   = 'none';
+            if (wrapper) wrapper.style.padding  = '0';
+        }
     }
 
     document.getElementById('checkoutForm').addEventListener('submit', function(e) {
