@@ -86,8 +86,15 @@ class PackageCheckout extends BaseController
             // Marca cupom como usado
             $couponModel->markAsUsed($coupon->id, $orderId);
 
-            // Cria conta do cliente (retorna senha temporária se nova conta)
-            $tempPassword = $this->createClientAccountIfNeeded($email, $name);
+            // Cria conta do cliente
+            $accountInfo  = $this->createClientAccountIfNeeded($email, $name);
+            $tempPassword = $accountInfo['password'];
+            $clientUserId = $accountInfo['user_id'];
+
+            // Vincula o pedido ao usuário criado/existente
+            if ($clientUserId) {
+                $orderModel->update($orderId, ['client_user_id' => $clientUserId]);
+            }
 
             // ── Auto-login: abre sessão imediatamente ──
             try {
@@ -106,7 +113,7 @@ class PackageCheckout extends BaseController
             $this->sendNotificationEmail($fakeOrder, ['id' => null, 'status' => 'cortesia_100pct']);
             $agendaLink = $this->generateAgendaToken($fakeOrder);
             $orderModel->update($orderId, ['agenda_link' => $agendaLink]);
-            $this->sendClientBookingEmail($fakeOrder, $agendaLink, $tempPassword);
+            $this->sendClientBookingEmail($fakeOrder, $agendaLink, $tempPassword, $accountInfo['is_new']);
 
             // Redireciona direto para o portal com flag de boas-vindas
             return $this->response->setJSON([
@@ -402,16 +409,19 @@ class PackageCheckout extends BaseController
 
                 // Dispara ações apenas quando aprovado pela primeira vez
                 if ($localStatus === 'approved' && $order->status !== 'approved') {
-                    // Cria conta do cliente (retorna senha temporária se nova conta)
-                    $tempPassword = $this->createClientAccountIfNeeded(
+                    // Cria conta do cliente e vincula o pedido ao usuário
+                    $accountInfo  = $this->createClientAccountIfNeeded(
                         $order->buyer_email,
                         $order->buyer_name
                     );
+                    if ($accountInfo['user_id']) {
+                        $updateData['client_user_id'] = $accountInfo['user_id'];
+                    }
                     $this->sendNotificationEmail($order, $paymentArr);
                     // Gera token de agendamento e envia link ao cliente
                     $agendaLink = $this->generateAgendaToken($order);
                     $updateData['agenda_link'] = $agendaLink;
-                    $this->sendClientBookingEmail($order, $agendaLink, $tempPassword);
+                    $this->sendClientBookingEmail($order, $agendaLink, $accountInfo['password'], $accountInfo['is_new']);
                 }
 
                 $orderModel->update($order->id, $updateData);
@@ -516,7 +526,7 @@ class PackageCheckout extends BaseController
     // ─────────────────────────────────────────────────────────────────────────
     // Cria conta no portal caso não exista
     // ─────────────────────────────────────────────────────────────────────────
-    private function createClientAccountIfNeeded(string $email, string $name): ?string
+    private function createClientAccountIfNeeded(string $email, string $name): array
     {
         try {
             $provider = auth()->getProvider();
@@ -524,8 +534,8 @@ class PackageCheckout extends BaseController
             // Verifica se já existe conta com este e-mail
             $existing = $provider->findByCredentials(['email' => strtolower(trim($email))]);
             if ($existing) {
-                log_message('info', "[ClientAccount] Conta já existe para {$email} — sem ação.");
-                return null;
+                log_message('info', "[ClientAccount] Conta já existe para {$email} (id={$existing->id}).");
+                return ['password' => null, 'user_id' => $existing->id, 'is_new' => false];
             }
 
             // Senha temporária legível: XXXX-xxxx-99
@@ -537,19 +547,18 @@ class PackageCheckout extends BaseController
                 'username' => null,
                 'active'   => true,
             ]);
-            // Define email e senha via métodos do Shield
             $user->fill(['email' => strtolower(trim($email)), 'password' => $tempPassword]);
 
             $provider->save($user);
             $newUser = $provider->findById($provider->getInsertID());
             $newUser->addGroup('user');
 
-            log_message('info', "[ClientAccount] Conta criada para {$email}.");
-            return $tempPassword;
+            log_message('info', "[ClientAccount] Conta criada para {$email} (id={$newUser->id}).");
+            return ['password' => $tempPassword, 'user_id' => $newUser->id, 'is_new' => true];
 
         } catch (\Throwable $e) {
             log_message('error', '[ClientAccount] Erro: ' . $e->getMessage());
-            return null;
+            return ['password' => null, 'user_id' => null, 'is_new' => false];
         }
     }
 
@@ -557,37 +566,47 @@ class PackageCheckout extends BaseController
     // Envia e-mail ao cliente com o link personalizado de agendamento
     // e, opcionalmente, as credenciais do portal
     // ─────────────────────────────────────────────────────────────────────────
-    private function sendClientBookingEmail(object $order, string $agendaLink, ?string $tempPassword = null): void
+    private function sendClientBookingEmail(object $order, string $agendaLink, ?string $tempPassword = null, bool $isNew = false): void
     {
         try {
-            $subject = '📸 Seu ensaio está confirmado — Agende sua data!';
+            $subject = 'Seu ensaio está confirmado — Agende sua data!';
 
             $portalSection = '';
-            if ($tempPassword !== null) {
-                $portalUrl    = site_url('login');
+            $portalUrl = site_url('login');
+            if ($isNew && $tempPassword !== null) {
+                // Conta nova: envia credenciais completas
                 $portalSection = "
                     <div style='border:1px solid rgba(197,160,89,.2);padding:20px;margin:24px 0;background:rgba(197,160,89,.05);'>
                         <p style='font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(197,160,89,.6);margin:0 0 10px'>ACESSO AO PORTAL DO CLIENTE</p>
-                        <p style='color:rgba(255,255,255,.7);font-size:.85rem;line-height:1.7;margin:0 0 12px'>Criamos sua conta no portal para você acompanhar seu ensaio, baixar seu contrato e ver suas fotos depois da sessão.</p>
+                        <p style='color:rgba(255,255,255,.7);font-size:.85rem;line-height:1.7;margin:0 0 12px'>Criamos sua conta no portal para você acompanhar seu ensaio, baixar seu contrato e ver suas fotos após a sessão.</p>
                         <table style='font-family:sans-serif;font-size:.8rem;border-collapse:collapse;width:100%'>
                             <tr><td style='padding:6px 0;color:rgba(255,255,255,.45)'>Login (e-mail)</td><td style='padding:6px 0;color:#C5A059'><strong>{$order->buyer_email}</strong></td></tr>
                             <tr><td style='padding:6px 0;color:rgba(255,255,255,.45)'>Senha temporária</td><td style='padding:6px 0;color:#C5A059'><strong>{$tempPassword}</strong></td></tr>
                         </table>
-                        <a href='{$portalUrl}' style='display:inline-block;margin-top:14px;border:1px solid rgba(197,160,89,.4);color:#C5A059;text-decoration:none;padding:10px 24px;font-family:sans-serif;font-size:.68rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase'>ACESSAR MEU PORTAL →</a>
+                        <a href='{$portalUrl}' style='display:inline-block;margin-top:14px;border:1px solid rgba(197,160,89,.4);color:#C5A059;text-decoration:none;padding:10px 24px;font-family:sans-serif;font-size:.68rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase'>ACESSAR MEU PORTAL &rarr;</a>
                         <p style='font-size:.7rem;color:rgba(255,255,255,.25);margin:12px 0 0'>Recomendamos trocar a senha após o primeiro acesso.</p>
+                    </div>";
+            } else {
+                // Conta já existia: apenas lembra o acesso
+                $portalSection = "
+                    <div style='border:1px solid rgba(197,160,89,.2);padding:20px;margin:24px 0;background:rgba(197,160,89,.05);'>
+                        <p style='font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(197,160,89,.6);margin:0 0 10px'>PORTAL DO CLIENTE</p>
+                        <p style='color:rgba(255,255,255,.7);font-size:.85rem;line-height:1.7;margin:0 0 12px'>Acesse seu portal para gerenciar seu ensaio e documentos.</p>
+                        <p style='font-family:sans-serif;font-size:.8rem;color:rgba(255,255,255,.45);margin:0 0 4px'>Login: <strong style='color:#C5A059'>{$order->buyer_email}</strong></p>
+                        <a href='{$portalUrl}' style='display:inline-block;margin-top:14px;border:1px solid rgba(197,160,89,.4);color:#C5A059;text-decoration:none;padding:10px 24px;font-family:sans-serif;font-size:.68rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase'>ACESSAR MEU PORTAL &rarr;</a>
                     </div>";
             }
 
             $message  = "<div style='font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#fff;padding:40px;'>"
             . "<p style='font-size:.7rem;letter-spacing:.25em;text-transform:uppercase;color:#C5A059;margin:0 0 24px'>STUDIO MARCOSANTOFOTO</p>"
             . "<h2 style='font-family:Georgia,serif;font-size:2rem;font-weight:400;color:#fff;margin:0 0 24px;line-height:1.3'>"
-            . "Olá, {$order->buyer_name}! 🎉</h2>"
+            . "Olá, {$order->buyer_name}! &#127881;</h2>"
             . "<p style='color:rgba(255,255,255,.7);line-height:1.8;margin:0 0 24px'>"
             . "Seu pagamento foi confirmado com sucesso. Agora é hora de escolher a data do seu ensaio fotográfico!</p>"
             . "<div style='border:1px solid rgba(197,160,89,.3);padding:24px;margin:32px 0;text-align:center;'>"
             . "<p style='font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(197,160,89,.6);margin:0 0 12px'>LINK EXCLUSIVO DE AGENDAMENTO</p>"
             . "<a href='{$agendaLink}' style='display:inline-block;background:linear-gradient(135deg,#C5A059,#F5E27A);color:#000;text-decoration:none;padding:16px 36px;font-family:sans-serif;font-size:.75rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;margin:8px 0'>"
-            . "ESCOLHER MINHA DATA →</a>"
+            . "ESCOLHER MINHA DATA &rarr;</a>"
             . "<p style='font-size:.75rem;color:rgba(255,255,255,.3);margin:12px 0 0'>Este link é válido por 90 dias e é pessoal.</p>"
             . "</div>"
             . $portalSection
@@ -605,7 +624,7 @@ class PackageCheckout extends BaseController
             if (!$emailService->send()) {
                 log_message('error', '[BookingEmail] Falha: ' . $emailService->printDebugger(['headers']));
             } else {
-                log_message('info', "[BookingEmail] Email enviado para {$order->buyer_email} com link: {$agendaLink}");
+                log_message('info', "[BookingEmail] Email enviado para {$order->buyer_email}");
             }
         } catch (\Exception $e) {
             log_message('error', '[BookingEmail] Erro: ' . $e->getMessage());

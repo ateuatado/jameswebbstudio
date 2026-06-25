@@ -21,9 +21,17 @@ class MeusEnsaiosController extends BaseController
         $tab     = $this->request->getGet('tab') ?? 'ensaios';
 
         // ── Compras / Agendamentos ──
+        // Filtra por client_user_id (pedidos vinculados a esta conta).
+        // Fallback: buyer_email para pedidos antigos que ainda não têm client_user_id.
         $orderModel = new OrderModel();
         $orders = $orderModel
-            ->where('buyer_email', $email)
+            ->groupStart()
+                ->where('client_user_id', $userId)
+                ->orGroupStart()
+                    ->where('buyer_email', $email)
+                    ->where('client_user_id IS NULL', null, false)
+                ->groupEnd()
+            ->groupEnd()
             ->whereIn('status', ['approved', 'pending'])
             ->orderBy('created_at', 'DESC')
             ->findAll();
