@@ -52,18 +52,31 @@ class MeusEnsaiosController extends BaseController
                 $order->coupon_code = $cpRow ? $cpRow->code : null;
             }
             // Calcula preço original (antes do desconto)
-            // Guarda contra divisão por zero quando discount_percent = 100 (cupom cortesia)
             if ($order->discount_percent > 0 && $order->discount_percent < 100 && $order->package) {
                 $order->original_price = round($order->amount / (1 - $order->discount_percent / 100), 2);
             } elseif ($order->discount_percent >= 100 && $order->package) {
-                // Cupom 100% — preço original vem direto do pacote
                 $order->original_price = (float) ($order->package->price ?? 0) ?: null;
             } else {
                 $order->original_price = null;
             }
-
+            // Carrega serviços do pacote agrupados por fase
+            $order->services_by_phase = [];
+            if ($order->package_id) {
+                $svcRows = $db->table('package_services ps')
+                    ->select('s.name, s.phase')
+                    ->join('services s', 's.id = ps.service_id')
+                    ->where('ps.package_id', $order->package_id)
+                    ->where('s.is_active', 1)
+                    ->orderBy('s.phase', 'ASC')
+                    ->orderBy('s.name', 'ASC')
+                    ->get()->getResultObject();
+                foreach ($svcRows as $svc) {
+                    $order->services_by_phase[$svc->phase][] = $svc->name;
+                }
+            }
         }
         unset($order);
+
 
         // ── Projetos do cliente (Galeria) ──
         $projectModel = new ClientProjectModel();
