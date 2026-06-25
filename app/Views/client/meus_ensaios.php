@@ -524,51 +524,27 @@
     .svc-list li:hover { border-color: rgba(197,160,89,.3); }
     .svc-list li .fa-check { color: #C5A059; font-size: .6rem; }
 
-    /* ── Tooltip dos serviços ── */
-    .svc-list li[data-tooltip] { position: relative; }
-    .svc-list li[data-tooltip]::after {
-        content: attr(data-tooltip);
-        position: absolute;
-        bottom: calc(100% + 8px);
-        left: 50%;
-        transform: translateX(-50%) translateY(4px);
+    /* ── Tooltip dos serviços (via JS, fora do overflow) ── */
+    #svc-tip {
+        position: fixed;
+        z-index: 9999;
         background: #1a1a1a;
-        border: 1px solid rgba(197,160,89,.35);
-        color: rgba(255,255,255,.85);
+        border: 1px solid rgba(197,160,89,.4);
+        color: rgba(255,255,255,.88);
         font-family: 'Inter', sans-serif;
-        font-size: .68rem;
-        line-height: 1.45;
+        font-size: .7rem;
+        line-height: 1.5;
         letter-spacing: 0;
-        text-transform: none;
-        white-space: normal;
-        width: max-content;
         max-width: 240px;
         padding: 8px 12px;
         border-radius: 6px;
         pointer-events: none;
+        box-shadow: 0 8px 28px rgba(0,0,0,.55);
         opacity: 0;
-        transition: opacity .2s ease, transform .2s ease;
-        z-index: 900;
-        box-shadow: 0 8px 24px rgba(0,0,0,.5);
+        transition: opacity .15s ease;
+        white-space: normal;
     }
-    .svc-list li[data-tooltip]::before {
-        content: '';
-        position: absolute;
-        bottom: calc(100% + 2px);
-        left: 50%;
-        transform: translateX(-50%) translateY(4px);
-        border: 5px solid transparent;
-        border-top-color: rgba(197,160,89,.35);
-        pointer-events: none;
-        opacity: 0;
-        transition: opacity .2s ease, transform .2s ease;
-        z-index: 901;
-    }
-    .svc-list li[data-tooltip]:hover::after,
-    .svc-list li[data-tooltip]:hover::before {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-    }
+    #svc-tip.visible { opacity: 1; }
 
 </style>
 <?= $this->endSection() ?>
@@ -1362,5 +1338,48 @@ function toggleServices(orderId) {
     body.classList.toggle('open', !isOpen);
     chev.classList.toggle('open', !isOpen);
 }
+
+// Tooltip de Serviços (fixo no body, nunca cortado por overflow)
+(function() {
+    const tip = document.createElement('div');
+    tip.id = 'svc-tip';
+    document.body.appendChild(tip);
+
+    let hideTimer;
+
+    document.addEventListener('mouseover', function(e) {
+        const li = e.target.closest('li[data-tooltip]');
+        if (!li) return;
+        clearTimeout(hideTimer);
+        tip.textContent = li.dataset.tooltip;
+        tip.classList.add('visible');
+        positionTip(li);
+    });
+
+    document.addEventListener('mousemove', function(e) {
+        if (!tip.classList.contains('visible')) return;
+        const li = e.target.closest('li[data-tooltip]');
+        if (li) positionTip(li);
+    });
+
+    document.addEventListener('mouseout', function(e) {
+        const li = e.target.closest('li[data-tooltip]');
+        if (!li) return;
+        hideTimer = setTimeout(() => tip.classList.remove('visible'), 80);
+    });
+
+    function positionTip(li) {
+        const rect = li.getBoundingClientRect();
+        const tipW = 240;
+        // Prefere aparecer acima; se não couber, aparece abaixo
+        let top = rect.top - tip.offsetHeight - 10;
+        if (top < 8) top = rect.bottom + 10;
+        let left = rect.left + rect.width / 2 - tipW / 2;
+        if (left < 8) left = 8;
+        if (left + tipW > window.innerWidth - 8) left = window.innerWidth - tipW - 8;
+        tip.style.top  = top + 'px';
+        tip.style.left = left + 'px';
+    }
+})();
 </script>
 <?= $this->endSection() ?>
