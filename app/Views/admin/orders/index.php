@@ -96,9 +96,10 @@
                                 <span class="badge <?= $badge ?>"><?= $label ?></span>
                             </td>
                             <td>
-                                <?php if (!empty($o->agenda_link)): ?>
-                                    <a href="<?= esc($o->agenda_link) ?>" target="_blank"
-                                       class="badge bg-info text-dark text-decoration-none">📅 Agendado</a>
+                                <?php if (!empty($o->scheduled_at)): ?>
+                                    <span class="badge bg-success" title="<?= date('d/m/Y H:i', strtotime($o->scheduled_at)) ?>">
+                                        📅 <?= date('d/m/Y', strtotime($o->scheduled_at)) ?>
+                                    </span>
                                 <?php elseif ($o->status === 'approved'): ?>
                                     <span class="badge bg-warning text-dark">⏳ Pendente</span>
                                 <?php else: ?>

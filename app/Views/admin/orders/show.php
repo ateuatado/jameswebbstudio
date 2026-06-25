@@ -17,6 +17,29 @@
 </div>
 
 <div class="row g-4">
+    <?php if (!empty($order->scheduled_at)): ?>
+    <!-- ═══ BANNER: Ensaio Agendado ═══ -->
+    <div class="col-12">
+        <div class="card border-0" style="background:linear-gradient(135deg,rgba(197,160,89,.15),rgba(197,160,89,.05));border-left:3px solid #C5A059 !important;">
+            <div class="card-body py-3 d-flex align-items-center gap-3 flex-wrap">
+                <span style="font-size:2rem;">📅</span>
+                <div>
+                    <div class="text-warning fw-bold text-uppercase" style="font-size:.7rem;letter-spacing:.15em;">Ensaio Agendado</div>
+                    <div class="text-white fw-bold fs-5">
+                        <?= date('d', strtotime($order->scheduled_at)) ?>
+                        de <?= ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][date('n', strtotime($order->scheduled_at)) - 1] ?>
+                        de <?= date('Y', strtotime($order->scheduled_at)) ?>
+                        às <?= date('H:i', strtotime($order->scheduled_at)) ?>h
+                    </div>
+                </div>
+                <?php if ($order->agenda_booking_id): ?>
+                <span class="ms-auto badge bg-secondary font-monospace">booking #<?= $order->agenda_booking_id ?></span>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+
     <!-- Dados do cliente -->
     <div class="col-md-6">
         <div class="card bg-dark border-secondary h-100">
@@ -77,24 +100,34 @@
                         </td>
                     </tr>
                     <tr>
-                        <td class="text-muted">Agendamento</td>
+                        <td class="text-muted">Ensaio Agendado</td>
                         <td>
-                            <?php if (!empty($order->agenda_link)): ?>
-                            <div class="d-flex align-items-center gap-2">
-                                <a href="<?= esc($order->agenda_link) ?>" target="_blank" class="text-info">
-                                    📅 Abrir link do agendamento
-                                </a>
-                                <form action="<?= site_url('admin/orders/' . $order->id . '/mark-scheduled') ?>" method="post" class="m-0">
-                                    <?= csrf_field() ?>
-                                    <button type="submit" class="btn btn-outline-success btn-sm py-0 px-2" style="font-size:0.75rem;" title="Marcar como já agendado para o cliente não conseguir agendar novamente">
-                                        ✅ Já Agendado
-                                    </button>
-                                </form>
-                            </div>
+                            <?php if (!empty($order->scheduled_at)): ?>
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <span class="badge bg-success fs-6">
+                                        📅 <?= date('d/m/Y', strtotime($order->scheduled_at)) ?>
+                                    </span>
+                                    <span class="text-white-50 small">
+                                        às <?= date('H:i', strtotime($order->scheduled_at)) ?>h
+                                    </span>
+                                    <?php if ($order->agenda_booking_id): ?>
+                                        <span class="badge bg-secondary font-monospace small">
+                                            booking #<?= $order->agenda_booking_id ?>
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
+                            <?php elseif ($order->status === 'approved' && !empty($order->agenda_link)): ?>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="text-warning small">⏳ Cliente ainda não agendou</span>
+                                    <a href="<?= esc($order->agenda_link) ?>" target="_blank"
+                                       class="btn btn-outline-info btn-sm py-0 px-2" style="font-size:.72rem;">
+                                        🔗 Link da agenda
+                                    </a>
+                                </div>
                             <?php elseif ($order->status === 'approved'): ?>
-                            <span class="text-warning">⏳ Já agendado (link removido)</span>
+                                <span class="text-warning small">⏳ Aguardando agendamento</span>
                             <?php else: ?>
-                            <span class="text-muted">—</span>
+                                <span class="text-muted">—</span>
                             <?php endif; ?>
                         </td>
                     </tr>
