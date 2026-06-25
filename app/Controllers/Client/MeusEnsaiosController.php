@@ -47,9 +47,16 @@ class MeusEnsaiosController extends BaseController
                 $order->coupon_code = $cpRow ? $cpRow->code : null;
             }
             // Calcula preço original (antes do desconto)
-            $order->original_price = ($order->discount_percent > 0 && $order->package)
-                ? round($order->amount / (1 - $order->discount_percent / 100), 2)
-                : null;
+            // Guarda contra divisão por zero quando discount_percent = 100 (cupom cortesia)
+            if ($order->discount_percent > 0 && $order->discount_percent < 100 && $order->package) {
+                $order->original_price = round($order->amount / (1 - $order->discount_percent / 100), 2);
+            } elseif ($order->discount_percent >= 100 && $order->package) {
+                // Cupom 100% — preço original vem direto do pacote
+                $order->original_price = (float) ($order->package->price ?? 0) ?: null;
+            } else {
+                $order->original_price = null;
+            }
+
         }
         unset($order);
 
