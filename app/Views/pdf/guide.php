@@ -16,13 +16,21 @@
     /* ── Capa ── */
     .cover {
         text-align: center;
-        padding-top: 180px;
+        padding-top: 140px;
+    }
+    .cover-logo {
+        margin-bottom: 10px;
+    }
+    .cover-logo img {
+        width: 180px;
+        height: auto;
     }
     .cover-brand {
-        font-size: 13pt;
-        letter-spacing: 6px;
+        font-family: 'Inter', 'DejaVu Sans', sans-serif;
+        font-size: 11pt;
+        letter-spacing: 3px;
         text-transform: uppercase;
-        color: #999;
+        color: #777;
         margin-bottom: 30px;
     }
     .cover-title {
@@ -150,6 +158,9 @@
 
 <!-- CAPA -->
 <div class="cover">
+    <div class="cover-logo">
+        <img src="data:image/png;base64,<?= base64_encode(file_get_contents(FCPATH . 'assets/img/jws-logo-horizontal.png')) ?>" alt="James Webb Studio">
+    </div>
     <div class="cover-brand">Marco Santo</div>
     <div class="cover-line"></div>
     <div class="cover-title">Guia Pre-Ensaio</div>
