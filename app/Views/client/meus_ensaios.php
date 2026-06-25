@@ -562,10 +562,9 @@
     <span class="status-badge <?= esc($order->status) ?>"><?= $statusLabel ?></span>
 </div>
 <!-- Links to PDFs -->
-<div class="card-links" style="margin-top:8px;display:flex;gap:8px;">
-    <a href="<?= site_url('client/pre-ensaio-pdf/' . $order->id) ?>" class="btn-ensaio" target="_blank" style="font-size:.75rem;">📄 PDF Pré-Ensaio</a>
-    <a href="<?= site_url('client/guia-pre-ensaio/' . $order->id) ?>" class="btn-ensaio" target="_blank" style="font-size:.75rem;">📄 Guia Pré-Ensaio</a>
-    <a href="<?= site_url('client/contrato/' . $order->id) ?>" class="btn-ensaio" target="_blank" style="font-size:.75rem;">📄 Meu Contrato</a>
+<div class="card-links" style="padding:8px 24px;display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid rgba(255,255,255,.06);">
+    <a href="<?= site_url('client/guia-pre-ensaio/' . $order->id) ?>" class="btn-ensaio" target="_blank" style="font-size:.72rem;"><i class="fas fa-file-alt"></i> Guia Pré-Ensaio</a>
+    <a href="<?= site_url('client/contrato/' . $order->id) ?>" class="btn-ensaio" target="_blank" style="font-size:.72rem;"><i class="fas fa-file-contract"></i> Meu Contrato</a>
 </div>
 <?php if (isset($order->package) && !empty($order->package->services) && is_array($order->package->services)): ?>
     <details class="package-services" style="margin-top:8px;color:rgba(255,255,255,.8);font-size:.8rem;">
@@ -623,12 +622,6 @@
                             <i class="fas fa-calendar-alt"></i>
                             <?= $scheduledAt ? 'Alterar Data' : 'Agendar Ensaio' ?>
                         </button>
-                        <a href="<?= site_url('client/guia-pre-ensaio/' . $order->id) ?>" class="btn-ensaio" target="_blank">
-                            <i class="fas fa-file-alt"></i> Guia Pre-Ensaio
-                        </a>
-                        <a href="<?= site_url('client/contrato/' . $order->id) ?>" class="btn-ensaio" target="_blank">
-                            <i class="fas fa-file-contract"></i> Meu Contrato
-                        </a>
                     <?php else: ?>
                         <span class="btn-ensaio" style="opacity:.4;cursor:default">Aguardando confirmacao do pagamento</span>
                     <?php endif ?>
