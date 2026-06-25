@@ -63,7 +63,7 @@ class MeusEnsaiosController extends BaseController
             $order->services_by_phase = [];
             if ($order->package_id) {
                 $svcRows = $db->table('package_services ps')
-                    ->select('s.name, s.phase')
+                    ->select('s.name, s.phase, s.description')
                     ->join('services s', 's.id = ps.service_id')
                     ->where('ps.package_id', $order->package_id)
                     ->where('s.is_active', 1)
@@ -71,7 +71,10 @@ class MeusEnsaiosController extends BaseController
                     ->orderBy('s.name', 'ASC')
                     ->get()->getResultObject();
                 foreach ($svcRows as $svc) {
-                    $order->services_by_phase[$svc->phase][] = $svc->name;
+                    $order->services_by_phase[$svc->phase][] = [
+                        'name'        => $svc->name,
+                        'description' => $svc->description ?? '',
+                    ];
                 }
             }
         }

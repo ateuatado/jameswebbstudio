@@ -523,6 +523,53 @@
     }
     .svc-list li:hover { border-color: rgba(197,160,89,.3); }
     .svc-list li .fa-check { color: #C5A059; font-size: .6rem; }
+
+    /* ── Tooltip dos serviços ── */
+    .svc-list li[data-tooltip] { position: relative; }
+    .svc-list li[data-tooltip]::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        bottom: calc(100% + 8px);
+        left: 50%;
+        transform: translateX(-50%) translateY(4px);
+        background: #1a1a1a;
+        border: 1px solid rgba(197,160,89,.35);
+        color: rgba(255,255,255,.85);
+        font-family: 'Inter', sans-serif;
+        font-size: .68rem;
+        line-height: 1.45;
+        letter-spacing: 0;
+        text-transform: none;
+        white-space: normal;
+        width: max-content;
+        max-width: 240px;
+        padding: 8px 12px;
+        border-radius: 6px;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity .2s ease, transform .2s ease;
+        z-index: 900;
+        box-shadow: 0 8px 24px rgba(0,0,0,.5);
+    }
+    .svc-list li[data-tooltip]::before {
+        content: '';
+        position: absolute;
+        bottom: calc(100% + 2px);
+        left: 50%;
+        transform: translateX(-50%) translateY(4px);
+        border: 5px solid transparent;
+        border-top-color: rgba(197,160,89,.35);
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity .2s ease, transform .2s ease;
+        z-index: 901;
+    }
+    .svc-list li[data-tooltip]:hover::after,
+    .svc-list li[data-tooltip]:hover::before {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+
 </style>
 <?= $this->endSection() ?>
 
@@ -641,8 +688,10 @@
                 <?= $phaseLabels[$phase] ?? esc($phase) ?>
             </div>
             <ul class="svc-list">
-                <?php foreach ($svcs as $svcName): ?>
-                <li><i class="fas fa-check"></i> <?= esc($svcName) ?></li>
+                <?php foreach ($svcs as $svcItem): ?>
+                <li<?= !empty($svcItem['description']) ? ' data-tooltip="' . esc($svcItem['description']) . '"' : '' ?>>
+                    <i class="fas fa-check"></i> <?= esc($svcItem['name']) ?>
+                </li>
                 <?php endforeach; ?>
             </ul>
         </div>
