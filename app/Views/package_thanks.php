@@ -229,10 +229,10 @@
                     <?php if ($pacote): ?>
                         Seu ensaio <span class="package-name"><?= esc($pacote) ?></span> está confirmado!<br>
                     <?php endif; ?>
-                    Redirecionando para o agendamento...
+                    Redirecionando para o seu portal...
                 </p>
-                <a href="#" id="btnAgenda" class="btn-agenda" style="display:inline-block;">
-                    AGENDAR MEU ENSAIO →
+                <a href="<?= site_url('client/meus-ensaios?bv=1') ?>" id="btnAgenda" class="btn-agenda" style="display:inline-block;">
+                    ACESSAR MEU PORTAL →
                 </a>
             </div>
 
@@ -280,7 +280,7 @@
         if (progressFill) progressFill.style.width = progressPercent + '%';
     }
 
-    function showApproved(agendaLink) {
+    function showApproved() {
         // Preenche a barra até 100%
         if (progressFill) {
             progressFill.style.transition = 'width 0.5s ease';
@@ -291,13 +291,11 @@
             if (stateProcessing) stateProcessing.style.display = 'none';
             if (stateApproved)   stateApproved.style.display = 'block';
 
-            if (agendaLink && btnAgenda) {
-                btnAgenda.href = agendaLink;
-                // Redireciona automaticamente após 3 segundos
-                setTimeout(function() {
-                    window.location.href = agendaLink;
-                }, 3000);
-            }
+            // Redireciona para o portal após 2.5 segundos
+            // Se não estiver logado, Shield redireciona para login e depois volta
+            setTimeout(function() {
+                window.location.href = '<?= site_url('client/meus-ensaios?bv=1') ?>';
+            }, 2500);
         }, 600);
     }
 
@@ -322,7 +320,7 @@
         .then(function(res) { return res.json(); })
         .then(function(data) {
             if (data.status === 'approved') {
-                showApproved(data.agenda_link);
+                showApproved();
             } else if (data.status === 'cancelled' || data.status === 'refunded') {
                 // Pagamento falhou
                 if (stateProcessing) stateProcessing.style.display = 'none';

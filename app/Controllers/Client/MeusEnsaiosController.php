@@ -29,8 +29,19 @@ class MeusEnsaiosController extends BaseController
             ->findAll();
 
         $packageModel = new PackageModel();
+        $db = \Config\Database::connect();
         foreach ($orders as &$order) {
             $order->package = $order->package_id ? $packageModel->find($order->package_id) : null;
+            // Carrega código do cupom se houver
+            $order->coupon_code = null;
+            if ($order->coupon_id) {
+                $cpRow = $db->table('coupons')->select('code')->where('id', $order->coupon_id)->get()->getRow();
+                $order->coupon_code = $cpRow ? $cpRow->code : null;
+            }
+            // Calcula preço original (antes do desconto)
+            $order->original_price = ($order->discount_percent > 0 && $order->package)
+                ? round($order->amount / (1 - $order->discount_percent / 100), 2)
+                : null;
         }
         unset($order);
 

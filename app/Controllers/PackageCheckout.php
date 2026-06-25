@@ -89,6 +89,18 @@ class PackageCheckout extends BaseController
             // Cria conta do cliente (retorna senha temporária se nova conta)
             $tempPassword = $this->createClientAccountIfNeeded($email, $name);
 
+            // ── Auto-login: abre sessão imediatamente ──
+            try {
+                $provider   = auth()->getProvider();
+                $userEntity = $provider->findByCredentials(['email' => strtolower(trim($email))]);
+                if ($userEntity) {
+                    auth()->login($userEntity, false);
+                    log_message('info', "[AutoLogin] Sessão aberta para {$email} após cupom 100%");
+                }
+            } catch (\Throwable $e) {
+                log_message('warning', '[AutoLogin] Falha: ' . $e->getMessage());
+            }
+
             // Gera link de agendamento e envia e-mails
             $fakeOrder = (object) array_merge($orderData, ['id' => $orderId]);
             $this->sendNotificationEmail($fakeOrder, ['id' => null, 'status' => 'cortesia_100pct']);
@@ -96,11 +108,11 @@ class PackageCheckout extends BaseController
             $orderModel->update($orderId, ['agenda_link' => $agendaLink]);
             $this->sendClientBookingEmail($fakeOrder, $agendaLink, $tempPassword);
 
-            $redirectUrl = site_url("ensaio/obrigado?order={$orderId}&pacote=" . urlencode($package->name) . "&nome=" . urlencode($name));
+            // Redireciona direto para o portal com flag de boas-vindas
             return $this->response->setJSON([
                 'success'      => true,
                 'free'         => true,
-                'redirect_url' => $redirectUrl,
+                'redirect_url' => site_url('client/meus-ensaios?bv=1'),
             ]);
         }
 

@@ -1,4 +1,4 @@
-<?= $this->extend('layout/main') ?>
+﻿<?= $this->extend('layout/main') ?>
 
 <?= $this->section('styles') ?>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
@@ -74,20 +74,81 @@
     .ensaio-card {
         background: rgba(255,255,255,.03);
         border: 1px solid rgba(255,255,255,.08);
-        padding: 24px; margin-bottom: 16px;
-        transition: all .3s; position: relative; overflow: hidden;
-        border-radius: 6px;
+        padding: 0; margin-bottom: 20px;
+        transition: all .3s; position: relative;
+        border-radius: 8px; overflow: hidden;
     }
     .ensaio-card::before {
         content: ''; position: absolute;
         top: 0; left: 0; width: 3px; height: 100%;
         background: var(--accent-color, rgba(197,160,89,.4));
     }
-    .ensaio-card:hover { background: rgba(255,255,255,.05); border-color: rgba(197,160,89,.2); }
-    .ensaio-card .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-    .ensaio-card .card-title { font-family: 'EB Garamond', Georgia, serif; font-size: 1.2rem; color: #fff; margin: 0 0 4px; }
-    .ensaio-card .card-meta { font-family: 'Inter', sans-serif; font-size: .72rem; color: rgba(255,255,255,.4); margin: 0; }
-    .ensaio-card .card-actions { margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .ensaio-card:hover { border-color: rgba(197,160,89,.2); }
+    .card-header {
+        padding: 20px 24px 16px;
+        border-bottom: 1px solid rgba(255,255,255,.06);
+        display: flex; align-items: flex-start;
+        justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    }
+    .card-title { font-family: 'EB Garamond', Georgia, serif; font-size: 1.3rem; color: #fff; margin: 0 0 4px; }
+    .card-meta  { font-family: 'Inter', sans-serif; font-size: .7rem; color: rgba(255,255,255,.35); margin: 0; }
+
+    /* Bloco de preços */
+    .card-pricing {
+        padding: 16px 24px;
+        border-bottom: 1px solid rgba(255,255,255,.06);
+        display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
+    }
+    .price-original {
+        font-family: 'Inter', sans-serif;
+        font-size: .85rem;
+        color: rgba(255,255,255,.3);
+        text-decoration: line-through;
+    }
+    .price-discount-tag {
+        font-family: 'Inter', sans-serif;
+        font-size: .65rem; letter-spacing: .12em; text-transform: uppercase;
+        background: rgba(197,160,89,.12);
+        border: 1px solid rgba(197,160,89,.25);
+        color: #C5A059;
+        padding: 3px 10px; border-radius: 20px;
+    }
+    .price-paid {
+        font-family: 'EB Garamond', Georgia, serif;
+        font-size: 1.6rem;
+        color: #C5A059;
+        font-weight: 400;
+        letter-spacing: .02em;
+    }
+    .price-free {
+        font-family: 'EB Garamond', Georgia, serif;
+        font-size: 1.4rem;
+        color: #66bb6a;
+        font-style: italic;
+    }
+
+    /* Data do ensaio */
+    .card-date {
+        padding: 12px 24px;
+        background: rgba(46,125,50,.08);
+        border-bottom: 1px solid rgba(102,187,106,.15);
+        display: flex; align-items: center; gap: 10px;
+    }
+    .card-date .date-label {
+        font-family: 'Inter', sans-serif;
+        font-size: .6rem; letter-spacing: .18em; text-transform: uppercase;
+        color: rgba(102,187,106,.7); margin: 0 0 2px;
+    }
+    .card-date .date-value {
+        font-family: 'EB Garamond', Georgia, serif;
+        font-size: 1.05rem; color: #fff; margin: 0;
+    }
+
+    /* Ações */
+    .card-actions {
+        padding: 14px 24px;
+        display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+    }
 
     /* ── Status badges ── */
     .status-badge {
@@ -109,7 +170,7 @@
         padding: 9px 20px; text-decoration: none;
         border: 1px solid rgba(197,160,89,.35); color: #C5A059;
         background: transparent; border-radius: 4px; transition: all .2s;
-        display: inline-flex; align-items: center; gap: 6px;
+        display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
     }
     .btn-ensaio:hover { background: rgba(197,160,89,.08); color: #C5A059; }
     .btn-ensaio.primary {
@@ -117,6 +178,198 @@
         color: #000; border-color: transparent; font-weight: 700;
     }
     .btn-ensaio.primary:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(197,160,89,.25); color: #000; }
+
+    /* ── Modal de Agendamento Embutido ── */
+    .bk-overlay {
+        display: none; position: fixed; inset: 0;
+        background: rgba(0,0,0,.88); backdrop-filter: blur(8px);
+        z-index: 9990; align-items: center; justify-content: center;
+        padding: 20px;
+    }
+    .bk-overlay.open { display: flex; }
+    .bk-modal {
+        background: #0d0d0d;
+        border: 1px solid rgba(197,160,89,.2);
+        border-radius: 4px;
+        width: 100%; max-width: 520px;
+        max-height: 90vh; overflow-y: auto;
+        position: relative;
+        animation: bkIn .25s ease;
+    }
+    @keyframes bkIn { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+    .bk-modal-head {
+        padding: 24px 28px 16px;
+        border-bottom: 1px solid rgba(255,255,255,.07);
+        display: flex; align-items: flex-start; justify-content: space-between;
+    }
+    .bk-modal-head h3 {
+        font-family: 'EB Garamond', Georgia, serif;
+        font-size: 1.3rem; font-style: italic;
+        color: #C5A059; margin: 0 0 4px;
+    }
+    .bk-modal-head p {
+        font-family: 'Inter', sans-serif;
+        font-size: .72rem; color: rgba(255,255,255,.4); margin: 0;
+    }
+    .bk-close {
+        background: none; border: none; color: rgba(255,255,255,.3);
+        font-size: 1.4rem; cursor: pointer; line-height: 1; padding: 4px;
+        transition: color .2s; flex-shrink: 0;
+    }
+    .bk-close:hover { color: #fff; }
+    .bk-body { padding: 24px 28px; }
+
+    /* Calendário */
+    .bk-cal-nav {
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: 16px;
+    }
+    .bk-cal-nav button {
+        background: transparent; border: 1px solid rgba(255,255,255,.15);
+        color: #fff; width: 36px; height: 36px; border-radius: 50%;
+        cursor: pointer; font-size: 1rem; transition: all .2s;
+    }
+    .bk-cal-nav button:hover { border-color: #C5A059; color: #C5A059; }
+    .bk-month-label {
+        font-family: 'EB Garamond', Georgia, serif;
+        font-size: 1.1rem; font-style: italic;
+        color: #C5A059; letter-spacing: .05em;
+    }
+    .bk-weekdays {
+        display: grid; grid-template-columns: repeat(7,1fr);
+        text-align: center; font-family: 'Inter', sans-serif;
+        font-size: .6rem; color: rgba(255,255,255,.3);
+        letter-spacing: .1em; text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+    .bk-grid {
+        display: grid; grid-template-columns: repeat(7,1fr);
+        gap: 5px; min-height: 200px;
+    }
+    .bk-day {
+        aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+        border-radius: 6px; font-family: 'Inter', sans-serif;
+        font-size: .85rem; border: 1px solid transparent; transition: all .18s;
+    }
+    .bk-day.empty  { background: transparent; }
+    .bk-day.past   { color: rgba(255,255,255,.1); }
+    .bk-day.booked { background: rgba(255,255,255,.03); color: rgba(255,255,255,.18); }
+    .bk-day.avail  {
+        background: rgba(197,160,89,.1); color: #C5A059;
+        border-color: rgba(197,160,89,.25); cursor: pointer;
+    }
+    .bk-day.avail:hover {
+        background: rgba(197,160,89,.22); border-color: rgba(197,160,89,.6);
+        transform: scale(1.08);
+    }
+    .bk-day.today  { border-color: rgba(255,255,255,.25); }
+    .bk-loading { grid-column:1/-1; display:flex; align-items:center; justify-content:center; padding:40px 0; }
+    .bk-spinner {
+        width:28px; height:28px;
+        border: 2px solid rgba(255,255,255,.08);
+        border-top-color: #C5A059;
+        border-radius: 50%; animation: bkSpin .8s linear infinite;
+    }
+    @keyframes bkSpin { to{transform:rotate(360deg)} }
+    .bk-legend {
+        font-family: 'Inter', sans-serif; font-size: .75rem;
+        color: rgba(255,255,255,.35); margin-top: 14px; text-align: center;
+    }
+    .bk-dot {
+        display: inline-block; width: 8px; height: 8px;
+        border-radius: 50%; margin-right: 4px; vertical-align: middle;
+    }
+    .bk-dot.a { background: #C5A059; }
+    .bk-dot.b { background: rgba(255,255,255,.15); }
+
+    /* Slots */
+    .bk-slots-list { display: flex; flex-direction: column; gap: 8px; max-height: 280px; overflow-y: auto; }
+    .bk-slot {
+        background: rgba(255,255,255,.04);
+        border: 1px solid rgba(255,255,255,.1);
+        border-radius: 8px; padding: 12px 16px;
+        cursor: pointer; transition: all .18s;
+        display: flex; justify-content: space-between; align-items: center;
+    }
+    .bk-slot:hover { background: rgba(197,160,89,.1); border-color: rgba(197,160,89,.35); }
+    .bk-slot-time { font-family: 'Inter', sans-serif; font-weight: 600; color: #fff; }
+    .bk-slot-type { font-family: 'Inter', sans-serif; font-size: .75rem; color: rgba(255,255,255,.4); }
+    .bk-back-link {
+        background: none; border: none; color: rgba(197,160,89,.7);
+        font-family: 'Inter', sans-serif; font-size: .75rem;
+        cursor: pointer; padding: 0; margin-bottom: 16px;
+        text-transform: uppercase; letter-spacing: .1em;
+        transition: color .2s;
+    }
+    .bk-back-link:hover { color: #C5A059; }
+
+    /* Formulário */
+    .bk-field { margin-bottom: 14px; }
+    .bk-field label {
+        display: block; font-family: 'Inter', sans-serif;
+        font-size: .7rem; letter-spacing: .08em; text-transform: uppercase;
+        color: rgba(255,255,255,.45); margin-bottom: 5px;
+    }
+    .bk-field input, .bk-field textarea {
+        width: 100%; background: rgba(255,255,255,.05);
+        border: 1px solid rgba(255,255,255,.12); border-radius: 6px;
+        color: #fff; padding: 10px 12px;
+        font-family: inherit; font-size: .9rem;
+        transition: border-color .2s; box-sizing: border-box;
+    }
+    .bk-field input:focus, .bk-field textarea:focus {
+        outline: none; border-color: rgba(197,160,89,.5);
+    }
+    .bk-form-actions { display: flex; gap: 10px; margin-top: 18px; }
+    .bk-btn-primary {
+        flex: 1; background: linear-gradient(135deg,#C5A059,#F5E27A);
+        color: #000; border: none; padding: 13px 20px;
+        font-family: 'Inter', sans-serif; font-size: .72rem;
+        font-weight: 700; letter-spacing: .15em; text-transform: uppercase;
+        cursor: pointer; transition: all .2s; border-radius: 2px;
+    }
+    .bk-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(197,160,89,.3); }
+    .bk-btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+    .bk-btn-secondary {
+        background: transparent; border: 1px solid rgba(255,255,255,.15);
+        color: rgba(255,255,255,.5); padding: 13px 16px;
+        font-family: 'Inter', sans-serif; font-size: .72rem;
+        letter-spacing: .1em; text-transform: uppercase;
+        cursor: pointer; transition: all .2s; border-radius: 2px;
+    }
+    .bk-btn-secondary:hover { border-color: rgba(255,255,255,.4); color: #fff; }
+    .bk-error {
+        background: rgba(220,53,69,.12); border: 1px solid rgba(220,53,69,.25);
+        border-radius: 6px; padding: 10px 14px;
+        color: #ff8a8a; font-family: 'Inter', sans-serif; font-size: .82rem;
+        margin-bottom: 12px;
+    }
+
+    /* Sucesso */
+    .bk-success { text-align: center; padding: 16px 0; }
+    .bk-success-icon {
+        width: 56px; height: 56px; border-radius: 50%;
+        border: 1px solid #C5A059; color: #C5A059;
+        font-size: 1.6rem; display: flex;
+        align-items: center; justify-content: center;
+        margin: 0 auto 16px;
+        animation: bkPop .4s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes bkPop { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+    .bk-success h4 {
+        font-family: 'EB Garamond', Georgia, serif;
+        font-size: 1.4rem; font-style: italic;
+        color: #C5A059; margin: 0 0 8px;
+    }
+    .bk-success p { color: rgba(255,255,255,.5); font-size: .88rem; line-height: 1.6; }
+    .bk-success-close {
+        margin-top: 20px;
+        background: linear-gradient(135deg,#C5A059,#F5E27A);
+        color: #000; border: none; padding: 12px 32px;
+        font-family: 'Inter', sans-serif; font-size: .72rem;
+        font-weight: 700; letter-spacing: .15em; text-transform: uppercase;
+        cursor: pointer; border-radius: 2px;
+    }
 
     /* ── Galeria grid ── */
     .gallery-grid {
@@ -269,66 +522,104 @@
                 <p>Suas compras, agendamentos e documentos</p>
             </div>
 
+            <?php if (isset($_GET['bv'])): ?>
+            <div style="background:rgba(197,160,89,.08);border:1px solid rgba(197,160,89,.25);border-radius:6px;padding:16px 20px;margin-bottom:24px;display:flex;align-items:center;gap:14px;">
+                <span style="font-size:1.8rem;">&#127775;</span>
+                <div>
+                    <p style="font-family:'EB Garamond',Georgia,serif;font-size:1.15rem;font-style:italic;color:#C5A059;margin:0 0 3px;">Bem-vindo ao seu portal!</p>
+                    <p style="font-family:'Inter',sans-serif;font-size:.8rem;color:rgba(255,255,255,.4);margin:0;">Seu ensaio est&aacute; confirmado. Clique em <strong style="color:#C5A059;">Agendar Ensaio</strong> para escolher a data.</p>
+                </div>
+            </div>
+            <?php endif ?>
+
             <?php if (!empty($orders)): ?>
-                <?php foreach ($orders as $order): ?>
-                    <?php
-                        $statusLabel = [
-                            'approved'  => '✅ Pago',
-                            'pending'   => '⏳ Aguardando pagamento',
-                            'cancelled' => '❌ Cancelado',
-                        ][$order->status] ?? $order->status;
-                        $packageName = $order->package ? $order->package->name : 'Ensaio Fotográfico';
-                        $amount      = 'R$ ' . number_format((float) $order->amount, 2, ',', '.');
-                        $date        = date('d/m/Y', strtotime($order->created_at));
-                    ?>
-                    <div class="ensaio-card" style="--accent-color: <?= $order->status === 'approved' ? '#66bb6a' : '#ffb74d' ?>">
-                        <div class="card-top">
-                            <div>
-                                <h4 class="card-title"><?= esc($packageName) ?></h4>
-                                <p class="card-meta"><?= $amount ?> &middot; Comprado em <?= $date ?></p>
-                            </div>
-                            <span class="status-badge <?= esc($order->status) ?>"><?= $statusLabel ?></span>
-                        </div>
-                        <?php
-                            $scheduledAt = $order->scheduled_at ?? null;
-                        ?>
-                        <?php if ($scheduledAt): ?>
-                            <!-- Data do ensaio confirmada -->
-                            <div style="margin-top:14px;padding:14px 16px;background:rgba(46,125,50,.1);border:1px solid rgba(102,187,106,.25);border-radius:6px;display:flex;align-items:center;gap:12px;">
-                                <span style="font-size:1.4rem;">📅</span>
-                                <div>
-                                    <p style="font-family:'Inter',sans-serif;font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(102,187,106,.7);margin:0 0 2px">Data do Ensaio</p>
-                                    <p style="font-family:'EB Garamond',Georgia,serif;font-size:1.15rem;color:#fff;margin:0">
-                                        <?= date('d \d\e F \d\e Y \à\s H:i', strtotime($scheduledAt)) ?>
-                                    </p>
-                                </div>
-                            </div>
-                        <?php endif ?>
-                        <div class="card-actions">
-                            <?php if ($order->status === 'approved' && !empty($order->agenda_link)): ?>
-                                <a href="<?= site_url('client/agendar/' . $order->id) ?>" class="btn-ensaio primary">
-                                    <i class="fas fa-calendar-alt"></i>
-                                    <?= $scheduledAt ? 'Alterar Data' : 'Agendar Ensaio' ?>
-                                </a>
-                            <?php elseif ($order->status === 'approved' && !$scheduledAt): ?>
-                                <span class="btn-ensaio" style="opacity:.5;cursor:default;"><i class="fas fa-clock"></i> Em breve entraremos em contato para agendar</span>
-                            <?php elseif ($order->status === 'pending'): ?>
-                                <span class="btn-ensaio" style="opacity:.4;cursor:default;">Aguardando confirmação do pagamento</span>
-                            <?php endif ?>
-                            <?php if ($order->status === 'approved'): ?>
-                                <a href="<?= site_url('client/guia-pre-ensaio/' . $order->id) ?>" class="btn-ensaio" target="_blank">
-                                    <i class="fas fa-file-alt"></i> Guia Pré-Ensaio
-                                </a>
-                                <a href="<?= site_url('client/contrato/' . $order->id) ?>" class="btn-ensaio" target="_blank">
-                                    <i class="fas fa-file-contract"></i> Meu Contrato
-                                </a>
-                            <?php endif ?>
-                        </div>
+            <?php foreach ($orders as $order): ?>
+            <?php
+                $statusLabel = [
+                    'approved'  => '&#10003; Pago',
+                    'pending'   => '&#9203; Aguardando',
+                    'cancelled' => '&#10007; Cancelado',
+                ][$order->status] ?? $order->status;
+                $packageName  = $order->package ? $order->package->name : 'Ensaio Fotogr&aacute;fico';
+                $amountFmt    = 'R$ ' . number_format((float) $order->amount, 2, ',', '.');
+                $origFmt      = !empty($order->original_price) ? 'R$ ' . number_format($order->original_price, 2, ',', '.') : null;
+                $datePurchase = date('d/m/Y', strtotime($order->created_at));
+                $scheduledAt  = $order->scheduled_at ?? null;
+                $isFree       = ((float) $order->amount === 0.0);
+                $accentColor  = $order->status === 'approved' ? '#66bb6a' : '#ffb74d';
+            ?>
+            <div class="ensaio-card" style="--accent-color:<?= $accentColor ?>" id="order-card-<?= $order->id ?>">
+
+                <!-- Cabecalho -->
+                <div class="card-header">
+                    <div>
+                        <h4 class="card-title"><?= esc($packageName) ?></h4>
+                        <p class="card-meta">Comprado em <?= $datePurchase ?></p>
                     </div>
-                <?php endforeach ?>
+                    <span class="status-badge <?= esc($order->status) ?>"><?= $statusLabel ?></span>
+                </div>
+
+                <!-- Precos -->
+                <div class="card-pricing">
+                    <?php if ($isFree): ?>
+                        <span class="price-free">&#127873; Presente &mdash; Gratuito</span>
+                    <?php else: ?>
+                        <?php if ($origFmt): ?>
+                            <span class="price-original"><?= $origFmt ?></span>
+                        <?php endif ?>
+                        <?php if ($order->discount_percent > 0): ?>
+                            <span class="price-discount-tag">
+                                <?= (int)$order->discount_percent ?>% OFF<?= $order->coupon_code ? ' &middot; ' . esc($order->coupon_code) : '' ?>
+                            </span>
+                        <?php endif ?>
+                        <span class="price-paid"><?= $amountFmt ?></span>
+                    <?php endif ?>
+                </div>
+
+                <!-- Data agendada -->
+                <?php if ($scheduledAt): ?>
+                <div class="card-date" id="order-date-wrap-<?= $order->id ?>">
+                    <span style="font-size:1.4rem">&#128197;</span>
+                    <div>
+                        <p class="date-label">Data do Ensaio</p>
+                        <p class="date-value" id="order-date-<?= $order->id ?>">
+                            <?= date('d \d\e F \d\e Y \a\s H:i', strtotime($scheduledAt)) ?>
+                        </p>
+                    </div>
+                </div>
+                <?php endif ?>
+
+                <!-- Acoes -->
+                <div class="card-actions">
+                    <?php if ($order->status === 'approved'): ?>
+                        <button
+                            class="btn-ensaio primary"
+                            onclick="openBookingModal(
+                                <?= $order->id ?>,
+                                '<?= esc(addslashes($packageName)) ?>',
+                                '<?= esc(addslashes($order->buyer_name)) ?>',
+                                '<?= esc(addslashes($order->buyer_email)) ?>',
+                                '<?= esc(addslashes($order->buyer_phone ?? '')) ?>'
+                            )">
+                            <i class="fas fa-calendar-alt"></i>
+                            <?= $scheduledAt ? 'Alterar Data' : 'Agendar Ensaio' ?>
+                        </button>
+                        <a href="<?= site_url('client/guia-pre-ensaio/' . $order->id) ?>" class="btn-ensaio" target="_blank">
+                            <i class="fas fa-file-alt"></i> Guia Pre-Ensaio
+                        </a>
+                        <a href="<?= site_url('client/contrato/' . $order->id) ?>" class="btn-ensaio" target="_blank">
+                            <i class="fas fa-file-contract"></i> Meu Contrato
+                        </a>
+                    <?php else: ?>
+                        <span class="btn-ensaio" style="opacity:.4;cursor:default">Aguardando confirmacao do pagamento</span>
+                    <?php endif ?>
+                </div>
+
+            </div>
+            <?php endforeach ?>
             <?php else: ?>
                 <div class="empty-state">
-                    <div class="emoji">🛒</div>
+                    <div class="emoji">&#128722;</div>
                     <p>Nenhum ensaio adquirido ainda.</p>
                 </div>
             <?php endif ?>
@@ -636,5 +927,185 @@ if (cpfEl) {
         cpfEl.value = v;
     });
 }
+
+// ===== MODAL DE AGENDAMENTO =====
+const BK = {
+    orderId: 0, year: new Date().getFullYear(), month: new Date().getMonth() + 1,
+    availability: {}, selectedDate: null, selectedSlot: null,
+    prefill: { name: '', email: '', phone: '' }, loading: false,
+};
+
+function openBookingModal(orderId, pkgName, name, email, phone) {
+    BK.orderId = orderId;
+    BK.prefill = { name, email, phone };
+    document.getElementById('bkTitle').textContent = 'Escolha sua Data';
+    document.getElementById('bkSubtitle').textContent = pkgName;
+    document.getElementById('bkOrderId').value = orderId;
+    document.getElementById('bkOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    bkShowStep('calendar');
+    bkLoadMonth();
+}
+
+function closeBookingModal() {
+    document.getElementById('bkOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+function bkShowStep(step) {
+    ['calendar','slots','form','success'].forEach(s =>
+        document.getElementById('bkStep' + s.charAt(0).toUpperCase() + s.slice(1)).style.display = 'none'
+    );
+    document.getElementById('bkStep' + step.charAt(0).toUpperCase() + step.slice(1)).style.display = 'block';
+}
+
+function bkChangeMonth(delta) {
+    BK.month += delta;
+    if (BK.month > 12) { BK.month = 1;  BK.year++; }
+    if (BK.month < 1)  { BK.month = 12; BK.year--; }
+    bkLoadMonth();
+}
+
+async function bkLoadMonth() {
+    const grid  = document.getElementById('bkCalGrid');
+    const label = document.getElementById('bkMonthLabel');
+    const today = new Date(); today.setHours(0,0,0,0);
+    const months = ['Janeiro','Fevereiro','Mar\u00e7o','Abril','Maio','Junho',
+                    'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    label.textContent = months[BK.month - 1] + ' ' + BK.year;
+    grid.innerHTML = '<div class="bk-loading"><div class="bk-spinner"></div></div>';
+
+    try {
+        const res  = await fetch(`/agenda-api/availability?year=${BK.year}&month=${BK.month}`);
+        const data = await res.json();
+        BK.availability = {};
+        (data.slots || data || []).forEach(s => {
+            const d = (s.date || '').substring(0,10);
+            if (!BK.availability[d]) BK.availability[d] = [];
+            BK.availability[d].push(s);
+        });
+    } catch(e) { BK.availability = {}; }
+
+    grid.innerHTML = '';
+    const firstDay = new Date(BK.year, BK.month - 1, 1).getDay();
+    const daysInMonth = new Date(BK.year, BK.month, 0).getDate();
+    for (let i = 0; i < firstDay; i++) {
+        const el = document.createElement('div');
+        el.className = 'bk-day empty'; grid.appendChild(el);
+    }
+    for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr = `${BK.year}-${String(BK.month).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const dayDate = new Date(BK.year, BK.month - 1, d);
+        const isPast  = dayDate < today;
+        const slots   = BK.availability[dateStr] || [];
+        const hasAvail = slots.some(s => s.available !== false && s.status !== 'booked');
+
+        const el = document.createElement('div');
+        el.textContent = d;
+        if (isPast) { el.className = 'bk-day past'; }
+        else if (hasAvail) {
+            el.className = 'bk-day avail';
+            el.onclick = () => bkSelectDate(dateStr, slots);
+        } else { el.className = 'bk-day booked'; }
+        grid.appendChild(el);
+    }
+}
+
+function bkSelectDate(dateStr, slots) {
+    BK.selectedDate = dateStr;
+    const [y, m, d] = dateStr.split('-');
+    const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    document.getElementById('bkSlotDateLabel').textContent =
+        `${d} de ${months[parseInt(m)-1]} de ${y}`;
+    const list = document.getElementById('bkSlotsList');
+    list.innerHTML = '';
+    const avail = slots.filter(s => s.available !== false && s.status !== 'booked');
+    if (!avail.length) { list.innerHTML = '<p style="color:rgba(255,255,255,.4);font-size:.85rem">Sem hor\u00e1rios dispon\u00edveis neste dia.</p>'; }
+    avail.forEach(slot => {
+        const div = document.createElement('div');
+        div.className = 'bk-slot';
+        div.innerHTML = `<span class="bk-slot-time">${(slot.time||'').substring(0,5)}</span><span class="bk-slot-type">${slot.type||''}</span>`;
+        div.onclick = () => bkSelectSlot(slot);
+        list.appendChild(div);
+    });
+    bkShowStep('slots');
+}
+
+function bkSelectSlot(slot) {
+    BK.selectedSlot = slot;
+    document.getElementById('bkSlotId').value = slot.id;
+    document.getElementById('bkFormSlotLabel').textContent =
+        `Hor\u00e1rio: ${(slot.time||'').substring(0,5)} \u2014 ${slot.type||''}`;
+    document.getElementById('bkName').value  = BK.prefill.name;
+    document.getElementById('bkEmail').value = BK.prefill.email;
+    document.getElementById('bkPhone').value = BK.prefill.phone;
+    document.getElementById('bkFormError').style.display = 'none';
+    bkShowStep('form');
+}
+
+async function bkSubmitForm(e) {
+    e.preventDefault();
+    const btn  = document.getElementById('bkSubmitBtn');
+    const errEl = document.getElementById('bkFormError');
+    btn.disabled = true;
+    btn.textContent = 'Aguarde...';
+    errEl.style.display = 'none';
+    const body = {
+        slot_id:  document.getElementById('bkSlotId').value,
+        order_id: parseInt(document.getElementById('bkOrderId').value) || 0,
+        name:     document.getElementById('bkName').value,
+        email:    document.getElementById('bkEmail').value,
+        phone:    document.getElementById('bkPhone').value,
+        notes:    document.getElementById('bkNotes').value,
+    };
+    try {
+        const res  = await fetch('/agenda-api/book', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        if (data.success || data.id || data.booking_id) {
+            const label = data.scheduled_at || data.date || '';
+            document.getElementById('bkSuccessMsg').textContent =
+                label ? `Seu ensaio est\u00e1 agendado para ${label}.` : 'Agendamento confirmado!';
+            bkShowStep('success');
+            // Atualiza o card na p\u00e1gina sem reload
+            const ordId = body.order_id;
+            const wrap  = document.getElementById('order-date-wrap-' + ordId);
+            if (wrap) {
+                document.getElementById('order-date-' + ordId).textContent = label || 'Data confirmada';
+            } else if (label) {
+                const card = document.getElementById('order-card-' + ordId);
+                if (card) {
+                    const pricing = card.querySelector('.card-pricing');
+                    if (pricing) {
+                        pricing.insertAdjacentHTML('afterend',
+                            `<div class="card-date" id="order-date-wrap-${ordId}">`+
+                            `<span style="font-size:1.4rem">&#128197;</span>`+
+                            `<div><p class="date-label">Data do Ensaio</p>`+
+                            `<p class="date-value" id="order-date-${ordId}">${label}</p></div></div>`);
+                    }
+                }
+            }
+        } else {
+            errEl.textContent = data.message || 'Erro ao agendar. Tente novamente.';
+            errEl.style.display = 'block';
+            btn.disabled = false;
+            btn.textContent = 'Confirmar Agendamento';
+        }
+    } catch(ex) {
+        errEl.textContent = 'Erro de conex\u00e3o. Tente novamente.';
+        errEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Confirmar Agendamento';
+    }
+}
+
+// Fecha modal ao clicar fora
+document.getElementById('bkOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeBookingModal();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeBookingModal(); });
 </script>
 <?= $this->endSection() ?>
