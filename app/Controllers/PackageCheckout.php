@@ -68,6 +68,8 @@ class PackageCheckout extends BaseController
             'rg'                     => trim($this->request->getPost('rg') ?? ''),
             'marital_status'         => trim($this->request->getPost('marital_status') ?? ''),
             'address'                => trim($this->request->getPost('address') ?? ''),
+            'address_number'         => trim($this->request->getPost('address_number') ?? ''),
+            'address_complement'     => trim($this->request->getPost('address_complement') ?? ''),
             'city'                   => trim($this->request->getPost('city') ?? ''),
             'state'                  => trim($this->request->getPost('state') ?? ''),
             'zip_code'               => trim($this->request->getPost('zip_code') ?? ''),

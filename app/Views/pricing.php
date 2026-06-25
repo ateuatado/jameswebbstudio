@@ -294,8 +294,18 @@
                      style="width:100%;background:#000;border:1px solid rgba(255,255,255,.12);color:#fff;padding:12px 16px;font-size:.95rem;outline:none;font-variant-numeric:tabular-nums;">
             </div>
             <div style="flex:1;">
-              <label style="font-family:'Inter',sans-serif;font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.45);display:block;margin-bottom:8px;">ENDEREÇO</label>
-              <input type="text" name="address" id="prcAddr" placeholder="Rua, nº, complemento" style="width:100%;background:#000;border:1px solid rgba(255,255,255,.12);color:#fff;padding:12px 16px;font-size:.95rem;outline:none;">
+              <label style="font-family:'Inter',sans-serif;font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.45);display:block;margin-bottom:8px;">LOGRADOURO</label>
+              <input type="text" name="address" id="prcAddr" placeholder="Rua, Av, Alameda..." style="width:100%;background:#000;border:1px solid rgba(255,255,255,.12);color:#fff;padding:12px 16px;font-size:.95rem;outline:none;">
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;margin-bottom:12px;">
+            <div style="flex:0 0 120px;">
+              <label style="font-family:'Inter',sans-serif;font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.45);display:block;margin-bottom:8px;">NÚMERO</label>
+              <input type="text" name="address_number" id="prcNum" placeholder="123" style="width:100%;background:#000;border:1px solid rgba(255,255,255,.12);color:#fff;padding:12px 16px;font-size:.95rem;outline:none;">
+            </div>
+            <div style="flex:1;">
+              <label style="font-family:'Inter',sans-serif;font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.45);display:block;margin-bottom:8px;">COMPLEMENTO <span style="color:rgba(255,255,255,.25);font-size:.6rem;">(opcional)</span></label>
+              <input type="text" name="address_complement" id="prcComp" placeholder="Apto, Bloco, Casa..." style="width:100%;background:#000;border:1px solid rgba(255,255,255,.12);color:#fff;padding:12px 16px;font-size:.95rem;outline:none;">
             </div>
           </div>
           <div style="display:flex;gap:10px;margin-bottom:16px;">

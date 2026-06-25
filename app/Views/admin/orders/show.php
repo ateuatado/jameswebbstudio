@@ -193,7 +193,17 @@
                         <div class="col-md-6">
                             <label class="form-label text-muted small">Endereço</label>
                             <input type="text" name="address" class="form-control bg-black text-white border-secondary"
-                                   value="<?= esc($order->address ?? '') ?>" placeholder="Rua, número, complemento">
+                                   value="<?= esc($order->address ?? '') ?>" placeholder="Rua, Av, Alameda...">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label text-muted small">Número</label>
+                            <input type="text" name="address_number" class="form-control bg-black text-white border-secondary"
+                                   value="<?= esc($order->address_number ?? '') ?>" placeholder="123">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-muted small">Complemento <span class="text-secondary" style="font-size:.7rem">(opcional)</span></label>
+                            <input type="text" name="address_complement" class="form-control bg-black text-white border-secondary"
+                                   value="<?= esc($order->address_complement ?? '') ?>" placeholder="Apto, Bloco, Casa...">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label text-muted small">Cidade</label>

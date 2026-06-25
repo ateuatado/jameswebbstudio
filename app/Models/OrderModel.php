@@ -39,6 +39,8 @@ class OrderModel extends Model
         'rg',
         'marital_status',
         'address',
+        'address_number',
+        'address_complement',
         'city',
         'state',
         'zip_code',
