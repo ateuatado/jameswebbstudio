@@ -34,14 +34,88 @@ class AgendaProxy extends BaseController
 
     /**
      * POST /agenda-api/book
-     * Repassa o JSON de booking para a agenda.
+     * Repassa o JSON de booking para a agenda e, em caso de sucesso,
+     * grava scheduled_at e agenda_booking_id no pedido correspondente.
      */
     public function book(): ResponseInterface
     {
-        $body = $this->request->getBody();
-        $url  = "{$this->agendaBase}/api/v1/book";
+        $rawBody  = $this->request->getBody();
+        $url      = "{$this->agendaBase}/api/v1/book";
+        $response = $this->proxyPost($url, $rawBody);
 
-        return $this->proxyPost($url, $body);
+        // Captura a data do agendamento sem bloquear a resposta ao cliente
+        $this->captureBookingDate($rawBody, $response->getBody());
+
+        return $response;
+    }
+
+    /**
+     * Extrai data e ID do booking da resposta da agenda e grava no pedido.
+     * Tolerante a falhas — nunca interrompe o fluxo do cliente.
+     */
+    private function captureBookingDate(string $requestBody, string $responseBody): void
+    {
+        try {
+            $req = json_decode($requestBody,  true) ?? [];
+            $res = json_decode($responseBody, true) ?? [];
+
+            // Log completo para depuração no primeiro agendamento real
+            log_message('info', '[AgendaProxy] book request: '  . $requestBody);
+            log_message('info', '[AgendaProxy] book response: ' . $responseBody);
+
+            // Verifica se houve sucesso
+            if (empty($res['success']) && empty($res['booking']) && empty($res['id'])) {
+                return;
+            }
+
+            // Extrai dados — tenta vários formatos possíveis
+            $bookingData  = $res['booking'] ?? $res['data'] ?? $res;
+            $bookingId    = $bookingData['id']           ?? $bookingData['booking_id'] ?? null;
+            $scheduledRaw = $bookingData['scheduled_at'] ?? $bookingData['datetime']
+                          ?? $bookingData['date']        ?? $bookingData['starts_at']  ?? null;
+
+            if (empty($scheduledRaw)) {
+                log_message('warning', '[AgendaProxy] Booking ok mas sem campo de data.');
+                return;
+            }
+
+            $scheduledAt = date('Y-m-d H:i:s', strtotime($scheduledRaw));
+
+            // Identifica o pedido pelo order_id (no request ou response) ou pelo e-mail
+            $orderId = $req['order_id']        ?? $bookingData['order_id']      ?? null;
+            $email   = $req['email']           ?? $req['customer_email']
+                     ?? $bookingData['customer_email'] ?? null;
+
+            $orderModel = new \App\Models\OrderModel();
+
+            if ($orderId) {
+                $order = $orderModel->find((int)$orderId);
+            } elseif ($email) {
+                $order = $orderModel
+                    ->where('buyer_email', strtolower(trim($email)))
+                    ->where('status', 'approved')
+                    ->orderBy('created_at', 'DESC')
+                    ->first();
+            } else {
+                log_message('warning', '[AgendaProxy] Pedido não identificado no booking.');
+                return;
+            }
+
+            if (!$order) {
+                log_message('warning', "[AgendaProxy] Pedido não encontrado. order_id={$orderId} email={$email}");
+                return;
+            }
+
+            $orderModel->update($order->id, [
+                'scheduled_at'      => $scheduledAt,
+                'agenda_booking_id' => $bookingId,
+            ]);
+
+            log_message('info', "[AgendaProxy] Ensaio agendado — order #{$order->id} em {$scheduledAt} (booking_id={$bookingId})");
+
+        } catch (\Throwable $e) {
+            log_message('error', '[AgendaProxy] Erro ao capturar booking: ' . $e->getMessage());
+        }
     }
 
     // ------------------------------------------------------------------

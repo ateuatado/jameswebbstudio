@@ -289,15 +289,31 @@
                             </div>
                             <span class="status-badge <?= esc($order->status) ?>"><?= $statusLabel ?></span>
                         </div>
+                        <?php
+                            $scheduledAt = $order->scheduled_at ?? null;
+                        ?>
+                        <?php if ($scheduledAt): ?>
+                            <!-- Data do ensaio confirmada -->
+                            <div style="margin-top:14px;padding:14px 16px;background:rgba(46,125,50,.1);border:1px solid rgba(102,187,106,.25);border-radius:6px;display:flex;align-items:center;gap:12px;">
+                                <span style="font-size:1.4rem;">📅</span>
+                                <div>
+                                    <p style="font-family:'Inter',sans-serif;font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(102,187,106,.7);margin:0 0 2px">Data do Ensaio</p>
+                                    <p style="font-family:'EB Garamond',Georgia,serif;font-size:1.15rem;color:#fff;margin:0">
+                                        <?= date('d \d\e F \d\e Y \à\s H:i', strtotime($scheduledAt)) ?>
+                                    </p>
+                                </div>
+                            </div>
+                        <?php endif ?>
                         <div class="card-actions">
                             <?php if ($order->status === 'approved' && !empty($order->agenda_link)): ?>
                                 <a href="<?= esc($order->agenda_link) ?>" class="btn-ensaio primary" target="_blank">
-                                    <i class="fas fa-calendar-alt"></i> Agendar Ensaio
+                                    <i class="fas fa-calendar-alt"></i>
+                                    <?= $scheduledAt ? 'Alterar Data' : 'Agendar Ensaio' ?>
                                 </a>
+                            <?php elseif ($order->status === 'approved' && !$scheduledAt): ?>
+                                <span class="btn-ensaio" style="opacity:.5;cursor:default;"><i class="fas fa-clock"></i> Em breve entraremos em contato para agendar</span>
                             <?php elseif ($order->status === 'pending'): ?>
-                                <span class="btn-ensaio" style="opacity:.4;cursor:default;">Aguardando confirmação do banco</span>
-                            <?php else: ?>
-                                <span class="btn-ensaio" style="opacity:.4;cursor:default;"><i class="fas fa-check"></i> Ensaio confirmado</span>
+                                <span class="btn-ensaio" style="opacity:.4;cursor:default;">Aguardando confirmação do pagamento</span>
                             <?php endif ?>
                             <?php if ($order->status === 'approved'): ?>
                                 <a href="<?= site_url('client/guia-pre-ensaio/' . $order->id) ?>" class="btn-ensaio" target="_blank">
