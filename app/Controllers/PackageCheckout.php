@@ -758,7 +758,7 @@ class PackageCheckout extends BaseController
             $user     = $provider->findById($order->client_user_id);
 
             if ($user) {
-                auth()->login($user, true); // remember = true para conveniência
+                auth()->login($user, false); // remember=false — sessão expira ao fechar o browser
                 log_message('info', "[AutoLogin] Login via token para user_id={$order->client_user_id}, order_id={$order->id}");
             } else {
                 log_message('warning', "[AutoLogin] Usuário não encontrado para client_user_id={$order->client_user_id}");
