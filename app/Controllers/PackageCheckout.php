@@ -80,8 +80,9 @@ class PackageCheckout extends BaseController
         // ── BYPASS: cupom 100% — confirma sem pagamento ───────────────────────────
         if ($discountPct === 100) {
             // Validação: cessão de imagem é obrigatória para ensaios gratuitos
-            $imageUsage = (int) ($this->request->getPost('image_usage') ?? 0);
-            if ($imageUsage !== 1) {
+            // Nota: checkbox HTML sem value envia "on"; com value="1" envia "1" — ambos são aceitos
+            $imageUsage = $this->request->getPost('image_usage');
+            if (empty($imageUsage)) {
                 return $this->response->setJSON([
                     'success' => false,
                     'message' => 'Para ensaios gratuitos (cortesia), a autorização de uso de imagens é obrigatória.',

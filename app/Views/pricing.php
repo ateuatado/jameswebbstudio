@@ -335,7 +335,7 @@
           </div>
           <div style="margin-bottom:20px;" id="imageUsageWrapper">
             <label id="imageUsageLabel" style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-family:'Inter',sans-serif;font-size:.78rem;color:rgba(255,255,255,.55);line-height:1.5;">
-              <input type="checkbox" id="imageUsageChk" name="image_usage" style="margin-top:3px;accent-color:#C5A059;min-width:16px;">
+              <input type="checkbox" id="imageUsageChk" name="image_usage" value="1" style="margin-top:3px;accent-color:#C5A059;min-width:16px;">
               Autorizo o uso das minhas imagens para portfólio e divulgação do fotógrafo.
             </label>
             <div id="imageUsageNotice" style="display:none;margin-top:8px;padding:10px 14px;background:rgba(197,160,89,.08);border:1px solid rgba(197,160,89,.3);border-radius:3px;font-family:'Inter',sans-serif;font-size:.72rem;color:rgba(197,160,89,.85);line-height:1.6;">
