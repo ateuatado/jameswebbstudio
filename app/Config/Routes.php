@@ -143,6 +143,9 @@ $routes->get( 'ensaio/obrigado', 'PackageCheckout::thanks');
 $routes->get( 'ensaio/falha',    'PackageCheckout::failure');
 $routes->get( 'ensaio/pendente', 'PackageCheckout::pending');
 $routes->get( 'ensaio/status/(:num)', 'PackageCheckout::orderStatus/$1');
+// Auto-login via token gerado após aprovação (rota pública — o token é a autenticação)
+$routes->get( 'client/auto-login/(:segment)', 'PackageCheckout::autoLogin/$1');
+
 
 
 // ─── Portal do Cliente (autenticado) ──────────────────────────────────────────

@@ -1,4 +1,4 @@
-﻿<?= $this->extend('layout/main') ?>
+<?= $this->extend('layout/main') ?>
 
 <?= $this->section('styles') ?>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
@@ -823,6 +823,93 @@
     <img id="lightboxImg" src="" alt="">
 </div>
 
+<!-- ===== MODAL DE AGENDAMENTO ===== -->
+<div class="bk-overlay" id="bkOverlay">
+    <div class="bk-modal">
+
+        <!-- Header -->
+        <div class="bk-modal-head">
+            <div>
+                <p style="font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(197,160,89,.5);margin:0 0 4px">STUDIO MARCOSANTOFOTO</p>
+                <h3 id="bkTitle">Escolha sua Data</h3>
+                <p id="bkSubtitle" style="color:rgba(255,255,255,.4);font-size:.8rem;margin:0;"></p>
+            </div>
+            <button class="bk-close" onclick="closeBookingModal()" aria-label="Fechar">✕</button>
+        </div>
+
+        <input type="hidden" id="bkOrderId" value="">
+        <input type="hidden" id="bkSlotId"   value="">
+
+        <div class="bk-body">
+
+            <!-- Step 1: Calendário -->
+            <div id="bkStepCalendar">
+                <div class="bk-cal-nav">
+                    <button onclick="bkChangeMonth(-1)">‹</button>
+                    <span class="bk-month-label" id="bkMonthLabel"></span>
+                    <button onclick="bkChangeMonth(1)">›</button>
+                </div>
+                <div class="bk-weekdays">
+                    <span>Dom</span><span>Seg</span><span>Ter</span>
+                    <span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span>
+                </div>
+                <div class="bk-grid" id="bkCalGrid"></div>
+                <div class="bk-legend">
+                    <span style="margin-right:14px"><span class="bk-dot a"></span> Disponível</span>
+                    <span><span class="bk-dot b"></span> Indisponível</span>
+                </div>
+            </div>
+
+            <!-- Step 2: Horários -->
+            <div id="bkStepSlots" style="display:none;">
+                <button class="bk-back-link" onclick="bkShowStep('calendar')">← Voltar ao calendário</button>
+                <h4 id="bkSlotDateLabel" style="color:#fff;font-family:'EB Garamond',serif;font-size:1.1rem;font-style:italic;margin:0 0 16px;"></h4>
+                <div class="bk-slots-list" id="bkSlotsList"></div>
+            </div>
+
+            <!-- Step 3: Formulário -->
+            <div id="bkStepForm" style="display:none;">
+                <button class="bk-back-link" onclick="bkShowStep('slots')">← Alterar horário</button>
+                <p id="bkFormSlotLabel" style="color:rgba(197,160,89,.8);font-size:.85rem;margin:0 0 16px;"></p>
+                <form id="bkForm" onsubmit="bkSubmitForm(event)">
+                    <div class="bk-field">
+                        <label>Seu nome completo</label>
+                        <input type="text" id="bkName" required placeholder="Nome Sobrenome">
+                    </div>
+                    <div class="bk-field">
+                        <label>E-mail</label>
+                        <input type="email" id="bkEmail" required placeholder="voce@email.com">
+                    </div>
+                    <div class="bk-field">
+                        <label>Telefone / WhatsApp</label>
+                        <input type="tel" id="bkPhone" placeholder="(11) 99999-9999">
+                    </div>
+                    <div class="bk-field">
+                        <label>Observações (opcional)</label>
+                        <textarea id="bkNotes" rows="3" placeholder="Alguma informação especial sobre o ensaio?"></textarea>
+                    </div>
+                    <div class="bk-error" id="bkFormError" style="display:none;"></div>
+                    <div class="bk-form-actions">
+                        <button type="submit" class="bk-btn-primary" id="bkSubmitBtn">Confirmar Agendamento</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Step 4: Sucesso -->
+            <div id="bkStepSuccess" style="display:none;">
+                <div class="bk-success">
+                    <div class="bk-success-icon">✨</div>
+                    <h3 class="bk-success-title">Agendamento Confirmado!</h3>
+                    <p id="bkSuccessMsg" style="color:rgba(255,255,255,.7);margin:0 0 8px;"></p>
+                    <p style="color:rgba(255,255,255,.4);font-size:.82rem;margin:0 0 24px;">Você receberá um e-mail de confirmação em instantes.</p>
+                    <button class="bk-btn-secondary" onclick="closeBookingModal()" style="width:100%;">Fechar</button>
+                </div>
+            </div>
+
+        </div><!-- /bk-body -->
+    </div>
+</div>
+
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
@@ -929,6 +1016,19 @@ if (cpfEl) {
 }
 
 // ===== MODAL DE AGENDAMENTO =====
+
+// Formata "2026-07-15 16:00:00" → "15 de Julho de 2026 às 16h00"
+function formatScheduledAt(raw) {
+    if (!raw) return '';
+    const parts = raw.trim().split(' ');
+    const [y, m, d] = (parts[0] || '').split('-');
+    const [hh, mm] = (parts[1] || '00:00').split(':');
+    const months = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+                    'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    const mName = months[parseInt(m, 10) - 1] || '';
+    return `${parseInt(d,10)} de ${mName} de ${y} às ${hh}h${mm}`;
+}
+
 const BK = {
     orderId: 0, year: new Date().getFullYear(), month: new Date().getMonth() + 1,
     availability: {}, selectedDate: null, selectedSlot: null,
@@ -977,9 +1077,11 @@ async function bkLoadMonth() {
 
     try {
         const res  = await fetch(`/agenda-api/availability?year=${BK.year}&month=${BK.month}`);
-        const data = await res.json();
+        const json = await res.json();
+        // A API retorna { success: true, data: [...slots] }
+        const slots = json.data || json.slots || json || [];
         BK.availability = {};
-        (data.slots || data || []).forEach(s => {
+        slots.forEach(s => {
             const d = (s.date || '').substring(0,10);
             if (!BK.availability[d]) BK.availability[d] = [];
             BK.availability[d].push(s);
@@ -998,7 +1100,7 @@ async function bkLoadMonth() {
         const dayDate = new Date(BK.year, BK.month - 1, d);
         const isPast  = dayDate < today;
         const slots   = BK.availability[dateStr] || [];
-        const hasAvail = slots.some(s => s.available !== false && s.status !== 'booked');
+        const hasAvail = slots.some(s => s.status === 'available');
 
         const el = document.createElement('div');
         el.textContent = d;
@@ -1019,12 +1121,15 @@ function bkSelectDate(dateStr, slots) {
         `${d} de ${months[parseInt(m)-1]} de ${y}`;
     const list = document.getElementById('bkSlotsList');
     list.innerHTML = '';
-    const avail = slots.filter(s => s.available !== false && s.status !== 'booked');
+    const avail = slots.filter(s => s.status === 'available');
     if (!avail.length) { list.innerHTML = '<p style="color:rgba(255,255,255,.4);font-size:.85rem">Sem hor\u00e1rios dispon\u00edveis neste dia.</p>'; }
     avail.forEach(slot => {
         const div = document.createElement('div');
         div.className = 'bk-slot';
-        div.innerHTML = `<span class="bk-slot-time">${(slot.time||'').substring(0,5)}</span><span class="bk-slot-type">${slot.type||''}</span>`;
+        // API retorna start_time e session_type_name
+        const timeStr = (slot.start_time || slot.time || '').substring(0,5);
+        const typeStr = slot.session_type_name || slot.type || 'Ensaio';
+        div.innerHTML = `<span class="bk-slot-time">${timeStr}</span><span class="bk-slot-type">${typeStr}</span>`;
         div.onclick = () => bkSelectSlot(slot);
         list.appendChild(div);
     });
@@ -1034,8 +1139,10 @@ function bkSelectDate(dateStr, slots) {
 function bkSelectSlot(slot) {
     BK.selectedSlot = slot;
     document.getElementById('bkSlotId').value = slot.id;
+    const timeStr = (slot.start_time || slot.time || '').substring(0,5);
+    const typeStr = slot.session_type_name || slot.type || 'Ensaio';
     document.getElementById('bkFormSlotLabel').textContent =
-        `Hor\u00e1rio: ${(slot.time||'').substring(0,5)} \u2014 ${slot.type||''}`;
+        `Hor\u00e1rio: ${timeStr} \u2014 ${typeStr}`;
     document.getElementById('bkName').value  = BK.prefill.name;
     document.getElementById('bkEmail').value = BK.prefill.email;
     document.getElementById('bkPhone').value = BK.prefill.phone;
@@ -1065,17 +1172,20 @@ async function bkSubmitForm(e) {
             body: JSON.stringify(body),
         });
         const data = await res.json();
-        if (data.success || data.id || data.booking_id) {
-            const label = data.scheduled_at || data.date || '';
+        // API retorna { success: true, data: { booking_id, scheduled_at, date, start_time } }
+        if (data.success && data.data && data.data.booking_id) {
+            const d = data.data;
+            const label = d.scheduled_at || d.date || '';
+            const labelFmt = label ? formatScheduledAt(label) : '';
             document.getElementById('bkSuccessMsg').textContent =
-                label ? `Seu ensaio est\u00e1 agendado para ${label}.` : 'Agendamento confirmado!';
+                labelFmt ? `Seu ensaio est\u00e1 agendado para ${labelFmt}.` : 'Agendamento confirmado!';
             bkShowStep('success');
             // Atualiza o card na p\u00e1gina sem reload
             const ordId = body.order_id;
             const wrap  = document.getElementById('order-date-wrap-' + ordId);
             if (wrap) {
-                document.getElementById('order-date-' + ordId).textContent = label || 'Data confirmada';
-            } else if (label) {
+                document.getElementById('order-date-' + ordId).textContent = labelFmt || 'Data confirmada';
+            } else if (labelFmt) {
                 const card = document.getElementById('order-card-' + ordId);
                 if (card) {
                     const pricing = card.querySelector('.card-pricing');
@@ -1084,7 +1194,7 @@ async function bkSubmitForm(e) {
                             `<div class="card-date" id="order-date-wrap-${ordId}">`+
                             `<span style="font-size:1.4rem">&#128197;</span>`+
                             `<div><p class="date-label">Data do Ensaio</p>`+
-                            `<p class="date-value" id="order-date-${ordId}">${label}</p></div></div>`);
+                            `<p class="date-value" id="order-date-${ordId}">${labelFmt}</p></div></div>`);
                     }
                 }
             }

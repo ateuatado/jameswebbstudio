@@ -280,7 +280,7 @@
         if (progressFill) progressFill.style.width = progressPercent + '%';
     }
 
-    function showApproved() {
+    function showApproved(autoLoginToken) {
         // Preenche a barra até 100%
         if (progressFill) {
             progressFill.style.transition = 'width 0.5s ease';
@@ -291,10 +291,14 @@
             if (stateProcessing) stateProcessing.style.display = 'none';
             if (stateApproved)   stateApproved.style.display = 'block';
 
-            // Redireciona para o portal após 2.5 segundos
-            // Se não estiver logado, Shield redireciona para login e depois volta
+            // Redireciona após 2.5 segundos
+            // Se tivermos token de auto-login, usa ele (cliente entra já logado)
+            // Caso contrário, Shield redireciona para login
             setTimeout(function() {
-                window.location.href = '<?= site_url('client/meus-ensaios?bv=1') ?>';
+                var destino = autoLoginToken
+                    ? '<?= site_url('client/auto-login/') ?>' + autoLoginToken
+                    : '<?= site_url('client/meus-ensaios?bv=1') ?>';
+                window.location.href = destino;
             }, 2500);
         }, 600);
     }
@@ -320,7 +324,8 @@
         .then(function(res) { return res.json(); })
         .then(function(data) {
             if (data.status === 'approved') {
-                showApproved();
+                showApproved(data.auto_login_token || null);
+
             } else if (data.status === 'cancelled' || data.status === 'refunded') {
                 // Pagamento falhou
                 if (stateProcessing) stateProcessing.style.display = 'none';

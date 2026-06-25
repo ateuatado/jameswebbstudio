@@ -417,11 +417,19 @@ class PackageCheckout extends BaseController
                     if ($accountInfo['user_id']) {
                         $updateData['client_user_id'] = $accountInfo['user_id'];
                     }
+
+                    // Gera token de auto-login (7 dias) para redirect pós-webhook
+                    $autoToken = $this->generateAutoLoginToken(
+                        $order->id,
+                        $orderModel,
+                        $accountInfo['user_id'] ?? null
+                    );
+
                     $this->sendNotificationEmail($order, $paymentArr);
-                    // Gera token de agendamento e envia link ao cliente
+                    // Gera link de agendamento (mantido para fallback)
                     $agendaLink = $this->generateAgendaToken($order);
                     $updateData['agenda_link'] = $agendaLink;
-                    $this->sendClientBookingEmail($order, $agendaLink, $accountInfo['password'], $accountInfo['is_new']);
+                    $this->sendClientBookingEmail($order, $agendaLink, $accountInfo['password'], $accountInfo['is_new'], $autoToken);
                 }
 
                 $orderModel->update($order->id, $updateData);
@@ -524,6 +532,28 @@ class PackageCheckout extends BaseController
     }
 
     // ─────────────────────────────────────────────────────────────────────────
+    // Gera token de auto-login (uso único, 7 dias) e salva na order
+    // ─────────────────────────────────────────────────────────────────────────
+    private function generateAutoLoginToken(int $orderId, OrderModel $orderModel, ?int $clientUserId = null): string
+    {
+        $token   = bin2hex(random_bytes(32)); // 64 chars hex
+        $expires = date('Y-m-d H:i:s', strtotime('+7 days'));
+
+        $updateData = [
+            'auto_login_token'   => $token,
+            'auto_login_expires' => $expires,
+        ];
+        if ($clientUserId) {
+            $updateData['client_user_id'] = $clientUserId;
+        }
+
+        $orderModel->update($orderId, $updateData);
+        log_message('info', "[AutoLoginToken] Token gerado para order_id={$orderId}, expira em {$expires}");
+
+        return $token;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
     // Cria conta no portal caso não exista
     // ─────────────────────────────────────────────────────────────────────────
     private function createClientAccountIfNeeded(string $email, string $name): array
@@ -566,7 +596,7 @@ class PackageCheckout extends BaseController
     // Envia e-mail ao cliente com o link personalizado de agendamento
     // e, opcionalmente, as credenciais do portal
     // ─────────────────────────────────────────────────────────────────────────
-    private function sendClientBookingEmail(object $order, string $agendaLink, ?string $tempPassword = null, bool $isNew = false): void
+    private function sendClientBookingEmail(object $order, string $agendaLink, ?string $tempPassword = null, bool $isNew = false, ?string $autoLoginToken = null): void
     {
         try {
             $subject = 'Seu ensaio está confirmado — Agende sua data!';
@@ -597,17 +627,22 @@ class PackageCheckout extends BaseController
                     </div>";
             }
 
+            // Link principal: portal com auto-login (7 dias) ou login simples
+            $portalLink = $autoLoginToken
+                ? site_url('client/auto-login/' . $autoLoginToken)
+                : site_url('login');
+
             $message  = "<div style='font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#fff;padding:40px;'>"
             . "<p style='font-size:.7rem;letter-spacing:.25em;text-transform:uppercase;color:#C5A059;margin:0 0 24px'>STUDIO MARCOSANTOFOTO</p>"
             . "<h2 style='font-family:Georgia,serif;font-size:2rem;font-weight:400;color:#fff;margin:0 0 24px;line-height:1.3'>"
             . "Olá, {$order->buyer_name}! &#127881;</h2>"
             . "<p style='color:rgba(255,255,255,.7);line-height:1.8;margin:0 0 24px'>"
-            . "Seu pagamento foi confirmado com sucesso. Agora é hora de escolher a data do seu ensaio fotográfico!</p>"
+            . "Seu pagamento foi confirmado! Acesse seu portal para escolher a data do ensaio.</p>"
             . "<div style='border:1px solid rgba(197,160,89,.3);padding:24px;margin:32px 0;text-align:center;'>"
-            . "<p style='font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(197,160,89,.6);margin:0 0 12px'>LINK EXCLUSIVO DE AGENDAMENTO</p>"
-            . "<a href='{$agendaLink}' style='display:inline-block;background:linear-gradient(135deg,#C5A059,#F5E27A);color:#000;text-decoration:none;padding:16px 36px;font-family:sans-serif;font-size:.75rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;margin:8px 0'>"
-            . "ESCOLHER MINHA DATA &rarr;</a>"
-            . "<p style='font-size:.75rem;color:rgba(255,255,255,.3);margin:12px 0 0'>Este link é válido por 90 dias e é pessoal.</p>"
+            . "<p style='font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(197,160,89,.6);margin:0 0 12px'>SEU PORTAL ESTÁ PRONTO</p>"
+            . "<a href='{$portalLink}' style='display:inline-block;background:linear-gradient(135deg,#C5A059,#F5E27A);color:#000;text-decoration:none;padding:16px 36px;font-family:sans-serif;font-size:.75rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;margin:8px 0'>"
+            . "ACESSAR MEU PORTAL &rarr;</a>"
+            . "<p style='font-size:.75rem;color:rgba(255,255,255,.3);margin:12px 0 0'>Clique para agendar sua data e acompanhar seu ensaio.</p>"
             . "</div>"
             . $portalSection
             . "<p style='color:rgba(255,255,255,.5);font-size:.85rem;line-height:1.8'>"
@@ -679,9 +714,57 @@ class PackageCheckout extends BaseController
         }
 
         return $this->response->setJSON([
-            'status'      => $order->status,
-            'agenda_link' => $order->agenda_link ?? null,
+            'status'           => $order->status,
+            'agenda_link'      => $order->agenda_link ?? null,
+            'auto_login_token' => ($order->status === 'approved' && !empty($order->auto_login_token))
+                                  ? $order->auto_login_token
+                                  : null,
         ]);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // GET /client/auto-login/{token}
+    // Valida token, loga o cliente e redireciona para o portal
+    // ─────────────────────────────────────────────────────────────────────────
+    public function autoLogin(string $token)
+    {
+        $orderModel = new OrderModel();
+        $order = $orderModel
+            ->where('auto_login_token', $token)
+            ->where('auto_login_expires >', date('Y-m-d H:i:s'))
+            ->first();
+
+        if (!$order) {
+            log_message('warning', "[AutoLogin] Token inválido ou expirado: {$token}");
+            return redirect()->to(site_url('login'))
+                ->with('error', 'Link expirado. Faça login com seu e-mail e senha temporária.');
+        }
+
+        // Invalida o token imediatamente (uso único)
+        $orderModel->update($order->id, [
+            'auto_login_token'   => null,
+            'auto_login_expires' => null,
+        ]);
+
+        // Loga o usuário
+        try {
+            $provider = auth()->getProvider();
+            $user     = $provider->findById($order->client_user_id);
+
+            if ($user) {
+                auth()->login($user, true); // remember = true para conveniência
+                log_message('info', "[AutoLogin] Login via token para user_id={$order->client_user_id}, order_id={$order->id}");
+            } else {
+                log_message('warning', "[AutoLogin] Usuário não encontrado para client_user_id={$order->client_user_id}");
+                return redirect()->to(site_url('login'))
+                    ->with('error', 'Conta não encontrada. Entre em contato com o estúdio.');
+            }
+        } catch (\Throwable $e) {
+            log_message('error', '[AutoLogin] Erro: ' . $e->getMessage());
+            return redirect()->to(site_url('login'));
+        }
+
+        return redirect()->to(site_url('client/meus-ensaios?bv=1'));
     }
 
     // ─────────────────────────────────────────────────────────────────────────

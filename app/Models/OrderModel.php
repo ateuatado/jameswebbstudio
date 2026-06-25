@@ -24,6 +24,16 @@ class OrderModel extends Model
         'status',
         'agenda_link',
         'mp_raw',
+        // Cupom e desconto
+        'coupon_id',
+        'discount_percent',
+        // Portal do cliente
+        'client_user_id',
+        'auto_login_token',
+        'auto_login_expires',
+        // Agendamento
+        'scheduled_at',
+        'agenda_booking_id',
         // Dados contratuais
         'cpf',
         'rg',
@@ -35,6 +45,7 @@ class OrderModel extends Model
         'image_usage_authorized',
         'accepted_terms_at',
     ];
+
 
     protected $validationRules = [
         'buyer_name'  => 'required',
