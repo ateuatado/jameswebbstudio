@@ -477,6 +477,52 @@
     .lightbox img { max-width: 90vw; max-height: 80vh; object-fit: contain; border-radius: 6px; }
     .lightbox-close { position: absolute; top: 1.5rem; right: 1.5rem; color: #aaa; font-size: 1.5rem; cursor: pointer; background: none; border: none; }
     .lightbox-close:hover { color: #C5A059; }
+    /* ── Acordeon de Serviços ── */
+    .svc-accordion {
+        border-top: 1px solid rgba(255,255,255,.06);
+    }
+    .svc-acc-toggle {
+        width: 100%; display: flex; align-items: center; justify-content: space-between;
+        padding: 13px 24px;
+        background: transparent; border: none; cursor: pointer;
+        font-family: 'Inter', sans-serif; font-size: .7rem;
+        letter-spacing: .12em; text-transform: uppercase;
+        color: #C5A059; transition: background .2s;
+    }
+    .svc-acc-toggle:hover { background: rgba(197,160,89,.05); }
+    .svc-acc-toggle span { display: flex; align-items: center; gap: 8px; }
+    .svc-chevron { transition: transform .3s; font-size: .7rem; }
+    .svc-chevron.open { transform: rotate(180deg); }
+    .svc-acc-body {
+        display: none;
+        padding: 4px 24px 20px;
+        animation: svcFadeIn .2s ease;
+    }
+    .svc-acc-body.open { display: block; }
+    @keyframes svcFadeIn { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
+    .svc-phase-group { margin-bottom: 14px; }
+    .svc-phase-group:last-child { margin-bottom: 0; }
+    .svc-phase-label {
+        font-family: 'Inter', sans-serif; font-size: .6rem;
+        letter-spacing: .18em; text-transform: uppercase;
+        color: rgba(197,160,89,.6); margin-bottom: 6px;
+        display: flex; align-items: center; gap: 6px;
+    }
+    .svc-list {
+        list-style: none; padding: 0; margin: 0;
+        display: flex; flex-wrap: wrap; gap: 6px;
+    }
+    .svc-list li {
+        font-family: 'Inter', sans-serif; font-size: .75rem;
+        color: rgba(255,255,255,.75);
+        background: rgba(255,255,255,.04);
+        border: 1px solid rgba(255,255,255,.08);
+        border-radius: 20px; padding: 4px 12px;
+        display: flex; align-items: center; gap: 6px;
+        transition: border-color .2s;
+    }
+    .svc-list li:hover { border-color: rgba(197,160,89,.3); }
+    .svc-list li .fa-check { color: #C5A059; font-size: .6rem; }
 </style>
 <?= $this->endSection() ?>
 
@@ -566,16 +612,45 @@
     <a href="<?= site_url('client/guia-pre-ensaio/' . $order->id) ?>" class="btn-ensaio" target="_blank" style="font-size:.72rem;"><i class="fas fa-file-alt"></i> Guia Pré-Ensaio</a>
     <a href="<?= site_url('client/contrato/' . $order->id) ?>" class="btn-ensaio" target="_blank" style="font-size:.72rem;"><i class="fas fa-file-contract"></i> Meu Contrato</a>
 </div>
-<?php if (isset($order->package) && !empty($order->package->services) && is_array($order->package->services)): ?>
-    <details class="package-services" style="margin-top:8px;color:rgba(255,255,255,.8);font-size:.8rem;">
-        <summary>Serviços do Pacote</summary>
-        <ul style="margin:4px 0 0 1.2rem;">
-            <?php foreach ($order->package->services as $svc): ?>
-                <li><?= esc($svc) ?></li>
-            <?php endforeach; ?>
-        </ul>
-    </details>
+<?php if (!empty($order->services_by_phase)): ?>
+<div class="svc-accordion" id="svc-acc-<?= $order->id ?>">
+    <button class="svc-acc-toggle" onclick="toggleServices(<?= $order->id ?>)" type="button">
+        <span><i class="fas fa-list-check"></i> O que est&aacute; incluso no pacote</span>
+        <i class="fas fa-chevron-down svc-chevron" id="svc-chev-<?= $order->id ?>"></i>
+    </button>
+    <div class="svc-acc-body" id="svc-body-<?= $order->id ?>">
+        <?php
+        $phaseLabels = [
+            'pre_ensaio'    => 'Pr&eacute;-Ensaio',
+            'durante'       => 'Durante o Ensaio',
+            'pos_producao'  => 'P&oacute;s-Produ&ccedil;&atilde;o',
+            'entregaveis'   => 'Entreg&aacute;veis',
+            'exclusividade' => 'Exclusividade &amp; B&ocirc;nus',
+        ];
+        $phaseIcons = [
+            'pre_ensaio'    => 'fa-star',
+            'durante'       => 'fa-camera',
+            'pos_producao'  => 'fa-magic',
+            'entregaveis'   => 'fa-box-open',
+            'exclusividade' => 'fa-gem',
+        ];
+        foreach ($order->services_by_phase as $phase => $svcs): ?>
+        <div class="svc-phase-group">
+            <div class="svc-phase-label">
+                <i class="fas <?= $phaseIcons[$phase] ?? 'fa-circle' ?>"></i>
+                <?= $phaseLabels[$phase] ?? esc($phase) ?>
+            </div>
+            <ul class="svc-list">
+                <?php foreach ($svcs as $svcName): ?>
+                <li><i class="fas fa-check"></i> <?= esc($svcName) ?></li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+        <?php endforeach; ?>
+    </div>
+</div>
 <?php endif; ?>
+
 
                 <!-- Precos -->
                 <div class="card-pricing">
@@ -1229,5 +1304,14 @@ document.getElementById('bkOverlay').addEventListener('click', function(e) {
     if (e.target === this) closeBookingModal();
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeBookingModal(); });
+
+// Acordeon de Serviços
+function toggleServices(orderId) {
+    const body  = document.getElementById('svc-body-' + orderId);
+    const chev  = document.getElementById('svc-chev-' + orderId);
+    const isOpen = body.classList.contains('open');
+    body.classList.toggle('open', !isOpen);
+    chev.classList.toggle('open', !isOpen);
+}
 </script>
 <?= $this->endSection() ?>
