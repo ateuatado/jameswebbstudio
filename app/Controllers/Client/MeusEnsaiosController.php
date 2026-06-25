@@ -15,23 +15,31 @@ class MeusEnsaiosController extends BaseController
      */
     public function index()
     {
-        // Guard de segurança: garante usuário autenticado (defesa em profundidade além do filtro de rota)
-        if (!auth()->loggedIn()) {
-            return redirect()->to(site_url('login'));
+        // ── Guarda de segurança: exige sessão válida ──────────────────────────
+        $user   = auth()->user();
+        $userId = auth()->id();
+
+        if (!$user || !$userId) {
+            return redirect()->to(site_url('login'))
+                             ->with('error', 'Você precisa estar logado para acessar esta página.');
         }
 
-        $user    = auth()->user();
-        $userId  = auth()->id();
-        $email   = $user->email;
-        $tab     = $this->request->getGet('tab') ?? 'ensaios';
+        $email = $user->email;
+
+        if (empty($email)) {
+            return redirect()->to(site_url('login'))
+                             ->with('error', 'Sessão inválida. Faça login novamente.');
+        }
+
+        $tab = $this->request->getGet('tab') ?? 'ensaios';
 
         // ── Compras / Agendamentos ──
-        // Filtra por client_user_id (pedidos vinculados a esta conta).
-        // Fallback: buyer_email para pedidos antigos que ainda não têm client_user_id.
+        // Filtra ESTRITAMENTE por client_user_id ou por buyer_email+sem user_id.
+        // NUNCA retorna dados se userId for nulo.
         $orderModel = new OrderModel();
         $orders = $orderModel
             ->groupStart()
-                ->where('client_user_id', $userId)
+                ->where('client_user_id', (int) $userId)
                 ->orGroupStart()
                     ->where('buyer_email', $email)
                     ->where('client_user_id IS NULL', null, false)
