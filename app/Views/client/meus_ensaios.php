@@ -551,13 +551,32 @@
             <div class="ensaio-card" style="--accent-color:<?= $accentColor ?>" id="order-card-<?= $order->id ?>">
 
                 <!-- Cabecalho -->
-                <div class="card-header">
-                    <div>
-                        <h4 class="card-title"><?= esc($packageName) ?></h4>
-                        <p class="card-meta">Comprado em <?= $datePurchase ?></p>
-                    </div>
-                    <span class="status-badge <?= esc($order->status) ?>"><?= $statusLabel ?></span>
-                </div>
+<div class="card-header">
+    <div>
+        <h4 class="card-title"><?= esc($packageName) ?></h4>
+        <p class="card-meta">Comprado em <?= $datePurchase ?></p>
+        <?php if (isset($order->package) && !empty($order->package->description)): ?>
+            <p class="card-description" style="font-size:.75rem;color:rgba(255,255,255,.6);margin-top:4px;"><?= esc($order->package->description) ?></p>
+        <?php endif; ?>
+    </div>
+    <span class="status-badge <?= esc($order->status) ?>"><?= $statusLabel ?></span>
+</div>
+<!-- Links to PDFs -->
+<div class="card-links" style="margin-top:8px;display:flex;gap:8px;">
+    <a href="<?= site_url('client/pre-ensaio-pdf/' . $order->id) ?>" class="btn-ensaio" target="_blank" style="font-size:.75rem;">📄 PDF Pré-Ensaio</a>
+    <a href="<?= site_url('client/guia-pre-ensaio/' . $order->id) ?>" class="btn-ensaio" target="_blank" style="font-size:.75rem;">📄 Guia Pré-Ensaio</a>
+    <a href="<?= site_url('client/contrato/' . $order->id) ?>" class="btn-ensaio" target="_blank" style="font-size:.75rem;">📄 Meu Contrato</a>
+</div>
+<?php if (isset($order->package) && !empty($order->package->services) && is_array($order->package->services)): ?>
+    <details class="package-services" style="margin-top:8px;color:rgba(255,255,255,.8);font-size:.8rem;">
+        <summary>Serviços do Pacote</summary>
+        <ul style="margin:4px 0 0 1.2rem;">
+            <?php foreach ($order->package->services as $svc): ?>
+                <li><?= esc($svc) ?></li>
+            <?php endforeach; ?>
+        </ul>
+    </details>
+<?php endif; ?>
 
                 <!-- Precos -->
                 <div class="card-pricing">
