@@ -536,15 +536,17 @@ function enforceImageUsageForFree(enforce) {
     if (!chk) return;
     if (enforce) {
         chk.checked  = true;
-        chk.disabled = true;
-        chk.style.accentColor = '#C5A059';
+        chk.style.pointerEvents = 'none';   // trava visual — disabled impede o envio no form
+        chk.style.cursor        = 'not-allowed';
+        chk.style.accentColor   = '#C5A059';
         if (notice)  notice.style.display  = 'block';
         if (wrapper) wrapper.style.border  = '1px solid rgba(197,160,89,.25)';
         if (wrapper) wrapper.style.padding = '10px 12px 6px';
         if (wrapper) wrapper.style.borderRadius = '3px';
     } else {
         chk.checked  = false;
-        chk.disabled = false;
+        chk.style.pointerEvents = '';
+        chk.style.cursor        = '';
         if (notice)  notice.style.display  = 'none';
         if (wrapper) wrapper.style.border  = 'none';
         if (wrapper) wrapper.style.padding = '0';
