@@ -60,6 +60,10 @@ Vagrantfile
 /writable/uploads/*
 !/writable/uploads/index.html
 
+# Imagens enviadas pelo painel admin (ficam só no servidor)
+/public/uploads/*
+!/public/uploads/index.html
+
 /writable/debugbar/*
 !/writable/debugbar/index.html
 
