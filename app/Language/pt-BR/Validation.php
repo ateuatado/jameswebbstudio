@@ -11,4 +11,5 @@ return [
     'max_length' => 'O campo {field} deve ter no máximo {param} caracteres.',
     'valid_email' => 'Informe um e-mail válido.',
     'matches'   => 'As senhas não coincidem.',
+    'regex_match' => 'O campo {field} possui caracteres inválidos ou espaços.',
 ];
