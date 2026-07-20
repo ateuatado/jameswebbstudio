@@ -341,7 +341,7 @@ class HeroController extends BaseController
             'text'        => ['content' => $p('content'), 'align' => $p('align') ?: 'left'],
             'image'       => ['image_path' => $p('image_path_existing'), 'caption' => $p('caption'), 'size' => $p('size') ?: 'contained'],
             'video_embed' => ['url' => $p('url'), 'title' => $p('title')],
-            'testimony'   => ['quote' => $p('quote'), 'author' => $p('author'), 'sport' => $p('sport'), 'image_path' => $p('image_path_existing')],
+            'testimony'   => ['quote' => $p('quote'), 'author' => $p('author'), 'sport' => $p('sport'), 'image_path' => $p('image_path_existing'), 'video_url' => $p('video_url')],
             'process'     => ['steps' => array_map(fn($n,$t,$d) => ['number'=>$n,'title'=>$t,'desc'=>$d],
                                 $this->request->getPost('step_number') ?? [],
                                 $this->request->getPost('step_title')  ?? [],

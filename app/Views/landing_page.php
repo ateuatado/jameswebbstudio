@@ -280,7 +280,21 @@
     <!-- ── TESTIMONY ── -->
     <section class="lp-testimony">
         <div class="lp-testimony-inner px-4">
-            <?php if (!empty($c['image_path'])): ?>
+            <?php if (!empty($c['video_url'])): ?>
+                <div class="lp-video-wrap mb-4" style="border-radius: 8px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid rgba(197,160,89,0.2);">
+                <?php
+                    $url = $c['video_url'];
+                    if (preg_match('/youtube\.com\/watch\?v=([\w-]+)/', $url, $m) || preg_match('/youtu\.be\/([\w-]+)/', $url, $m)) {
+                        $embedUrl = 'https://www.youtube.com/embed/' . $m[1] . '?rel=0';
+                    } elseif (preg_match('/vimeo\.com\/(\d+)/', $url, $m)) {
+                        $embedUrl = 'https://player.vimeo.com/video/' . $m[1];
+                    } else {
+                        $embedUrl = $url;
+                    }
+                ?>
+                    <iframe src="<?= esc($embedUrl) ?>" allowfullscreen loading="lazy" title="<?= esc($c['author'] ?? 'Depoimento') ?>"></iframe>
+                </div>
+            <?php elseif (!empty($c['image_path'])): ?>
                 <img src="<?= base_url($c['image_path']) ?>" class="lp-testimony-photo" alt="<?= esc($c['author'] ?? '') ?>">
             <?php endif; ?>
             <?php if (!empty($c['quote'])): ?>

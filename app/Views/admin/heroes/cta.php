@@ -236,6 +236,7 @@ function blockFields(type, c = {}) {
         ${ta('quote',  'Citação do atleta', c.quote, 3)}
         ${inp('author', 'Nome do atleta',  c.author)}
         ${inp('sport',  'Esporte / contexto', c.sport)}
+        ${inp('video_url', 'Vídeo (URL YouTube/Vimeo - Opcional)', c.video_url)}
         ${imgField(c.image_path)}`;
 
     if (type === 'process') {
