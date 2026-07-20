@@ -268,6 +268,7 @@ class HeroController extends BaseController
 
         // Upload de imagem se houver
         $content = $this->_handleBlockImageUpload($content);
+        $content = $this->_handleBlockVideoUpload($content);
 
         $blockModel = new \App\Models\CtaBlock();
         $maxOrder = $blockModel->where('cta_id', $cta['id'])->selectMax('display_order')->first();
@@ -286,6 +287,7 @@ class HeroController extends BaseController
         $existing = is_string($block['content']) ? json_decode($block['content'], true) ?? [] : [];
         $content  = $this->_extractBlockContent($block['type']);
         $content  = $this->_handleBlockImageUpload($content, $existing);
+        $content  = $this->_handleBlockVideoUpload($content, $existing);
 
         $blockModel->updateBlock((int)$blockId, $content);
         return redirect()->to(site_url('admin/heroes/' . $heroId . '/cta'))->with('message', 'Bloco atualizado.');
@@ -341,7 +343,7 @@ class HeroController extends BaseController
             'text'        => ['content' => $p('content'), 'align' => $p('align') ?: 'left'],
             'image'       => ['image_path' => $p('image_path_existing'), 'caption' => $p('caption'), 'size' => $p('size') ?: 'contained'],
             'video_embed' => ['url' => $p('url'), 'title' => $p('title')],
-            'testimony'   => ['quote' => $p('quote'), 'author' => $p('author'), 'sport' => $p('sport'), 'image_path' => $p('image_path_existing'), 'video_url' => $p('video_url')],
+            'testimony'   => ['quote' => $p('quote'), 'author' => $p('author'), 'sport' => $p('sport'), 'image_path' => $p('image_path_existing'), 'video_url' => $p('video_url'), 'video_path' => $p('video_path_existing')],
             'process'     => ['steps' => array_map(fn($n,$t,$d) => ['number'=>$n,'title'=>$t,'desc'=>$d],
                                 $this->request->getPost('step_number') ?? [],
                                 $this->request->getPost('step_title')  ?? [],
@@ -363,6 +365,25 @@ class HeroController extends BaseController
                 @unlink(FCPATH . $existing['image_path']);
             }
             $content['image_path'] = 'uploads/landing/' . $name;
+        }
+        return $content;
+    }
+
+    private function _handleBlockVideoUpload(array $content, array $existing = []): array
+    {
+        $file = $this->request->getFile('block_video');
+        if ($file && $file->isValid() && !$file->hasMoved()) {
+            $name = $file->getRandomName();
+            $path = FCPATH . 'uploads/landing/videos/';
+            if (!is_dir($path)) {
+                mkdir($path, 0777, true);
+            }
+            $file->move($path, $name);
+            // Remove video anterior se existir
+            if (!empty($existing['video_path']) && file_exists(FCPATH . $existing['video_path'])) {
+                @unlink(FCPATH . $existing['video_path']);
+            }
+            $content['video_path'] = 'uploads/landing/videos/' . $name;
         }
         return $content;
     }

@@ -237,6 +237,12 @@ function blockFields(type, c = {}) {
         ${inp('author', 'Nome do atleta',  c.author)}
         ${inp('sport',  'Esporte / contexto', c.sport)}
         ${inp('video_url', 'Vídeo (URL YouTube/Vimeo - Opcional)', c.video_url)}
+        <div class="mb-3">
+            <label class="form-label">Arquivo de Vídeo MP4 (Opcional, sobrescreve a URL acima)</label>
+            ${c.video_path ? '<div class="mb-2"><span class="badge bg-success">Vídeo MP4 salvo</span></div>' : ''}
+            <input type="hidden" name="video_path_existing" value="${esc(c.video_path)}">
+            <input type="file" class="form-control bg-black text-white border-secondary" name="block_video" accept="video/mp4">
+        </div>
         ${imgField(c.image_path)}`;
 
     if (type === 'process') {

@@ -280,7 +280,11 @@
     <!-- ── TESTIMONY ── -->
     <section class="lp-testimony">
         <div class="lp-testimony-inner px-4">
-            <?php if (!empty($c['video_url'])): ?>
+            <?php if (!empty($c['video_path'])): ?>
+                <div class="lp-video-wrap mb-4" style="border-radius: 8px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid rgba(197,160,89,0.2);">
+                    <video src="<?= base_url($c['video_path']) ?>" controls preload="metadata" style="width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0;"></video>
+                </div>
+            <?php elseif (!empty($c['video_url'])): ?>
                 <div class="lp-video-wrap mb-4" style="border-radius: 8px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid rgba(197,160,89,0.2);">
                 <?php
                     $url = $c['video_url'];
