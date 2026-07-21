@@ -267,8 +267,7 @@
                         $embedUrl = $url;
                     }
                 ?>
-                <iframe src="<?= esc($embedUrl) ?>" allowfullscreen loading="lazy"
-                        title="<?= esc($c['title'] ?? '') ?>"></iframe>
+                <iframe src="<?= esc($embedUrl) ?>" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" title="<?= esc($c['title'] ?? '') ?>"></iframe>
             </div>
             <?php if (!empty($c['title'])): ?>
                 <p class="lp-video-title"><?= esc($c['title']) ?></p>
@@ -297,7 +296,7 @@
                         $embedUrl = $url;
                     }
                 ?>
-                    <iframe src="<?= esc($embedUrl) ?>" allowfullscreen loading="lazy" title="<?= esc($c['author'] ?? 'Depoimento') ?>"></iframe>
+                    <iframe src="<?= esc($embedUrl) ?>" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" title="<?= esc($c['author'] ?? 'Depoimento') ?>"></iframe>
                 </div>
             <?php elseif (!empty($c['image_path'])): ?>
                 <img src="<?= base_url($c['image_path']) ?>" class="lp-testimony-photo" alt="<?= esc($c['author'] ?? '') ?>">
