@@ -492,7 +492,8 @@
                 <?php
                     $url = $c['url'];
                     if (preg_match('/youtube\.com\/watch\?v=([\w-]+)/', $url, $m) ||
-                        preg_match('/youtu\.be\/([\w-]+)/', $url, $m)) {
+                        preg_match('/youtu\.be\/([\w-]+)/', $url, $m) ||
+                        preg_match('/youtube\.com\/shorts\/([\w-]+)/', $url, $m)) {
                         $embedUrl = 'https://www.youtube.com/embed/' . $m[1] . '?rel=0';
                     } elseif (preg_match('/vimeo\.com\/(\d+)/', $url, $m)) {
                         $embedUrl = 'https://player.vimeo.com/video/' . $m[1];
@@ -522,7 +523,7 @@
                 <div class="lp-video-wrap mb-4" style="border-radius: 8px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid rgba(197,160,89,0.2); max-width: 600px; margin: 0 auto;">
                 <?php
                     $url = $c['video_url'];
-                    if (preg_match('/youtube\.com\/watch\?v=([\w-]+)/', $url, $m) || preg_match('/youtu\.be\/([\w-]+)/', $url, $m)) {
+                    if (preg_match('/youtube\.com\/watch\?v=([\w-]+)/', $url, $m) || preg_match('/youtu\.be\/([\w-]+)/', $url, $m) || preg_match('/youtube\.com\/shorts\/([\w-]+)/', $url, $m)) {
                         $embedUrl = 'https://www.youtube.com/embed/' . $m[1] . '?rel=0';
                     } elseif (preg_match('/vimeo\.com\/(\d+)/', $url, $m)) {
                         $embedUrl = 'https://player.vimeo.com/video/' . $m[1];
