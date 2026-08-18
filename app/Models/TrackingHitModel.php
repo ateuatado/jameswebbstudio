@@ -67,7 +67,7 @@ class TrackingHitModel extends Model
             ->where('created_at >=', $from)
             ->where('created_at <=', $to)
             ->where('city IS NOT NULL')
-            ->groupBy('city')
+            ->groupBy('city, country')
             ->orderBy('total', 'DESC')
             ->limit($limit)
             ->get()->getResultObject();
