@@ -106,6 +106,8 @@ $routes->group('admin', ['filter' => 'group:admin,superadmin'], static function 
     $routes->post('usuarios/(:num)/toggle-search',      'Admin\UserManagementController::toggleSearchPermission/$1');
     $routes->post('usuarios/(:num)/cadastrar-rosto',    'Admin\UserManagementController::registerFace/$1');
     $routes->post('usuarios/(:num)/update-profile',     'Admin\UserManagementController::updateProfile/$1');
+    $routes->post('usuarios/(:num)/promote',            'Admin\UserManagementController::promote/$1');
+    $routes->post('usuarios/(:num)/demote',             'Admin\UserManagementController::demote/$1');
 
     // Cupons de Desconto
     $routes->get( 'coupons',              'Admin\CouponController::index');

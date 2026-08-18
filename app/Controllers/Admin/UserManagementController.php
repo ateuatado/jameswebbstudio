@@ -121,4 +121,60 @@ class UserManagementController extends BaseController
 
         return redirect()->to('/admin/usuarios')->with('message', 'Perfil atualizado com sucesso!');
     }
+
+    /**
+     * Promove um usuário ao grupo 'admin'.
+     * POST /admin/usuarios/{userId}/promote
+     */
+    public function promote($userId)
+    {
+        $provider = auth()->getProvider();
+        $user     = $provider->findById($userId);
+
+        if (!$user) {
+            return redirect()->to('/admin/usuarios')->with('error', 'Usuário não encontrado.');
+        }
+
+        if ($user->inGroup('superadmin')) {
+            return redirect()->to('/admin/usuarios')->with('error', 'Superadmins não podem ser alterados aqui.');
+        }
+
+        if ($user->inGroup('admin')) {
+            return redirect()->to('/admin/usuarios')->with('error', 'Usuário já é administrador.');
+        }
+
+        $user->addGroup('admin');
+
+        return redirect()->to('/admin/usuarios')
+            ->with('message', '✅ ' . ($user->email) . ' agora é administrador.');
+    }
+
+    /**
+     * Remove um usuário do grupo 'admin'.
+     * POST /admin/usuarios/{userId}/demote
+     */
+    public function demote($userId)
+    {
+        $provider = auth()->getProvider();
+        $user     = $provider->findById($userId);
+
+        if (!$user) {
+            return redirect()->to('/admin/usuarios')->with('error', 'Usuário não encontrado.');
+        }
+
+        if ($user->inGroup('superadmin')) {
+            return redirect()->to('/admin/usuarios')->with('error', 'Superadmins não podem ser rebaixados aqui.');
+        }
+
+        // Impede auto-rebaixamento
+        if ($user->id === auth()->id()) {
+            return redirect()->to('/admin/usuarios')->with('error', 'Você não pode remover seus próprios privilégios de admin.');
+        }
+
+        $user->removeGroup('admin');
+
+        return redirect()->to('/admin/usuarios')
+            ->with('message', '⚠️ ' . ($user->email) . ' removido do grupo admin.');
+    }
 }
+

@@ -153,6 +153,29 @@
                     <button class="btn-edit-user" onclick="openEditModal(<?= $user->id ?>, '<?= esc(addslashes($displayName ?? '')) ?>', '<?= esc(addslashes($nicknames)) ?>')">
                         <i class="fas fa-pen me-1"></i>Nome & Apelidos
                     </button>
+
+                    <!-- Promover / Rebaixar Admin -->
+                    <?php if (!in_array('superadmin', $groups)): ?>
+                        <?php if (in_array('admin', $groups)): ?>
+                            <?php if ($user->id !== auth()->id()): ?>
+                            <form method="post" action="<?= site_url('admin/usuarios/' . $user->id . '/demote') ?>"
+                                  onsubmit="return confirm('Remover privilégios de admin de <?= esc(addslashes($user->email)) ?>?')">
+                                <?= csrf_field() ?>
+                                <button type="submit" class="btn-edit-user" style="color:#dc3545;border-color:rgba(220,53,69,0.3);">
+                                    <i class="fas fa-user-minus me-1"></i>Remover Admin
+                                </button>
+                            </form>
+                            <?php endif ?>
+                        <?php else: ?>
+                            <form method="post" action="<?= site_url('admin/usuarios/' . $user->id . '/promote') ?>"
+                                  onsubmit="return confirm('Promover <?= esc(addslashes($user->email)) ?> a administrador?')">
+                                <?= csrf_field() ?>
+                                <button type="submit" class="btn-edit-user" style="color:#c5a059;border-color:rgba(197,160,89,0.3);">
+                                    <i class="fas fa-user-shield me-1"></i>Tornar Admin
+                                </button>
+                            </form>
+                        <?php endif ?>
+                    <?php endif ?>
                 </div>
             </div>
         </div>
