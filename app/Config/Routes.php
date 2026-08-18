@@ -113,6 +113,16 @@ $routes->group('admin', ['filter' => 'group:admin,superadmin'], static function 
     $routes->post('coupons/store',        'Admin\CouponController::store');
     $routes->post('coupons/(:num)/delete','Admin\CouponController::delete/$1');
 
+    // ── Rastreamento de Visitas ────────────────────────────────────────────────
+    $routes->get( 'tracking',                   'Admin\TrackingLinkController::index');
+    $routes->get( 'tracking/dashboard',         'Admin\TrackingLinkController::dashboard');
+    $routes->get( 'tracking/create',            'Admin\TrackingLinkController::create');
+    $routes->post('tracking/store',             'Admin\TrackingLinkController::store');
+    $routes->get( 'tracking/(:num)/edit',       'Admin\TrackingLinkController::edit/$1');
+    $routes->post('tracking/(:num)/update',     'Admin\TrackingLinkController::update/$1');
+    $routes->post('tracking/(:num)/delete',     'Admin\TrackingLinkController::destroy/$1');
+    $routes->post('tracking/(:num)/toggle',     'Admin\TrackingLinkController::toggleActive/$1');
+
 });
 
 // ─── Agenda Proxy (resolve CORS/SSL server-side) ──────────────────────────────
@@ -170,6 +180,9 @@ $routes->group('client', ['filter' => 'group:user'], static function ($routes) {
 // ─── Landing page de copy — /{slug}/agendar ───────────────────────────────────
 // Deve vir ANTES do catch-all de slug
 $routes->get('(:segment)/agendar', 'LandingPage::view/$1');
+
+// ─── Links Rastreados (redireciona e registra visita) ─────────────────────────
+$routes->get('r/(:segment)', 'TrackingController::redirect/$1');
 
 // ─── Página pública do herói por slug (catch-all — deve ser a última) ─────────
 $routes->get('(:segment)', 'HeroPage::view/$1', ['priority' => 99]);
