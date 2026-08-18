@@ -38,7 +38,14 @@ Este documento descreve a arquitetura, regras de negócios e funcionalidades da 
 - **Status Atual:** Módulo básico que capta e permite a visualização de leads (intenções de compra ou carrinhos abandonados).
 - **Integrações Futuras:** Necessita de uma estruturação melhor (ex: réguas de relacionamento, disparo de e-mails via AWS SES, funil de vendas).
 
-### 7. Painel Administrativo (`Admin/*`)
+### 7. Rastreamento de Visitas (`TrackingController` / `Admin\TrackingLinkController`)
+- **Objetivo:** Rastrear a origem dos visitantes provenientes de redes sociais e campanhas de marketing, combinando URLs curtas legíveis com parâmetros UTM internos.
+- **Links Rastreados:** O Admin cria links com slug personalizado (ex: `ig-bio`), definindo source, medium e campanha. O sistema gera a URL curta `jameswebbstudio.com.br/r/{slug}`.
+- **Captura de Dados:** A cada visita, o sistema registra: data/hora, IP anonimizado, geolocalização (país, região, cidade via `ip-api.com`), tipo de dispositivo (mobile/desktop/tablet), OS e browser.
+- **Dashboard Admin:** Painel com filtros por período e source, exibindo: total de visitas, gráfico de visitas por dia, ranking por utm_source, ranking por campanha, top 10 cidades e divisão por dispositivo.
+- **Segurança/LGPD:** IPs são anonimizados (último octeto removido) antes de persistir.
+
+### 8. Painel Administrativo (`Admin/*`)
 Um painel completo gerenciando:
 - **Catálogo:** Categorias, Serviços e Pacotes.
 - **CRM / Vendas:** Projetos dos Clientes, Pedidos (Orders), Leads (Intention) e Reservas (Bookings).
@@ -64,5 +71,6 @@ Um painel completo gerenciando:
 **Then** ele consegue visualizar, curtir e selecionar as imagens desejadas para compor seu produto final.
 
 ## Sucesso e Requisitos
-- **Tecnologias:** PHP 8.2 (CodeIgniter 4), AWS SDK, Mercado Pago DX-PHP.
+- **Tecnologias:** PHP 8.2 (CodeIgniter 4), AWS SDK, Mercado Pago DX-PHP, DomPDF, ip-api.com (geolocalização), Chart.js (dashboards).
+
 - **Metas de Sistema:** Tolerância alta a upload massivo de imagens, processamento de filas (Rekognition) sem travar a interface do cliente, e transações de pagamento confiáveis.
