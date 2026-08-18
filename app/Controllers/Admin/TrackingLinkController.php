@@ -92,15 +92,16 @@ class TrackingLinkController extends BaseController
         return redirect()->to(site_url('admin/tracking'))->with('message', 'Status alterado.');
     }
 
-    // ── Dashboard ──────────────────────────────────────────────────────────────
+    // ── Dashboard ──────────────────────────────────────────────────────
     public function dashboard(): string
     {
         $hitModel  = new TrackingHitModel();
         $linkModel = new TrackingLinkModel();
 
-        $from   = $this->request->getGet('date_from') ?? date('Y-m-01');
-        $to     = $this->request->getGet('date_to')   ?? date('Y-m-d');
-        $linkId = (int) ($this->request->getGet('link_id') ?? 0) ?: null;
+        $from        = $this->request->getGet('date_from') ?? date('Y-m-01');
+        $to          = $this->request->getGet('date_to')   ?? date('Y-m-d');
+        $linkId      = (int) ($this->request->getGet('link_id') ?? 0) ?: null;
+        $excludeBots = (bool) ($this->request->getGet('exclude_bots') ?? 1);
 
         // Ensure $to includes the full day
         $toFull = $to . ' 23:59:59';
@@ -109,13 +110,18 @@ class TrackingLinkController extends BaseController
             'from'         => $from,
             'to'           => $to,
             'selectedLink' => $linkId,
+            'excludeBots'  => $excludeBots,
             'links'        => $linkModel->findAll(),
             'total'        => $hitModel->totalHits($from, $toFull, $linkId),
-            'bySource'     => $hitModel->hitsBySource($from, $toFull),
-            'byCampaign'   => $hitModel->hitsByCampaign($from, $toFull),
-            'byDay'        => $hitModel->hitsByDay($from, $toFull, $linkId),
-            'byCity'       => $hitModel->hitsByCity($from, $toFull),
-            'byDevice'     => $hitModel->hitsByDevice($from, $toFull),
+            'unique'       => $hitModel->uniqueVisitors($from, $toFull, $linkId, $excludeBots),
+            'botCount'     => $hitModel->botHits($from, $toFull, $linkId),
+            'bySource'     => $hitModel->hitsBySource($from, $toFull, $excludeBots),
+            'byCampaign'   => $hitModel->hitsByCampaign($from, $toFull, $excludeBots),
+            'byDay'        => $hitModel->hitsByDay($from, $toFull, $linkId, $excludeBots),
+            'byCity'       => $hitModel->hitsByCity($from, $toFull, 10, $excludeBots),
+            'byDevice'     => $hitModel->hitsByDevice($from, $toFull, $excludeBots),
+            'byBrowser'    => $hitModel->hitsByBrowser($from, $toFull, $linkId),
+            'recentHits'   => $hitModel->recentHits(15, $linkId),
         ]);
     }
 
