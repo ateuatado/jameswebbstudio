@@ -58,6 +58,18 @@ $routes->group('admin', ['filter' => 'group:admin,superadmin'], static function 
     $routes->resource('categories', ['controller' => 'Admin\CategoryController', 'websafe' => 1]);
     $routes->resource('services', ['controller' => 'Admin\ServiceController', 'websafe' => 1]);
 
+    // Acervo público e edições de fotografias
+    $routes->get('fotos/(:num)/imagens', 'Admin\PhotoWorkController::images/$1');
+    $routes->post('fotos/(:num)/imagens', 'Admin\PhotoWorkController::uploadImage/$1');
+    $routes->post('fotos/(:num)/imagens/(:num)/capa', 'Admin\PhotoWorkController::setCover/$1/$2');
+    $routes->post('fotos/(:num)/imagens/(:num)/excluir', 'Admin\PhotoWorkController::deleteImage/$1/$2');
+    $routes->get('fotos/(:num)/imagens/(:num)/edicoes', 'Admin\PhotoWorkController::printOptions/$1/$2');
+    $routes->post('fotos/(:num)/imagens/(:num)/edicoes', 'Admin\PhotoWorkController::savePrintOptions/$1/$2');
+    $routes->get('fotos/(:num)/imagens/(:num)/edicoes/(:num)/edit', 'Admin\PhotoWorkController::editPrintOption/$1/$2/$3');
+    $routes->put('fotos/(:num)/imagens/(:num)/edicoes/(:num)', 'Admin\PhotoWorkController::updatePrintOption/$1/$2/$3');
+    $routes->post('fotos/(:num)/imagens/(:num)/edicoes/(:num)/excluir', 'Admin\PhotoWorkController::deletePrintOption/$1/$2/$3');
+    $routes->resource('fotos', ['controller' => 'Admin\PhotoWorkController', 'websafe' => 1]);
+
     // Pedidos (orders)
     $routes->get('orders',               'Admin\OrderController::index');
     $routes->get('orders/testar-email',  'Admin\OrderController::testEmail');
@@ -143,6 +155,10 @@ $routes->post('api/photo/metadata', 'Api\ApiController::saveMetadata');
 
 // ─── Página de Investimento (pública) ────────────────────────────────────────
 $routes->get('investimento', 'Pricing::index');
+
+// ─── Acervo público de fotografias ───────────────────────────────────────────
+$routes->get('fotos', 'PhotoGalleryController::index');
+$routes->get('fotos/(:segment)', 'PhotoGalleryController::show/$1');
 
 // ─── Checkout de Pacotes (público) ───────────────────────────────────────────
 $routes->post('comprar-ensaio',        'PackageCheckout::buy');

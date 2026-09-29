@@ -22,3 +22,16 @@ Este documento lista as tarefas pendentes de acordo com a regra de negócio esta
 - `[ ]` **Consultas N+1 no Admin:** Refatorar `ClientProjectController` para usar `JOINs` no banco de dados ao invés de buscar os nomes de usuários e pacotes dentro de laços de repetição `foreach`.
 - `[ ]` **Polling da AWS S3:** Modificar a rota `pollInteractions` para não fazer chamadas síncronas para a AWS S3 (risco de custos altos e gargalo). Implementar leitura apenas do banco local e sincronizar via AWS EventBridge/Webhooks.
 - `[ ]` **Refatoração do Checkout:** Mover a regra de negócios pesada do `PackageCheckout::buy()` (quase 200 linhas) para um ou mais Serviços (`PaymentService`, `OrderService`), diminuindo o acoplamento com o SDK do Mercado Pago.
+
+## 7. Acervo Público e Edições Fotográficas
+- `[x]` **Modalidades de entrega:** Oferecer retirada no estúdio e entrega por frete; pedidos devem registrar a modalidade escolhida e endereço apenas quando aplicável.
+- `[x]` **Integração de frete:** Usar a API Frenet, inicialmente com serviços dos Correios; encapsular o provedor em um serviço de frete e manter a chave somente no servidor.
+- `[x]` **Serviços dos Correios:** Oferecer PAC e SEDEX quando disponíveis para o CEP de destino.
+- `[x]` **Revalidação de frete:** Manter a cotação exibida sem vencimento, mas recalcular obrigatoriamente antes de gerar o pagamento e pedir nova aceitação se houver alteração.
+- `[ ]` **Decisões comerciais restantes:** Definir prazo de produção, política de reserva para Pix, obras únicas versus edições/reproduções e política de devolução.
+- `[ ]` **Schema do Acervo de Fotos:** Criar migrações e modelos para `photo_works` e `photo_work_images`, sem modificar `heroes` ou `photos` existentes.
+- `[ ]` **Admin de Fotos:** Criar CRUD em `/admin/fotos` com rascunho/publicação, título, narrativa/histórico, técnica, data/ano, local, coleção, créditos, texto alternativo, capa e ordenação.
+- `[x]` **Galeria pública de Fotos:** Criar `/fotos` e `/fotos/{slug}` com uma capa por galeria, filtros, navegação anterior/próxima, moldura selecionável, metadados SEO e inclusão seletiva no sitemap.
+- `[x]` **Edições à venda:** Associar tamanhos, preço, disponibilidade e pedido de tamanho personalizado diretamente a cada fotografia, com CRUD completo das edições e sem catálogo comercial independente.
+- `[ ]` **Checkout de edições:** Implementar fluxo de pedido/snapshot da fotografia e do tamanho selecionado, reserva transacional quando aplicável, Mercado Pago, webhook idempotente, expiração/cancelamento e recuperação de estoque.
+- `[ ]` **Mídia, segurança e qualidade:** Validar MIME/dimensões, gerar derivados otimizados, restringir acesso aos originais de impressão, testar estoque concorrente, autorização admin, acessibilidade, SEO e fluxos de pagamento.

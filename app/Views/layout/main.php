@@ -208,6 +208,9 @@
             <div class="collapse navbar-collapse" id="navPublic">
                 <ul class="navbar-nav ms-auto align-items-center gap-2">
                     <li class="nav-item">
+                        <a class="nav-link" href="<?= site_url('fotos') ?>">Fotos</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="<?= site_url('investimento') ?>" style="color:rgba(197,160,89,.7);">Investimento</a>
                     </li>
                     <?php if (auth()->loggedIn()): ?>

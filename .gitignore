@@ -257,5 +257,6 @@ _modules/*
 
 credenciais/
 .env_production
+sqls/
 *.csv
 adm/email/

@@ -41,6 +41,9 @@
                         <a class="nav-link text-info" href="<?= site_url('admin/services') ?>">Serviços</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link text-info" href="<?= site_url('admin/fotos') ?>">Acervo de Fotos</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link text-info" href="<?= site_url('admin/guide-sections') ?>">Guia Pré-Ensaio</a>
                     </li>
                     <li class="nav-item">

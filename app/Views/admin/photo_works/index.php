@@ -1,0 +1,10 @@
+<?= $this->extend('admin/layout') ?>
+<?= $this->section('styles') ?>
+<link rel="stylesheet" href="<?= base_url('assets/css/admin-photo-gallery.css') ?>">
+<?= $this->endSection() ?>
+<?= $this->section('content') ?>
+<div class="d-flex justify-content-between align-items-center mb-4"><div><h2 class="mb-1"><?= esc($title) ?></h2><p class="text-muted mb-0">Galerias de fotografias autorais, separadas dos ensaios.</p></div><a class="btn btn-primary" href="<?= site_url('admin/fotos/new') ?>">Nova galeria</a></div>
+<div class="card bg-dark border-secondary"><div class="table-responsive"><table class="table table-dark table-hover align-middle mb-0"><thead><tr><th>Galeria</th><th>Coleção</th><th>Status</th><th>Ordem</th><th class="text-end">Ações</th></tr></thead><tbody>
+<?php foreach ($works as $work): ?><tr><td class="d-flex align-items-center gap-3"><?php if ($work['cover_image']): ?><img src="<?= base_url($work['cover_image']) ?>" alt="" class="admin-photo-cover-thumbnail"><?php endif ?><div><strong><?= esc($work['title']) ?></strong><br><small class="text-muted">/fotos/<?= esc($work['slug']) ?></small></div></td><td><?= esc($work['collection_name'] ?? '—') ?></td><td><span class="badge bg-<?= $work['is_published'] ? 'success' : 'secondary' ?>"><?= $work['is_published'] ? 'Publicado' : 'Rascunho' ?></span></td><td><?= esc($work['display_order']) ?></td><td class="text-end"><a class="btn btn-sm btn-outline-info" href="<?= site_url('admin/fotos/' . $work['id'] . '/imagens') ?>">Fotografias</a> <a class="btn btn-sm btn-outline-light" href="<?= site_url('admin/fotos/' . $work['id'] . '/edit') ?>">Editar</a><form method="post" action="<?= site_url('admin/fotos/' . $work['id']) ?>" class="d-inline" onsubmit="return confirm('Excluir esta galeria e todas as fotografias?')"><input type="hidden" name="_method" value="DELETE"><button class="btn btn-sm btn-outline-danger">Excluir</button></form></td></tr><?php endforeach ?>
+<?php if (!$works): ?><tr><td colspan="5" class="text-center text-muted py-5">Nenhuma galeria cadastrada.</td></tr><?php endif ?></tbody></table></div></div>
+<?= $this->endSection() ?>

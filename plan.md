@@ -46,3 +46,10 @@ As funcionalidades abaixo ainda precisam ser desenvolvidas ou aprimoradas em fut
 - **Consultas N+1 (Admin):** O `ClientProjectController` atualmente varre o banco de forma ineficiente, podendo causar lentidão. Precisa ser refatorado para usar relacionamentos (`JOIN`).
 - **Custo e Gargalo da AWS:** O sistema de Polling em tempo real faz requisições pesadas diretamente na S3. Deve ser migrado para leitura local com sincronização via AWS Webhooks/EventBridge.
 - **Fat Controller de Checkout:** A classe `PackageCheckout` acumula muita lógica de negócios e contato direto com SDK. Deve ser isolada em "Services" para facilitar manutenções futuras.
+
+### 2.3 Acervo Público e Edições Fotográficas
+- **Propósito único:** o acervo de `heroes` permanece como portfólio de ensaios e páginas de copy. `Fotos` é o acervo artístico; toda oferta comercial nasce da fotografia e não de um catálogo independente.
+- **Fotos:** `/fotos` exibe uma capa por galeria. Cada galeria abre uma sequência navegável de fotografias, com narrativa/histórico, contexto técnico, retorno ao acervo, moldura selecionável e bloco “Do pixel ao papel” quando a fotografia tiver edições à venda.
+- **Administração:** `/admin/fotos` concentra publicação, upload seguro, ordenação, prévia e as opções comerciais de cada fotografia: tamanhos, preço, disponibilidade e tamanho personalizado.
+- **Dados e integridade:** `photo_works`, `photo_work_images` e `photo_print_options`. Valores monetários serão armazenados em centavos; estoque e confirmação de pagamento serão transacionais quando o checkout for incluído.
+- **Entrega definida:** o checkout oferecerá retirada no estúdio ou entrega por frete. Retirada dispensa cobrança de frete; entrega requer CEP/endereço e cotação antes do pagamento. A integração inicial será Frenet para **PAC e SEDEX** dos Correios, isolada em um serviço de frete para que possa migrar para contrato direto no futuro. A cotação será sempre revalidada antes do pagamento, sem vencimento exibido ao cliente. Ainda é necessário definir política de reserva do Pix, prazo de produção e se haverá edição limitada ou reprodução sob encomenda.
