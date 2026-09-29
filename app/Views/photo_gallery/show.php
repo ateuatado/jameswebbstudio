@@ -1,6 +1,6 @@
 <?= $this->extend('layout/main') ?>
 <?= $this->section('styles') ?>
-<link rel="stylesheet" href="<?= base_url('assets/css/photo-gallery.css') ?>">
+<link rel="stylesheet" href="<?= base_url('assets/css/photo-gallery.css') ?>?v=<?= filemtime(FCPATH . 'assets/css/photo-gallery.css') ?>">
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
@@ -77,6 +77,7 @@
                     <p id="photo-sale-label">Do pixel ao papel</p>
                     <h2>Leve esta fotografia para a sua parede</h2>
                     <?php if ($printOptions): ?>
+                        <?php $selectedOption = $printOptions[0]; ?>
                         <label for="print-option">Escolha o tamanho</label>
                         <select id="print-option" data-print-option>
                             <?php foreach ($printOptions as $option): ?>
@@ -85,12 +86,12 @@
                         </select>
                         <p class="photo-sale-price">A partir de <strong data-print-price>R$ <?= number_format($printOptions[0]['price_cents'] / 100, 2, ',', '.') ?></strong></p>
                         <dl class="photo-print-specifications" data-print-specifications>
-                            <div data-spec-row="print-material"><dt>Impressão</dt><dd data-spec="print-material"></dd></div>
-                            <div data-spec-row="frame-material"><dt>Moldura</dt><dd data-spec="frame-material"></dd></div>
-                            <div data-spec-row="backing-material"><dt>Fundo</dt><dd data-spec="backing-material"></dd></div>
-                            <div data-spec-row="glazing"><dt>Proteção</dt><dd data-spec="glazing"></dd></div>
-                            <div data-spec-row="weight"><dt>Peso</dt><dd data-spec="weight"></dd></div>
-                            <div data-spec-row="lead-time"><dt>Produção</dt><dd data-spec="lead-time"></dd></div>
+                            <div data-spec-row="print-material" <?= empty($selectedOption['print_material']) ? 'hidden' : '' ?>><dt>Impressão</dt><dd data-spec="print-material"><?= esc($selectedOption['print_material'] ?? '') ?></dd></div>
+                            <div data-spec-row="frame-material" <?= empty($selectedOption['frame_material']) ? 'hidden' : '' ?>><dt>Moldura</dt><dd data-spec="frame-material"><?= esc($selectedOption['frame_material'] ?? '') ?></dd></div>
+                            <div data-spec-row="backing-material" <?= empty($selectedOption['backing_material']) ? 'hidden' : '' ?>><dt>Fundo</dt><dd data-spec="backing-material"><?= esc($selectedOption['backing_material'] ?? '') ?></dd></div>
+                            <div data-spec-row="glazing" <?= empty($selectedOption['glazing']) ? 'hidden' : '' ?>><dt>Proteção</dt><dd data-spec="glazing"><?= esc($selectedOption['glazing'] ?? '') ?></dd></div>
+                            <div data-spec-row="weight" <?= empty($selectedOption['weight_grams']) ? 'hidden' : '' ?>><dt>Peso</dt><dd data-spec="weight"><?= !empty($selectedOption['weight_grams']) ? esc($selectedOption['weight_grams'] . ' g') : '' ?></dd></div>
+                            <div data-spec-row="lead-time" <?= empty($selectedOption['production_lead_time']) ? 'hidden' : '' ?>><dt>Produção</dt><dd data-spec="lead-time"><?= esc($selectedOption['production_lead_time'] ?? '') ?></dd></div>
                         </dl>
                     <?php endif ?>
                     <a class="photo-sale-button" data-print-interest href="mailto:contato@jameswebbstudio.com.br">Quero esta edição</a>
@@ -105,5 +106,5 @@
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
-<script src="<?= base_url('assets/js/photo-gallery.js') ?>" defer></script>
+<script src="<?= base_url('assets/js/photo-gallery.js') ?>?v=<?= filemtime(FCPATH . 'assets/js/photo-gallery.js') ?>" defer></script>
 <?= $this->endSection() ?>

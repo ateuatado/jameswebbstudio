@@ -1,6 +1,6 @@
 <?= $this->extend('layout/main') ?>
 <?= $this->section('styles') ?>
-<link rel="stylesheet" href="<?= base_url('assets/css/photo-gallery.css') ?>">
+<link rel="stylesheet" href="<?= base_url('assets/css/photo-gallery.css') ?>?v=<?= filemtime(FCPATH . 'assets/css/photo-gallery.css') ?>">
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
