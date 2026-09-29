@@ -71,7 +71,7 @@
     const shareOptions = document.querySelector('[data-share-options]');
     const shareFeedback = document.querySelector('[data-share-feedback]');
     if (shareTrigger && shareOptions) {
-        const url = window.location.href;
+        const url = document.querySelector('[data-share-url]')?.dataset.shareUrl || window.location.href;
         const title = document.title;
         const text = 'Conheça esta fotografia autoral do James Webb Studio.';
         const setShareLink = (selector, value) => {

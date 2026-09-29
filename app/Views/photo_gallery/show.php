@@ -32,11 +32,11 @@
         <?php endif ?>
         <?php if (!empty($currentImage['is_for_sale'])): ?>
             <div class="photo-commerce-actions" aria-label="Ações de compra">
-                <?php if ($printOptions): ?><a class="photo-buy-button" data-photo-buy target="_blank" rel="noopener">Comprar esta edição</a><?php endif ?>
+                <?php if ($printOptions): ?><a class="photo-buy-button" data-photo-buy target="_blank" rel="noopener">Comprar pelo WhatsApp</a><?php endif ?>
                 <a class="photo-quote-button" data-photo-quote target="_blank" rel="noopener">Pedir orçamento</a>
             </div>
         <?php endif ?>
-        <section class="photo-share-control" aria-label="Compartilhar fotografia">
+        <section class="photo-share-control" aria-label="Compartilhar fotografia" data-share-url="<?= esc($shareUrl ?? '', 'attr') ?>">
             <button class="photo-share-trigger" type="button" data-share-trigger aria-expanded="false" aria-controls="photo-share-options">Compartilhar fotografia</button>
             <div class="photo-share-options" id="photo-share-options" data-share-options hidden>
                 <a data-share-whatsapp target="_blank" rel="noopener">WhatsApp</a>

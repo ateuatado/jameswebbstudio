@@ -159,6 +159,7 @@ $routes->get('investimento', 'Pricing::index');
 
 // ─── Acervo público de fotografias ───────────────────────────────────────────
 $routes->get('fotos', 'PhotoGalleryController::index');
+$routes->get('fotos/preview/(:num)', 'PhotoGalleryController::socialPreview/$1');
 $routes->get('fotos/(:segment)', 'PhotoGalleryController::show/$1');
 
 // ─── Checkout de Pacotes (público) ───────────────────────────────────────────
