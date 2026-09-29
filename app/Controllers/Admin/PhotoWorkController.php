@@ -37,6 +37,12 @@ class PhotoWorkController extends BaseController
         return view('admin/photo_works/form', ['title' => 'Nova Galeria de Fotos']);
     }
 
+    public function show($id = null)
+    {
+        if (!$this->works->find($id)) throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        return redirect()->to(site_url('admin/fotos/' . $id . '/edit'));
+    }
+
     public function create()
     {
         $data = $this->workData();
