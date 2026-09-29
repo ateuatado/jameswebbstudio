@@ -24,6 +24,13 @@
         <div class="col-md-2"><label class="form-label">Preço (R$)</label><input type="number" step="0.01" min="0" name="price" class="form-control bg-black text-white border-secondary"></div>
         <div class="col-md-1"><label class="form-label">Ordem</label><input type="number" name="display_order" value="0" class="form-control bg-black text-white border-secondary"></div>
         <div class="col-md-2 form-check align-self-end ms-2"><input class="form-check-input" type="checkbox" name="is_available" value="1" id="available" checked><label class="form-check-label" for="available">Disponível</label></div>
+        <div class="col-12"><h6 class="mt-2">Materiais e produção desta edição</h6></div>
+        <div class="col-md-4"><label class="form-label">Papel / impressão</label><input name="print_material" class="form-control bg-black text-white border-secondary" placeholder="Ex.: Fine art em algodão"></div>
+        <div class="col-md-4"><label class="form-label">Moldura</label><input name="frame_material" class="form-control bg-black text-white border-secondary" placeholder="Ex.: Madeira natural"></div>
+        <div class="col-md-4"><label class="form-label">Fundo</label><input name="backing_material" class="form-control bg-black text-white border-secondary" placeholder="Ex.: Eucatex"></div>
+        <div class="col-md-4"><label class="form-label">Proteção frontal</label><input name="glazing" class="form-control bg-black text-white border-secondary" placeholder="Ex.: Vidro UV"></div>
+        <div class="col-md-2"><label class="form-label">Peso (g)</label><input type="number" min="0" name="weight_grams" class="form-control bg-black text-white border-secondary"></div>
+        <div class="col-md-6"><label class="form-label">Prazo de produção</label><input name="production_lead_time" class="form-control bg-black text-white border-secondary" placeholder="Ex.: 10 dias úteis"></div>
         <div class="col-12"><button class="btn btn-success">Salvar configurações</button></div>
     </div>
 </form>

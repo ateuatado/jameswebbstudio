@@ -64,6 +64,12 @@
 .photo-share-options { display: flex; justify-content: center; flex-wrap: wrap; gap: 7px; margin-top: 9px; }
 .photo-share-options[hidden] { display: none; }
 .photo-share-feedback { min-height: 1em; margin: 7px 0 0; color: rgba(255,255,255,.48); font-size: .68rem; }
+.photo-commerce-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 14px auto 0; }
+.photo-buy-button, .photo-quote-button { min-width: 180px; padding: 12px 16px; font-size: .68rem; font-weight: 600; letter-spacing: .1em; text-align: center; text-decoration: none; text-transform: uppercase; }
+.photo-buy-button { border: 1px solid #c5a059; color: #17130e; background: #c5a059; }
+.photo-buy-button:hover { color: #fff; background: transparent; }
+.photo-quote-button { border: 1px solid rgba(197,160,89,.6); color: #c5a059; background: #090909; }
+.photo-quote-button:hover { color: #000; background: #c5a059; }
 .work-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 54px; margin-top: 36px; }
 .work-layout h1 { font-size: clamp(2.5rem,5vw,4.2rem); color: #c5a059; }
 .work-meta { border-top: 1px solid rgba(197,160,89,.25); padding-top: 20px; color: rgba(255,255,255,.7); }
@@ -85,6 +91,11 @@
 .photo-sale-button { display: block; padding: 11px; border: 1px solid #c5a059; color: #17130e; background: #c5a059; font-size: .68rem; font-weight: 600; letter-spacing: .1em; text-align: center; text-decoration: none; text-transform: uppercase; }
 .photo-sale-button:hover { color: #fff; background: transparent; }
 .photo-sale-custom { margin: 12px 0 0; color: rgba(255,255,255,.48); font-size: .78rem; line-height: 1.45; }
+.photo-print-specifications { margin: 18px 0 0; padding-top: 13px; border-top: 1px solid rgba(197,160,89,.2); }
+.photo-print-specifications div { display: grid; grid-template-columns: 92px 1fr; gap: 10px; padding: 5px 0; }
+.photo-print-specifications dt { color: #c5a059; font-family: 'Inter', sans-serif; font-size: .61rem; letter-spacing: .1em; text-transform: uppercase; }
+.photo-print-specifications dd { margin: 0; color: rgba(255,255,255,.72); font-size: .8rem; }
+.photo-print-specifications [hidden] { display: none; }
 
 @media (max-width: 768px) {
     .work-page { padding: 110px 18px 60px; }

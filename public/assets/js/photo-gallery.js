@@ -17,6 +17,38 @@
     const printOption = document.querySelector('[data-print-option]');
     const price = document.querySelector('[data-print-price]');
     const interest = document.querySelector('[data-print-interest]');
+    const buy = document.querySelector('[data-photo-buy]');
+    const quote = document.querySelector('[data-photo-quote]');
+    const whatsappNumber = '5511964322103';
+    const whatsappUrl = (message) => `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+    const photoName = document.title.replace(/\s*\|\s*Fotos\s*\|.*$/, '');
+    const updatePurchaseLinks = (selected = null) => {
+        const size = selected?.dataset.label || 'tamanho personalizado';
+        const cents = Number(selected?.value || 0);
+        const formattedPrice = cents ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cents / 100) : '';
+        if (buy) buy.href = whatsappUrl(`Olá! Quero comprar a edição "${photoName}" no tamanho ${size}${formattedPrice ? `, por ${formattedPrice}` : ''}. Link: ${window.location.href}`);
+        if (quote) quote.href = whatsappUrl(`Olá! Gostaria de pedir um orçamento para a fotografia "${photoName}". Link: ${window.location.href}`);
+    };
+    const updateSpecifications = (selected) => {
+        const values = {
+            'print-material': selected.dataset.printMaterial,
+            'frame-material': selected.dataset.frameMaterial,
+            'backing-material': selected.dataset.backingMaterial,
+            glazing: selected.dataset.glazing,
+            weight: selected.dataset.weight ? `${selected.dataset.weight} g` : '',
+            'lead-time': selected.dataset.leadTime,
+        };
+        Object.entries(values).forEach(([key, value]) => {
+            const row = document.querySelector(`[data-spec-row="${key}"]`);
+            const output = document.querySelector(`[data-spec="${key}"]`);
+            if (row && output) {
+                output.textContent = value || '';
+                row.hidden = !value;
+            }
+        });
+        const container = document.querySelector('[data-print-specifications]');
+        if (container) container.hidden = !Object.values(values).some(Boolean);
+    };
     if (interest) {
         interest.href = `mailto:contato@jameswebbstudio.com.br?subject=${encodeURIComponent(`Interesse em uma edição — ${document.title}`)}`;
     }
@@ -27,10 +59,13 @@
             price.textContent = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cents / 100);
             const subject = `Interesse na edição ${selected.dataset.label} — ${document.title}`;
             interest.href = `mailto:contato@jameswebbstudio.com.br?subject=${encodeURIComponent(subject)}`;
+            updatePurchaseLinks(selected);
+            updateSpecifications(selected);
         };
         updatePrintOption();
         printOption.addEventListener('change', updatePrintOption);
     }
+    updatePurchaseLinks(printOption ? printOption.options[printOption.selectedIndex] : null);
 
     const shareTrigger = document.querySelector('[data-share-trigger]');
     const shareOptions = document.querySelector('[data-share-options]');

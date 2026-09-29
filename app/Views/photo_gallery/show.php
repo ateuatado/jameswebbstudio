@@ -30,6 +30,12 @@
         <?php if ($totalImages > 1): ?>
             <p class="photo-position">Fotografia <?= $currentIndex + 1 ?> de <?= $totalImages ?></p>
         <?php endif ?>
+        <?php if (!empty($currentImage['is_for_sale'])): ?>
+            <div class="photo-commerce-actions" aria-label="Ações de compra">
+                <?php if ($printOptions): ?><a class="photo-buy-button" data-photo-buy target="_blank" rel="noopener">Comprar esta edição</a><?php endif ?>
+                <a class="photo-quote-button" data-photo-quote target="_blank" rel="noopener">Pedir orçamento</a>
+            </div>
+        <?php endif ?>
         <section class="photo-share-control" aria-label="Compartilhar fotografia">
             <button class="photo-share-trigger" type="button" data-share-trigger aria-expanded="false" aria-controls="photo-share-options">Compartilhar fotografia</button>
             <div class="photo-share-options" id="photo-share-options" data-share-options hidden>
@@ -74,10 +80,18 @@
                         <label for="print-option">Escolha o tamanho</label>
                         <select id="print-option" data-print-option>
                             <?php foreach ($printOptions as $option): ?>
-                                <option value="<?= (int) $option['price_cents'] ?>" data-label="<?= esc($option['size_label']) ?>"><?= esc($option['size_label']) ?> — R$ <?= number_format($option['price_cents'] / 100, 2, ',', '.') ?></option>
+                                <option value="<?= (int) $option['price_cents'] ?>" data-label="<?= esc($option['size_label'], 'attr') ?>" data-print-material="<?= esc($option['print_material'] ?? '', 'attr') ?>" data-frame-material="<?= esc($option['frame_material'] ?? '', 'attr') ?>" data-backing-material="<?= esc($option['backing_material'] ?? '', 'attr') ?>" data-glazing="<?= esc($option['glazing'] ?? '', 'attr') ?>" data-weight="<?= esc($option['weight_grams'] ?? '', 'attr') ?>" data-lead-time="<?= esc($option['production_lead_time'] ?? '', 'attr') ?>"><?= esc($option['size_label']) ?> — R$ <?= number_format($option['price_cents'] / 100, 2, ',', '.') ?></option>
                             <?php endforeach ?>
                         </select>
                         <p class="photo-sale-price">A partir de <strong data-print-price>R$ <?= number_format($printOptions[0]['price_cents'] / 100, 2, ',', '.') ?></strong></p>
+                        <dl class="photo-print-specifications" data-print-specifications>
+                            <div data-spec-row="print-material"><dt>Impressão</dt><dd data-spec="print-material"></dd></div>
+                            <div data-spec-row="frame-material"><dt>Moldura</dt><dd data-spec="frame-material"></dd></div>
+                            <div data-spec-row="backing-material"><dt>Fundo</dt><dd data-spec="backing-material"></dd></div>
+                            <div data-spec-row="glazing"><dt>Proteção</dt><dd data-spec="glazing"></dd></div>
+                            <div data-spec-row="weight"><dt>Peso</dt><dd data-spec="weight"></dd></div>
+                            <div data-spec-row="lead-time"><dt>Produção</dt><dd data-spec="lead-time"></dd></div>
+                        </dl>
                     <?php endif ?>
                     <a class="photo-sale-button" data-print-interest href="mailto:contato@jameswebbstudio.com.br">Quero esta edição</a>
                     <?php if (!empty($currentImage['accepts_custom_sizes'])): ?>
