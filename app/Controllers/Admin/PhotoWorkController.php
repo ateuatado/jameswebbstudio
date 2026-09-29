@@ -10,6 +10,7 @@ use App\Models\PhotoWorkModel;
 class PhotoWorkController extends BaseController
 {
     private const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
+    private const MAX_WEB_UPLOAD_BYTES = 5 * 1024 * 1024;
 
     private PhotoWorkModel $works;
     private PhotoWorkImageModel $images;
@@ -71,7 +72,10 @@ class PhotoWorkController extends BaseController
 
     public function delete($id = null)
     {
-        foreach ($this->images->where('photo_work_id', $id)->findAll() as $image) $this->removeFile($image['image_path']);
+        foreach ($this->images->where('photo_work_id', $id)->findAll() as $image) {
+            $this->removeFile($image['image_path']);
+            $this->removeOriginalFile($image['original_path'] ?? null);
+        }
         $this->works->delete($id);
         return redirect()->to(site_url('admin/fotos'))->with('message', 'Obra e suas imagens foram removidas.');
     }
@@ -86,19 +90,34 @@ class PhotoWorkController extends BaseController
     public function uploadImage($id)
     {
         if (!$this->works->find($id)) throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
-        $file = $this->request->getFile('image');
-        if (!$file || !$file->isValid() || !in_array($file->getMimeType(), ['image/jpeg', 'image/png', 'image/webp'], true) || $file->getSize() > self::MAX_UPLOAD_BYTES) {
-            return redirect()->back()->with('error', 'Envie uma imagem JPG, PNG ou WebP de até 25 MB.');
+        $webFile = $this->request->getFile('image');
+        $originalFile = $this->request->getFile('original');
+        $acceptedMimes = ['image/jpeg', 'image/png', 'image/webp'];
+        if (!$webFile || !$webFile->isValid() || !in_array($webFile->getMimeType(), $acceptedMimes, true) || $webFile->getSize() > self::MAX_WEB_UPLOAD_BYTES) {
+            return redirect()->back()->with('error', 'Envie uma versão web JPG, PNG ou WebP de até 5 MB.');
+        }
+        if ($originalFile && $originalFile->getError() !== UPLOAD_ERR_NO_FILE && (!$originalFile->isValid() || !in_array($originalFile->getMimeType(), $acceptedMimes, true) || $originalFile->getSize() > self::MAX_UPLOAD_BYTES)) {
+            return redirect()->back()->with('error', 'O original deve ser JPG, PNG ou WebP de até 25 MB.');
         }
 
-        $directory = FCPATH . 'uploads/photo-works';
-        if (!is_dir($directory)) mkdir($directory, 0755, true);
-        $name = $file->getRandomName();
-        $file->move($directory, $name);
+        $webDirectory = FCPATH . 'uploads/photo-works/web';
+        if (!is_dir($webDirectory)) mkdir($webDirectory, 0755, true);
+        $webName = $webFile->getRandomName();
+        $webFile->move($webDirectory, $webName);
+
+        $originalPath = null;
+        if ($originalFile && $originalFile->isValid()) {
+            $originalDirectory = WRITEPATH . 'uploads/photo-works/originals';
+            if (!is_dir($originalDirectory)) mkdir($originalDirectory, 0755, true);
+            $originalName = $originalFile->getRandomName();
+            $originalFile->move($originalDirectory, $originalName);
+            $originalPath = 'photo-works/originals/' . $originalName;
+        }
         $hasImages = $this->images->where('photo_work_id', $id)->countAllResults() > 0;
         $this->images->insert([
             'photo_work_id' => (int) $id,
-            'image_path' => 'uploads/photo-works/' . $name,
+            'image_path' => 'uploads/photo-works/web/' . $webName,
+            'original_path' => $originalPath,
             'alt_text' => trim((string) $this->request->getPost('alt_text')),
             'is_cover' => $hasImages ? 0 : 1,
             'display_order' => (int) ($this->request->getPost('display_order') ?? 0),
@@ -118,7 +137,11 @@ class PhotoWorkController extends BaseController
     public function deleteImage($workId, $imageId)
     {
         $image = $this->images->where('id', $imageId)->where('photo_work_id', $workId)->first();
-        if ($image) { $this->removeFile($image['image_path']); $this->images->delete($imageId); }
+        if ($image) {
+            $this->removeFile($image['image_path']);
+            $this->removeOriginalFile($image['original_path'] ?? null);
+            $this->images->delete($imageId);
+        }
         return redirect()->back()->with('message', 'Imagem removida.');
     }
 
@@ -245,6 +268,13 @@ class PhotoWorkController extends BaseController
     private function removeFile(string $path): void
     {
         $file = FCPATH . ltrim($path, '/\\');
+        if (is_file($file)) unlink($file);
+    }
+
+    private function removeOriginalFile(?string $path): void
+    {
+        if (!$path) return;
+        $file = WRITEPATH . 'uploads' . DIRECTORY_SEPARATOR . ltrim($path, '/\\');
         if (is_file($file)) unlink($file);
     }
 }

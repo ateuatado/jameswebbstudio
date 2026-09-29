@@ -88,7 +88,7 @@ Um painel completo gerenciando:
 - `photo_work_images`: fotografia de capa e fotografias internas de uma galeria, com texto alternativo, ordem e sinalização comercial opcional.
 - `photo_print_options`: tamanhos/edições vendáveis de uma fotografia, com dimensão, preço em centavos, disponibilidade e ordem.
 - Futuras tabelas de pedido devem referenciar a fotografia e a edição selecionada, registrando comprador, modalidade (`pickup` ou `shipping`), endereço quando aplicável, frete, pagamento e o *snapshot* da edição no momento da compra.
-- As imagens devem ficar em armazenamento público controlado e fora do Git; arquivos originais e derivados web devem ter nomes não previsíveis. A implementação deve gerar versões otimizadas (miniatura, grade e detalhe) sem expor o original de impressão.
+- A publicação usa duas cópias enviadas manualmente: uma versão web pública, preparada antes do upload para galeria e compartilhamento, e um original privado para impressão em `writable/`. O sistema não redimensiona, rotaciona ou converte imagens automaticamente.
 
 #### 9.6 SEO, acessibilidade e operação
 - Cada obra pública deve possuir `title`, meta description, Open Graph e `Product`/`VisualArtwork` estruturado quando aplicável. Obras esgotadas continuam indexáveis; rascunhos não.
