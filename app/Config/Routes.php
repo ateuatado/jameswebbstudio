@@ -64,6 +64,7 @@ $routes->group('admin', ['filter' => 'group:admin,superadmin'], static function 
     $routes->post('fotos/(:num)/imagens/(:num)/capa', 'Admin\PhotoWorkController::setCover/$1/$2');
     $routes->post('fotos/(:num)/imagens/(:num)/excluir', 'Admin\PhotoWorkController::deleteImage/$1/$2');
     $routes->get('fotos/(:num)/imagens/(:num)/edicoes', 'Admin\PhotoWorkController::printOptions/$1/$2');
+    $routes->post('fotos/(:num)/imagens/(:num)/edicoes/configuracao', 'Admin\PhotoWorkController::savePrintSettings/$1/$2');
     $routes->post('fotos/(:num)/imagens/(:num)/edicoes', 'Admin\PhotoWorkController::savePrintOptions/$1/$2');
     $routes->get('fotos/(:num)/imagens/(:num)/edicoes/(:num)/edit', 'Admin\PhotoWorkController::editPrintOption/$1/$2/$3');
     $routes->put('fotos/(:num)/imagens/(:num)/edicoes/(:num)', 'Admin\PhotoWorkController::updatePrintOption/$1/$2/$3');

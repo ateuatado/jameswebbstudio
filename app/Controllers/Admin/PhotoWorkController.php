@@ -140,12 +140,6 @@ class PhotoWorkController extends BaseController
         $image = $this->images->where('id', $imageId)->where('photo_work_id', $workId)->first();
         if (!$image) throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
 
-        $this->images->update($imageId, [
-            'is_for_sale' => $this->request->getPost('is_for_sale') ? 1 : 0,
-            'accepts_custom_sizes' => $this->request->getPost('accepts_custom_sizes') ? 1 : 0,
-            'custom_size_note' => trim((string) $this->request->getPost('custom_size_note')) ?: null,
-        ]);
-
         $option = [
             'photo_work_image_id' => (int) $imageId,
             'size_label' => trim((string) $this->request->getPost('size_label')),
@@ -161,11 +155,28 @@ class PhotoWorkController extends BaseController
             'is_available' => $this->request->getPost('is_available') ? 1 : 0,
             'display_order' => (int) ($this->request->getPost('display_order') ?? 0),
         ];
-        if ($option['size_label'] !== '' && $option['price_cents'] > 0 && !$this->printOptions->insert($option)) {
+        if ($option['size_label'] === '' || $option['price_cents'] <= 0) {
+            return redirect()->back()->withInput()->with('errors', ['Informe o nome e um preço maior que zero para criar a edição.']);
+        }
+        if (!$this->printOptions->insert($option)) {
             return redirect()->back()->withInput()->with('errors', $this->printOptions->errors());
         }
 
-        return redirect()->to(site_url("admin/fotos/{$workId}/imagens/{$imageId}/edicoes"))->with('message', 'Opções comerciais atualizadas.');
+        return redirect()->to(site_url("admin/fotos/{$workId}/imagens/{$imageId}/edicoes"))->with('message', 'Edição criada.');
+    }
+
+    public function savePrintSettings($workId, $imageId)
+    {
+        $image = $this->images->where('id', $imageId)->where('photo_work_id', $workId)->first();
+        if (!$image) throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+
+        $this->images->update($imageId, [
+            'is_for_sale' => $this->request->getPost('is_for_sale') ? 1 : 0,
+            'accepts_custom_sizes' => $this->request->getPost('accepts_custom_sizes') ? 1 : 0,
+            'custom_size_note' => trim((string) $this->request->getPost('custom_size_note')) ?: null,
+        ]);
+
+        return redirect()->to(site_url("admin/fotos/{$workId}/imagens/{$imageId}/edicoes"))->with('message', 'Configuração comercial atualizada.');
     }
 
     public function deletePrintOption($workId, $imageId, $optionId)
