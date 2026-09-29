@@ -9,6 +9,8 @@ use App\Models\PhotoWorkModel;
 
 class PhotoWorkController extends BaseController
 {
+    private const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
+
     private PhotoWorkModel $works;
     private PhotoWorkImageModel $images;
     private PhotoPrintOptionModel $printOptions;
@@ -79,8 +81,8 @@ class PhotoWorkController extends BaseController
     {
         if (!$this->works->find($id)) throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         $file = $this->request->getFile('image');
-        if (!$file || !$file->isValid() || !in_array($file->getMimeType(), ['image/jpeg', 'image/png', 'image/webp'], true) || $file->getSize() > 10 * 1024 * 1024) {
-            return redirect()->back()->with('error', 'Envie uma imagem JPG, PNG ou WebP de até 10 MB.');
+        if (!$file || !$file->isValid() || !in_array($file->getMimeType(), ['image/jpeg', 'image/png', 'image/webp'], true) || $file->getSize() > self::MAX_UPLOAD_BYTES) {
+            return redirect()->back()->with('error', 'Envie uma imagem JPG, PNG ou WebP de até 25 MB.');
         }
 
         $directory = FCPATH . 'uploads/photo-works';
