@@ -92,8 +92,8 @@
 .photo-sale-button:hover { color: #fff; background: transparent; }
 .photo-sale-custom { margin: 12px 0 0; color: rgba(255,255,255,.48); font-size: .78rem; line-height: 1.45; }
 .photo-print-specifications { margin: 18px 0 0; padding-top: 13px; border-top: 1px solid rgba(197,160,89,.2); }
-.photo-print-specifications div { display: grid; grid-template-columns: 92px 1fr; gap: 10px; padding: 5px 0; }
-.photo-print-specifications dt { color: #c5a059; font-family: 'Inter', sans-serif; font-size: .61rem; letter-spacing: .1em; text-transform: uppercase; }
+.photo-print-specifications div { display: grid; grid-template-columns: 92px 1fr; align-items: center; gap: 10px; padding: 5px 0; }
+.photo-print-specifications dt { margin-top: 0; color: #c5a059; font-family: 'Inter', sans-serif; font-size: .61rem; letter-spacing: .1em; text-transform: uppercase; }
 .photo-print-specifications dd { margin: 0; color: rgba(255,255,255,.72); font-size: .8rem; }
 .photo-print-specifications [hidden] { display: none; }
 
