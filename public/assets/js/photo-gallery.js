@@ -73,6 +73,7 @@
     const shareFeedback = document.querySelector('[data-share-feedback]');
     if (shareTrigger && shareOptions) {
         const url = photoShareUrl;
+        const imageUrl = document.querySelector('[data-share-image]')?.dataset.shareImage || '';
         const title = document.title;
         const text = 'Conheça esta fotografia autoral do James Webb Studio.';
         const setShareLink = (selector, value) => {
@@ -80,9 +81,29 @@
             if (link) link.href = value;
         };
 
-        setShareLink('[data-share-whatsapp]', `https://wa.me/?text=${encodeURIComponent(`${text} ${url}`)}`);
+        const whatsappLink = `https://wa.me/?text=${encodeURIComponent(`${text} ${url}`)}`;
+        const whatsappButton = document.querySelector('[data-share-whatsapp]');
+        setShareLink('[data-share-whatsapp]', whatsappLink);
         setShareLink('[data-share-facebook]', `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`);
         setShareLink('[data-share-x]', `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`);
+
+        // Em celulares compatíveis, compartilha a própria foto como mídia.
+        // Assim o WhatsApp pode enviar a imagem grande, em vez de uma prévia
+        // pequena de link. O link wa.me continua como fallback.
+        if (whatsappButton && imageUrl) whatsappButton.addEventListener('click', async (event) => {
+            if (!navigator.share || !navigator.canShare) return;
+            event.preventDefault();
+            try {
+                const response = await fetch(imageUrl, { credentials: 'same-origin' });
+                if (!response.ok) throw new Error('Não foi possível carregar a fotografia.');
+                const blob = await response.blob();
+                const file = new File([blob], 'fotografia.jpg', { type: blob.type || 'image/jpeg' });
+                if (!navigator.canShare({ files: [file] })) throw new Error('Compartilhamento de arquivos não suportado.');
+                await navigator.share({ files: [file], title, text });
+            } catch (error) {
+                if (error?.name !== 'AbortError') window.open(whatsappLink, '_blank', 'noopener');
+            }
+        });
 
         shareTrigger.addEventListener('click', () => {
             const expanded = shareTrigger.getAttribute('aria-expanded') === 'true';

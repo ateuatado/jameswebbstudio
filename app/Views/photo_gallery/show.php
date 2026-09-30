@@ -40,7 +40,7 @@
                 <a class="photo-quote-button" data-photo-quote target="_blank" rel="noopener">Quero mais informação sobre esse quadro</a>
             </div>
         <?php endif ?>
-        <section class="photo-share-control" aria-label="Compartilhar fotografia" data-share-url="<?= esc($shareUrl ?? '', 'attr') ?>">
+        <section class="photo-share-control" aria-label="Compartilhar fotografia" data-share-url="<?= esc($shareUrl ?? '', 'attr') ?>" data-share-image="<?= esc(base_url($currentImage['image_path']), 'attr') ?>">
             <button class="photo-share-trigger" type="button" data-share-trigger aria-expanded="false" aria-controls="photo-share-options">Compartilhar fotografia</button>
             <div class="photo-share-options" id="photo-share-options" data-share-options hidden>
                 <a data-share-whatsapp target="_blank" rel="noopener">WhatsApp</a>
