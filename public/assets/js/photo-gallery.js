@@ -23,11 +23,8 @@
     const whatsappUrl = (message) => `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
     const photoShareUrl = document.querySelector('[data-share-url]')?.dataset.shareUrl || window.location.href;
     const photoName = document.title.replace(/\s*\|\s*Fotos\s*\|.*$/, '');
-    const updatePurchaseLinks = (selected = null) => {
-        const size = selected?.dataset.label || 'tamanho personalizado';
-        const cents = Number(selected?.value || 0);
-        const formattedPrice = cents ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cents / 100) : '';
-        if (buy) buy.href = whatsappUrl(`Olá! Quero comprar a edição "${photoName}" no tamanho ${size}${formattedPrice ? `, por ${formattedPrice}` : ''}. Link: ${photoShareUrl}`);
+    const updatePurchaseLinks = () => {
+        if (buy) buy.href = whatsappUrl(`Olá, Marco Santo! Gostei muito deste quadro e gostaria de conversar com você sobre ele.\n\nLink: ${photoShareUrl}`);
         const quoteText = quote?.dataset.photoQuoteIntent === 'information'
             ? `Olá! Gostaria de obter mais informações sobre a fotografia "${photoName}". Link: ${photoShareUrl}`
             : `Olá! Gostaria de pedir um orçamento para a fotografia "${photoName}". Link: ${photoShareUrl}`;
