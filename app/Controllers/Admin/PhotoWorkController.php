@@ -84,7 +84,11 @@ class PhotoWorkController extends BaseController
     {
         $work = $this->works->find($id);
         if (!$work) throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
-        return view('admin/photo_works/images', ['work' => $work, 'images' => $this->images->where('photo_work_id', $id)->orderBy('display_order', 'asc')->findAll()]);
+        return view('admin/photo_works/images', [
+            'work' => $work,
+            'images' => $this->images->where('photo_work_id', $id)->orderBy('display_order', 'asc')->findAll(),
+            'nextDisplayOrder' => $this->nextDisplayOrder((int) $id),
+        ]);
     }
 
     public function uploadImage($id)
@@ -114,13 +118,15 @@ class PhotoWorkController extends BaseController
             $originalPath = 'photo-works/originals/' . $originalName;
         }
         $hasImages = $this->images->where('photo_work_id', $id)->countAllResults() > 0;
+        $requestedOrder = (int) $this->request->getPost('display_order');
+        $displayOrder = $requestedOrder > 0 ? $requestedOrder : $this->nextDisplayOrder((int) $id);
         $this->images->insert([
             'photo_work_id' => (int) $id,
             'image_path' => 'uploads/photo-works/web/' . $webName,
             'original_path' => $originalPath,
             'alt_text' => trim((string) $this->request->getPost('alt_text')),
             'is_cover' => $hasImages ? 0 : 1,
-            'display_order' => (int) ($this->request->getPost('display_order') ?? 0),
+            'display_order' => $displayOrder,
         ]);
         return redirect()->back()->with('message', 'Imagem enviada.');
     }
@@ -276,5 +282,11 @@ class PhotoWorkController extends BaseController
         if (!$path) return;
         $file = WRITEPATH . 'uploads' . DIRECTORY_SEPARATOR . ltrim($path, '/\\');
         if (is_file($file)) unlink($file);
+    }
+
+    private function nextDisplayOrder(int $workId): int
+    {
+        $row = $this->images->selectMax('display_order', 'max_order')->where('photo_work_id', $workId)->first();
+        return ((int) ($row['max_order'] ?? 0)) + 1;
     }
 }
