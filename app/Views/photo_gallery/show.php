@@ -11,21 +11,21 @@
         <div class="work-stage">
             <div class="work-frame">
                 <img class="work-main" src="<?= base_url($currentImage['image_path']) ?>" alt="<?= esc($currentImage['alt_text'] ?: $work['title']) ?>">
+                <?php if ($totalImages > 1): ?>
+                    <nav class="photo-navigator" aria-label="Navegação entre fotografias">
+                        <?php if ($previousImage): ?>
+                            <a data-gallery-previous href="<?= site_url('fotos/' . $work['slug']) . '?imagem=' . (int) $previousImage['id'] ?>" aria-label="Fotografia anterior">‹</a>
+                        <?php else: ?>
+                            <span aria-hidden="true">‹</span>
+                        <?php endif ?>
+                        <?php if ($nextImage): ?>
+                            <a data-gallery-next href="<?= site_url('fotos/' . $work['slug']) . '?imagem=' . (int) $nextImage['id'] ?>" aria-label="Próxima fotografia">›</a>
+                        <?php else: ?>
+                            <span aria-hidden="true">›</span>
+                        <?php endif ?>
+                    </nav>
+                <?php endif ?>
             </div>
-            <?php if ($totalImages > 1): ?>
-                <nav class="photo-navigator" aria-label="Navegação entre fotografias">
-                    <?php if ($previousImage): ?>
-                        <a data-gallery-previous href="<?= site_url('fotos/' . $work['slug']) . '?imagem=' . (int) $previousImage['id'] ?>" aria-label="Fotografia anterior">←</a>
-                    <?php else: ?>
-                        <span aria-hidden="true">←</span>
-                    <?php endif ?>
-                    <?php if ($nextImage): ?>
-                        <a data-gallery-next href="<?= site_url('fotos/' . $work['slug']) . '?imagem=' . (int) $nextImage['id'] ?>" aria-label="Próxima fotografia">→</a>
-                    <?php else: ?>
-                        <span aria-hidden="true">→</span>
-                    <?php endif ?>
-                </nav>
-            <?php endif ?>
         </div>
         <?php if ($totalImages > 1): ?>
             <p class="photo-position">Fotografia <?= $currentIndex + 1 ?> de <?= $totalImages ?></p>
