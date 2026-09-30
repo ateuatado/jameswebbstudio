@@ -6,6 +6,7 @@ class PhotoSocialImage
 {
     public const WIDTH = 1200;
     public const HEIGHT = 630;
+    public const VERSION = 2;
 
     public function generate(int $imageId, string $sourcePath): ?string
     {
@@ -23,16 +24,27 @@ class PhotoSocialImage
         $canvas = imagecreatetruecolor(self::WIDTH, self::HEIGHT);
         $background = imagecolorallocate($canvas, 232, 229, 224);
         imagefill($canvas, 0, 0, $background);
-        $scale = min(self::WIDTH / $info[0], self::HEIGHT / $info[1]);
-        $width = (int) round($info[0] * $scale);
-        $height = (int) round($info[1] * $scale);
-        $x = (self::WIDTH - $width) / 2;
-        $y = (self::HEIGHT - $height) / 2;
-        imagecopyresampled($canvas, $source, $x, $y, 0, 0, $width, $height, $info[0], $info[1]);
+        // Preenche todo o quadro para que a fotografia apareça maior nas
+        // prévias de compartilhamento. O recorte é centralizado e mantém a
+        // proporção recomendada pelo Open Graph (1200x630).
+        $sourceRatio = $info[0] / $info[1];
+        $targetRatio = self::WIDTH / self::HEIGHT;
+        if ($sourceRatio > $targetRatio) {
+            $cropHeight = $info[1];
+            $cropWidth = (int) round($info[1] * $targetRatio);
+            $sourceX = (int) round(($info[0] - $cropWidth) / 2);
+            $sourceY = 0;
+        } else {
+            $cropWidth = $info[0];
+            $cropHeight = (int) round($info[0] / $targetRatio);
+            $sourceX = 0;
+            $sourceY = (int) round(($info[1] - $cropHeight) / 2);
+        }
+        imagecopyresampled($canvas, $source, 0, 0, $sourceX, $sourceY, self::WIDTH, self::HEIGHT, $cropWidth, $cropHeight);
 
         $directory = FCPATH . 'uploads/photo-works/social';
         if (! is_dir($directory)) mkdir($directory, 0755, true);
-        $filename = $imageId . '.jpg';
+        $filename = $imageId . '-v' . self::VERSION . '.jpg';
         $target = $directory . DIRECTORY_SEPARATOR . $filename;
         $ok = imagejpeg($canvas, $target, 88);
         imagedestroy($source);

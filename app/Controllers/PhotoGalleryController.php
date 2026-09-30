@@ -52,7 +52,8 @@ class PhotoGalleryController extends BaseController
         $currentImage = $images[$currentIndex] ?? null;
         if ($currentImage) {
             $this->recordPhotoView((int) $currentImage['id']);
-            if (empty($currentImage['social_image_path']) || ! is_file(FCPATH . ltrim((string) $currentImage['social_image_path'], '/\\'))) {
+            $expectedSocialPath = 'uploads/photo-works/social/' . (int) $currentImage['id'] . '-v' . PhotoSocialImage::VERSION . '.jpg';
+            if (($currentImage['social_image_path'] ?? '') !== $expectedSocialPath || ! is_file(FCPATH . $expectedSocialPath)) {
                 $socialPath = (new PhotoSocialImage())->generate((int) $currentImage['id'], FCPATH . ltrim($currentImage['image_path'], '/\\'));
                 if ($socialPath) {
                     (new PhotoWorkImageModel())->update((int) $currentImage['id'], ['social_image_path' => $socialPath]);
@@ -65,7 +66,13 @@ class PhotoGalleryController extends BaseController
             $printOptions = (new PhotoPrintOptionModel())->where('photo_work_image_id', $currentImage['id'])->where('is_available', 1)->orderBy('display_order', 'asc')->findAll();
         }
         $shareVersion = $currentImage ? strtotime($currentImage['updated_at'] ?? $currentImage['created_at'] ?? 'now') : time();
-        $shareUrl = $currentImage ? site_url('fotos/' . $work['slug']) . '?imagem=' . $currentImage['id'] . '&compartilhar=' . $shareVersion : null;
+        // O link compartilhado precisa identificar a fotografia, não apenas a
+        // galeria; assim o rastreador do WhatsApp recebe os metadados da foto
+        // que o visitante estava visualizando.
+        $shareUrl = $currentImage ? site_url('fotos/' . $work['slug']) . '?' . http_build_query([
+            'imagem' => (int) $currentImage['id'],
+            'compartilhar' => $shareVersion,
+        ]) : null;
         $workTitle = $currentImage['title'] ?: $work['title'];
         $photoDescription = $currentImage['description'] ?: ($currentImage['alt_text'] ?: 'Conheça a obra ' . $workTitle . ' do James Webb Studio.');
         return view('photo_gallery/show', [

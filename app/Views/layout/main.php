@@ -100,14 +100,21 @@
     <meta property="og:url" content="<?= esc($ogUrl ?? current_url()) ?>">
     <?php if (!empty($ogImage)): ?>
     <meta property="og:image" content="<?= esc($ogImage) ?>">
+    <meta property="og:image:secure_url" content="<?= esc($ogImage) ?>">
+    <meta property="og:image:type" content="image/jpeg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="<?= esc($ogTitle ?? $title ?? 'James Webb Studio') ?>">
     <?php endif; ?>
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="<?= esc($ogTitle ?? $title ?? 'James Webb Studio') ?>">
     <meta name="twitter:description" content="<?= esc($ogDescription ?? $metaDescription ?? 'Ensaios fotográficos em estúdio na Lapa, São Paulo.') ?>">
+    <?php if (!empty($ogImage)): ?>
+    <meta name="twitter:image" content="<?= esc($ogImage) ?>">
+    <meta name="twitter:image:alt" content="<?= esc($ogTitle ?? $title ?? 'James Webb Studio') ?>">
+    <?php endif; ?>
 
     <!-- Schema.org: LocalBusiness + Photographer -->
     <script type="application/ld+json">
