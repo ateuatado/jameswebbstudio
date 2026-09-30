@@ -14,6 +14,8 @@ class GoogleAuthController extends BaseController
         $clientId = $this->setting('GOOGLE_CLIENT_ID', 'google.clientId');
         $redirectUri = $this->redirectUri();
         if (! $clientId || ! $redirectUri) return redirect()->to(site_url('login'))->with('error', 'O login Google ainda não foi configurado neste ambiente.');
+        $returnUrl = config('Auth')->safeReturnUrl($this->request->getGet('redirect'));
+        if ($returnUrl) session()->setTempdata('beforeLoginUrl', $returnUrl, 3600);
         $state = bin2hex(random_bytes(32));
         session()->set('google_oauth_state', $state);
         return redirect()->to('https://accounts.google.com/o/oauth2/v2/auth?' . http_build_query([

@@ -27,7 +27,7 @@
                 <div class="alert alert-warning" role="alert">
                     <strong>Este e-mail já possui uma conta no sistema.</strong><br>
                     Se você recebeu um link de cortesia ou fez uma compra, sua conta já foi criada automaticamente.<br>
-                    <a href="<?= url_to('login') ?>" class="btn btn-sm btn-primary mt-2">Entrar com este e-mail →</a>
+                    <a href="<?= url_to('login') . (service('request')->getGet('redirect') ? '?redirect=' . rawurlencode((string) service('request')->getGet('redirect')) : '') ?>" class="btn btn-sm btn-primary mt-2">Entrar com este e-mail →</a>
                 </div>
             <?php elseif (session('error') !== null) : ?>
                 <div class="alert alert-danger" role="alert"><?= esc(session('error')) ?></div>
@@ -39,7 +39,8 @@
                 </div>
             <?php endif ?>
 
-            <form action="<?= url_to('register') ?>" method="post">
+            <?php $returnQuery = service('request')->getGet('redirect') ? '?redirect=' . rawurlencode((string) service('request')->getGet('redirect')) : ''; ?>
+            <form action="<?= url_to('register') . $returnQuery ?>" method="post">
                 <?= csrf_field() ?>
 
                 <!-- E-mail -->
@@ -87,7 +88,7 @@
                 </div>
 
                 <p class="text-center small">
-                    Já tem uma conta? <a href="<?= url_to('login') ?>">Entrar</a>
+                    Já tem uma conta? <a href="<?= url_to('login') . $returnQuery ?>">Entrar</a>
                 </p>
 
             </form>

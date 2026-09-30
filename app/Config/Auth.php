@@ -449,6 +449,11 @@ class Auth extends ShieldAuth
             return $this->getUrl($url);
         }
 
+        $url = $this->safeReturnUrl(service('request')->getGet('redirect'));
+        if ($url) {
+            return $this->getUrl($url);
+        }
+
         // Redireciona baseado no perfil do usuário
         $user = auth()->user();
 
@@ -485,6 +490,11 @@ class Auth extends ShieldAuth
             return $this->getUrl($url);
         }
 
+        $url = $this->safeReturnUrl(service('request')->getGet('redirect'));
+        if ($url) {
+            return $this->getUrl($url);
+        }
+
         $url = setting('Auth.redirects')['register'];
 
         return $this->getUrl($url);
@@ -499,6 +509,24 @@ class Auth extends ShieldAuth
         $url = setting('Auth.redirects')['force_reset'];
 
         return $this->getUrl($url);
+    }
+
+    public function safeReturnUrl(?string $url): ?string
+    {
+        $url = trim((string) $url);
+        if ($url === '' || str_starts_with($url, '//')) {
+            return null;
+        }
+
+        $parsed = parse_url($url);
+        if ($parsed === false || ! str_starts_with($url, '/')) {
+            $base = parse_url(base_url());
+            if ($parsed === false || empty($parsed['host']) || strtolower((string) $parsed['host']) !== strtolower((string) ($base['host'] ?? ''))) {
+                return null;
+            }
+        }
+
+        return $url;
     }
 
     /**

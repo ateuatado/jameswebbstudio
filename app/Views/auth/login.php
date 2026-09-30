@@ -27,7 +27,8 @@
                 <div class="alert alert-success" role="alert"><?= esc(session('message')) ?></div>
             <?php endif ?>
 
-            <form action="<?= url_to('login') ?>" method="post">
+            <?php $returnQuery = service('request')->getGet('redirect') ? '?redirect=' . rawurlencode((string) service('request')->getGet('redirect')) : ''; ?>
+            <form action="<?= url_to('login') . $returnQuery ?>" method="post">
                 <?= csrf_field() ?>
 
                 <!-- E-mail -->
@@ -67,7 +68,7 @@
 
                 <?php if (env('GOOGLE_CLIENT_ID') || env('google.clientId')): ?>
                     <div class="text-center my-3 text-muted">ou</div>
-                    <a href="<?= site_url('login/google') ?>" class="btn btn-google w-100">
+                    <a href="<?= site_url('login/google') . $returnQuery ?>" class="btn btn-google w-100">
                         <span class="btn-google-mark" aria-hidden="true">G</span>
                         <span>Continuar com Google</span>
                     </a>
@@ -81,7 +82,7 @@
 
                 <?php if (setting('Auth.allowRegistration')) : ?>
                     <p class="text-center small">
-                        Não tem conta? <a href="<?= url_to('register') ?>">Criar conta</a>
+                        Não tem conta? <a href="<?= url_to('register') . $returnQuery ?>">Criar conta</a>
                     </p>
                 <?php endif ?>
 

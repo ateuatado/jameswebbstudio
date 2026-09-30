@@ -228,7 +228,7 @@
                         </li>
                     <?php else: ?>
                         <li class="nav-item">
-                            <a class="btn btn-outline-terroso btn-sm px-4" href="<?= site_url('login') ?>">Entrar</a>
+                            <a class="btn btn-outline-terroso btn-sm px-4" href="<?= site_url('login') . '?redirect=' . rawurlencode(current_url()) ?>">Entrar</a>
                         </li>
                     <?php endif; ?>
                 </ul>
