@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use App\Models\PhotoWorkImageModel;
 use App\Models\PhotoPrintOptionModel;
 use App\Models\PhotoWorkModel;
+use App\Libraries\PhotoSocialImage;
 
 class PhotoWorkController extends BaseController
 {
@@ -74,6 +75,7 @@ class PhotoWorkController extends BaseController
     {
         foreach ($this->images->where('photo_work_id', $id)->findAll() as $image) {
             $this->removeFile($image['image_path']);
+            $this->removeFile($image['social_image_path'] ?? '');
             $this->removeOriginalFile($image['original_path'] ?? null);
         }
         $this->works->delete($id);
@@ -125,10 +127,27 @@ class PhotoWorkController extends BaseController
             'image_path' => 'uploads/photo-works/web/' . $webName,
             'original_path' => $originalPath,
             'alt_text' => trim((string) $this->request->getPost('alt_text')),
+            'title' => trim((string) $this->request->getPost('title')) ?: null,
+            'description' => trim((string) $this->request->getPost('description')) ?: null,
             'is_cover' => $hasImages ? 0 : 1,
             'display_order' => $displayOrder,
         ]);
+        $imageId = (int) $this->images->getInsertID();
+        $socialPath = (new PhotoSocialImage())->generate($imageId, $webDirectory . DIRECTORY_SEPARATOR . $webName);
+        if ($socialPath) $this->images->update($imageId, ['social_image_path' => $socialPath]);
         return redirect()->back()->with('message', 'Imagem enviada.');
+    }
+
+    public function updateImageMetadata($workId, $imageId)
+    {
+        $image = $this->images->where('id', $imageId)->where('photo_work_id', $workId)->first();
+        if (!$image) throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        $this->images->update($imageId, [
+            'alt_text' => trim((string) $this->request->getPost('alt_text')),
+            'title' => trim((string) $this->request->getPost('title')) ?: null,
+            'description' => trim((string) $this->request->getPost('description')) ?: null,
+        ]);
+        return redirect()->back()->with('message', 'Metadados da fotografia atualizados.');
     }
 
     public function setCover($workId, $imageId)
@@ -145,6 +164,7 @@ class PhotoWorkController extends BaseController
         $image = $this->images->where('id', $imageId)->where('photo_work_id', $workId)->first();
         if ($image) {
             $this->removeFile($image['image_path']);
+            $this->removeFile($image['social_image_path'] ?? '');
             $this->removeOriginalFile($image['original_path'] ?? null);
             $this->images->delete($imageId);
         }
@@ -273,6 +293,7 @@ class PhotoWorkController extends BaseController
 
     private function removeFile(string $path): void
     {
+        if ($path === '') return;
         $file = FCPATH . ltrim($path, '/\\');
         if (is_file($file)) unlink($file);
     }

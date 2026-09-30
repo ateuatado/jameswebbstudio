@@ -96,7 +96,7 @@ futuras.
 - A publicação usa duas cópias enviadas manualmente: uma versão web pública, preparada antes do upload para galeria e compartilhamento, e um original privado para impressão em `writable/`. O sistema não redimensiona, rotaciona ou converte imagens automaticamente.
 
 #### 9.6 SEO, acessibilidade e operação
-- Cada obra pública possui `title`, meta description e metadados Open Graph/Twitter; `Product`/`VisualArtwork` estruturado permanece previsto quando aplicável. Obras esgotadas continuam indexáveis; rascunhos não.
+- Cada fotografia pública possui título e descrição próprios, usados em `og:title`, `og:description` e Twitter; o título termina com “James Webb Studio”. A `og:image` é uma derivação persistente de 1200×630 da própria fotografia, com fundo neutro e sem corte quando a proporção exigir. O link social mantém `imagem` e `compartilhar` para seleção da obra e invalidação de cache; `Product`/`VisualArtwork` estruturado permanece previsto quando aplicável. Obras esgotadas continuam indexáveis; rascunhos não.
 - Toda imagem deve ter texto alternativo editável, *lazy loading*, dimensões reservadas para evitar salto de layout e navegação por teclado no lightbox.
 - O sitemap deve incluir apenas galerias publicadas. A exclusão deve remover referências de mídia e nunca afetar `heroes`, `photos` de ensaios ou galerias privadas de clientes.
 - O site publica as rotas `/politica-de-privacidade` e `/termos-de-servico`, usadas também no cadastro do login Google e vinculadas no rodapé.

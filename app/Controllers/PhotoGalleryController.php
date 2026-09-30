@@ -7,6 +7,7 @@ use App\Models\PhotoPrintOptionModel;
 use App\Models\PhotoWorkModel;
 use App\Models\PhotoCommentModel;
 use App\Models\PhotoImageViewModel;
+use App\Libraries\PhotoSocialImage;
 
 class PhotoGalleryController extends BaseController
 {
@@ -51,16 +52,26 @@ class PhotoGalleryController extends BaseController
         $currentImage = $images[$currentIndex] ?? null;
         if ($currentImage) {
             $this->recordPhotoView((int) $currentImage['id']);
+            if (empty($currentImage['social_image_path']) || ! is_file(FCPATH . ltrim((string) $currentImage['social_image_path'], '/\\'))) {
+                $socialPath = (new PhotoSocialImage())->generate((int) $currentImage['id'], FCPATH . ltrim($currentImage['image_path'], '/\\'));
+                if ($socialPath) {
+                    (new PhotoWorkImageModel())->update((int) $currentImage['id'], ['social_image_path' => $socialPath]);
+                    $currentImage['social_image_path'] = $socialPath;
+                }
+            }
         }
         $printOptions = [];
         if ($currentImage && !empty($currentImage['is_for_sale'])) {
             $printOptions = (new PhotoPrintOptionModel())->where('photo_work_image_id', $currentImage['id'])->where('is_available', 1)->orderBy('display_order', 'asc')->findAll();
         }
         $shareVersion = $currentImage ? strtotime($currentImage['updated_at'] ?? $currentImage['created_at'] ?? 'now') : time();
+        $shareUrl = $currentImage ? site_url('fotos/' . $work['slug']) . '?imagem=' . $currentImage['id'] . '&compartilhar=' . $shareVersion : null;
+        $workTitle = $currentImage['title'] ?: $work['title'];
+        $photoDescription = $currentImage['description'] ?: ($currentImage['alt_text'] ?: 'Conheça a obra ' . $workTitle . ' do James Webb Studio.');
         return view('photo_gallery/show', [
-            'title' => $work['title'] . ' | Fotos | James Webb Studio',
-            'ogTitle' => $work['title'] . ' | Fotografia autoral | James Webb Studio',
-            'ogDescription' => $work['short_description'] ?: 'Conheça esta fotografia autoral do James Webb Studio.',
+            'title' => $workTitle . ' James Webb Studio',
+            'ogTitle' => $workTitle . ' James Webb Studio',
+            'ogDescription' => $photoDescription,
             'work' => $work,
             'currentImage' => $currentImage,
             'currentIndex' => $currentIndex,
@@ -68,8 +79,9 @@ class PhotoGalleryController extends BaseController
             'nextImage' => $images[$currentIndex + 1] ?? null,
             'totalImages' => count($images),
             'printOptions' => $printOptions,
-            'ogImage' => !empty($currentImage['image_path']) ? base_url($currentImage['image_path']) : null,
-            'shareUrl' => $currentImage ? site_url('fotos/' . $work['slug']) . '?imagem=' . $currentImage['id'] . '&compartilhar=' . $shareVersion : null,
+            'ogImage' => !empty($currentImage['social_image_path']) ? base_url($currentImage['social_image_path']) . '?v=' . $shareVersion : (!empty($currentImage['image_path']) ? base_url($currentImage['image_path']) . '?v=' . $shareVersion : null),
+            'shareUrl' => $shareUrl,
+            'ogUrl' => $shareUrl,
             'comments' => $currentImage ? $this->commentsForImage((int) $currentImage['id']) : [],
             'commentReturnUrl' => current_url() . ($this->request->getUri()->getQuery() ? '?' . $this->request->getUri()->getQuery() : ''),
         ]);

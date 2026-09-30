@@ -97,7 +97,7 @@
     <meta property="og:site_name" content="James Webb Studio">
     <meta property="og:title" content="<?= esc($ogTitle ?? $title ?? 'James Webb Studio') ?>">
     <meta property="og:description" content="<?= esc($ogDescription ?? $metaDescription ?? 'Ensaios fotográficos em estúdio na Lapa, São Paulo. Branding pessoal, retratos profissionais e fotografia autoral.') ?>">
-    <meta property="og:url" content="<?= current_url() ?>">
+    <meta property="og:url" content="<?= esc($ogUrl ?? current_url()) ?>">
     <?php if (!empty($ogImage)): ?>
     <meta property="og:image" content="<?= esc($ogImage) ?>">
     <meta property="og:image:width" content="1200">

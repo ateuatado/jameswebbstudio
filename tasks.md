@@ -41,3 +41,4 @@ Este documento lista as tarefas pendentes de acordo com a regra de negócio esta
 - `[ ]` **Moderação e inteligência comercial:** Criar painel para moderar comentários, ferramentas antispam, consentimento de analytics e relatórios de recorrência por fotografia.
 - `[x]` **CTA de informação:** Exibir “Quero mais informação sobre esse quadro” nas fotografias sem edição à venda.
 - `[x]` **Páginas legais:** Publicar Política de Privacidade e Termos de Serviço em rotas públicas para o site e o login Google.
+- `[x]` **Metadados sociais por fotografia:** Adicionar título/descrição específicos, gerar imagem social 1200×630 com fundo neutro para proporções verticais e preservar `compartilhar` no link.

@@ -65,6 +65,7 @@ $routes->group('admin', ['filter' => 'group:admin,superadmin'], static function 
     // Acervo público e edições de fotografias
     $routes->get('fotos/(:num)/imagens', 'Admin\PhotoWorkController::images/$1');
     $routes->post('fotos/(:num)/imagens', 'Admin\PhotoWorkController::uploadImage/$1');
+    $routes->post('fotos/(:num)/imagens/(:num)/metadados', 'Admin\PhotoWorkController::updateImageMetadata/$1/$2');
     $routes->post('fotos/(:num)/imagens/(:num)/capa', 'Admin\PhotoWorkController::setCover/$1/$2');
     $routes->post('fotos/(:num)/imagens/(:num)/excluir', 'Admin\PhotoWorkController::deleteImage/$1/$2');
     $routes->get('fotos/(:num)/imagens/(:num)/edicoes', 'Admin\PhotoWorkController::printOptions/$1/$2');
