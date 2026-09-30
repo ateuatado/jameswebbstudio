@@ -7,6 +7,7 @@ use App\Models\PhotoPrintOptionModel;
 use App\Models\PhotoWorkModel;
 use App\Models\PhotoCommentModel;
 use App\Models\PhotoImageViewModel;
+use App\Models\TrackingLinkModel;
 use App\Libraries\PhotoSocialImage;
 
 class PhotoGalleryController extends BaseController
@@ -66,13 +67,12 @@ class PhotoGalleryController extends BaseController
             $printOptions = (new PhotoPrintOptionModel())->where('photo_work_image_id', $currentImage['id'])->where('is_available', 1)->orderBy('display_order', 'asc')->findAll();
         }
         $shareVersion = $currentImage ? strtotime($currentImage['updated_at'] ?? $currentImage['created_at'] ?? 'now') : time();
-        // O link compartilhado precisa identificar a fotografia, não apenas a
-        // galeria; assim o rastreador do WhatsApp recebe os metadados da foto
-        // que o visitante estava visualizando.
-        $shareUrl = $currentImage ? site_url('fotos/' . $work['slug']) . '?' . http_build_query([
+        $photoPageUrl = $currentImage ? site_url('fotos/' . $work['slug']) . '?' . http_build_query([
             'imagem' => (int) $currentImage['id'],
             'compartilhar' => $shareVersion,
         ]) : null;
+        $trackedShareUrls = $currentImage ? $this->trackedShareUrls($work['slug'], (int) $currentImage['id'], $shareVersion) : [];
+        $shareUrl = $trackedShareUrls['whatsapp'] ?? $photoPageUrl;
         // O cartão social deve identificar a fotografia compartilhada. O nome
         // da galeria fica apenas como fallback para fotos sem título próprio.
         $imageTitle = trim((string) ($currentImage['title'] ?? ''))
@@ -99,10 +99,43 @@ class PhotoGalleryController extends BaseController
             'printOptions' => $printOptions,
             'ogImage' => !empty($currentImage['social_image_path']) ? base_url($currentImage['social_image_path']) . '?v=' . $shareVersion : (!empty($currentImage['image_path']) ? base_url($currentImage['image_path']) . '?v=' . $shareVersion : null),
             'shareUrl' => $shareUrl,
-            'ogUrl' => $shareUrl,
+            'shareUrls' => $trackedShareUrls,
+            'ogUrl' => $photoPageUrl,
             'comments' => $currentImage ? $this->commentsForImage((int) $currentImage['id']) : [],
             'commentReturnUrl' => current_url() . ($this->request->getUri()->getQuery() ? '?' . $this->request->getUri()->getQuery() : ''),
         ]);
+    }
+
+    private function trackedShareUrls(string $workSlug, int $imageId, int $shareVersion): array
+    {
+        $destination = site_url('fotos/' . $workSlug) . '?' . http_build_query([
+            'imagem' => $imageId,
+            'compartilhar' => $shareVersion,
+        ]);
+        $model = new TrackingLinkModel();
+        $urls = [];
+
+        foreach (['whatsapp', 'facebook', 'x'] as $channel) {
+            $slug = 'foto-' . $imageId . '-' . $channel;
+            $data = [
+                'slug' => $slug,
+                'destination_url' => $destination,
+                'utm_source' => $channel,
+                'utm_medium' => 'share',
+                'utm_campaign' => 'photo-gallery',
+                'utm_content' => 'photo-' . $imageId,
+                'is_active' => 1,
+            ];
+            $existing = $model->where('slug', $slug)->first();
+            if ($existing) {
+                $model->update($existing->id, $data);
+            } elseif (! $model->insert($data)) {
+                continue;
+            }
+            $urls[$channel] = site_url('r/' . $slug);
+        }
+
+        return $urls;
     }
 
     public function comment($slug, $imageId)

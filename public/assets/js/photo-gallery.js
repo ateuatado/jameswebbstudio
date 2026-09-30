@@ -77,6 +77,10 @@
     if (shareTrigger && shareOptions) {
         const url = photoShareUrl;
         const imageUrl = document.querySelector('[data-share-image]')?.dataset.shareImage || '';
+        const shareRoot = document.querySelector('[data-share-url]');
+        const whatsappShareUrl = shareRoot?.dataset.shareWhatsappUrl || url;
+        const facebookShareUrl = shareRoot?.dataset.shareFacebookUrl || url;
+        const xShareUrl = shareRoot?.dataset.shareXUrl || url;
         const title = document.title;
         const text = 'Conheça esta fotografia autoral do James Webb Studio.';
         const setShareLink = (selector, value) => {
@@ -84,11 +88,11 @@
             if (link) link.href = value;
         };
 
-        const whatsappLink = `https://wa.me/?text=${encodeURIComponent(`${text} ${url}`)}`;
+        const whatsappLink = `https://wa.me/?text=${encodeURIComponent(`${text} ${whatsappShareUrl}`)}`;
         const whatsappButton = document.querySelector('[data-share-whatsapp]');
         setShareLink('[data-share-whatsapp]', whatsappLink);
-        setShareLink('[data-share-facebook]', `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`);
-        setShareLink('[data-share-x]', `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`);
+        setShareLink('[data-share-facebook]', `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(facebookShareUrl)}`);
+        setShareLink('[data-share-x]', `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(xShareUrl)}`);
 
         // Em celulares compatíveis, compartilha a própria foto como mídia.
         // Assim o WhatsApp pode enviar a imagem grande, em vez de uma prévia
@@ -102,7 +106,7 @@
                 const blob = await response.blob();
                 const file = new File([blob], 'fotografia.jpg', { type: blob.type || 'image/jpeg' });
                 if (!navigator.canShare({ files: [file] })) throw new Error('Compartilhamento de arquivos não suportado.');
-                await navigator.share({ files: [file], title, text });
+                await navigator.share({ files: [file], title, text: `${text} ${whatsappShareUrl}` });
             } catch (error) {
                 if (error?.name !== 'AbortError') window.open(whatsappLink, '_blank', 'noopener');
             }
