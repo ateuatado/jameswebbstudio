@@ -124,7 +124,7 @@ class PhotoGalleryController extends BaseController
         $visitorToken = $this->request->getCookie('jws_visitor_token');
         if (! is_string($visitorToken) || ! preg_match('/^[a-f0-9]{64}$/', $visitorToken)) {
             $visitorToken = bin2hex(random_bytes(32));
-            $this->response->setCookie('jws_visitor_token', $visitorToken, 60 * 60 * 24 * 365, '/', '', false, true, 'Lax');
+            $this->response->setCookie('jws_visitor_token', $visitorToken, 60 * 60 * 24 * 365, '', '/', '', false, true, 'Lax');
         }
 
         $userId = auth()->loggedIn() ? (int) auth()->id() : null;
