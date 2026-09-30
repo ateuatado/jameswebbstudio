@@ -21,13 +21,14 @@
     const quote = document.querySelector('[data-photo-quote]');
     const whatsappNumber = '5511964322103';
     const whatsappUrl = (message) => `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+    const photoShareUrl = document.querySelector('[data-share-url]')?.dataset.shareUrl || window.location.href;
     const photoName = document.title.replace(/\s*\|\s*Fotos\s*\|.*$/, '');
     const updatePurchaseLinks = (selected = null) => {
         const size = selected?.dataset.label || 'tamanho personalizado';
         const cents = Number(selected?.value || 0);
         const formattedPrice = cents ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cents / 100) : '';
-        if (buy) buy.href = whatsappUrl(`Olá! Quero comprar a edição "${photoName}" no tamanho ${size}${formattedPrice ? `, por ${formattedPrice}` : ''}. Link: ${window.location.href}`);
-        if (quote) quote.href = whatsappUrl(`Olá! Gostaria de pedir um orçamento para a fotografia "${photoName}". Link: ${window.location.href}`);
+        if (buy) buy.href = whatsappUrl(`Olá! Quero comprar a edição "${photoName}" no tamanho ${size}${formattedPrice ? `, por ${formattedPrice}` : ''}. Link: ${photoShareUrl}`);
+        if (quote) quote.href = whatsappUrl(`Olá! Gostaria de pedir um orçamento para a fotografia "${photoName}". Link: ${photoShareUrl}`);
     };
     const updateSpecifications = (selected) => {
         const values = {
@@ -71,7 +72,7 @@
     const shareOptions = document.querySelector('[data-share-options]');
     const shareFeedback = document.querySelector('[data-share-feedback]');
     if (shareTrigger && shareOptions) {
-        const url = document.querySelector('[data-share-url]')?.dataset.shareUrl || window.location.href;
+        const url = photoShareUrl;
         const title = document.title;
         const text = 'Conheça esta fotografia autoral do James Webb Studio.';
         const setShareLink = (selector, value) => {
