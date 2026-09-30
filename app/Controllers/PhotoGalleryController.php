@@ -78,10 +78,17 @@ class PhotoGalleryController extends BaseController
         $imageTitle = trim((string) ($currentImage['title'] ?? ''))
             ?: trim((string) ($currentImage['alt_text'] ?? ''))
             ?: $work['title'];
-        $photoDescription = $currentImage['description'] ?: ($currentImage['alt_text'] ?: 'Conheça a fotografia ' . $imageTitle . ' do James Webb Studio.');
+        $galleryLabel = trim((string) $work['title']);
+        $galleryStem = preg_replace('/s$/u', '', $galleryLabel) ?: $galleryLabel;
+        $imageLabel = $imageTitle;
+        if (mb_stripos($imageLabel, $galleryStem . ' ') === 0) {
+            $imageLabel = trim(mb_substr($imageLabel, mb_strlen($galleryStem)));
+        }
+        $socialTitle = $galleryStem . ' | ' . ($imageLabel ?: $imageTitle);
+        $photoDescription = $currentImage['description'] ?: 'Um quadro de MarcoSanto';
         return view('photo_gallery/show', [
             'title' => $imageTitle . ' | Fotos | James Webb Studio',
-            'ogTitle' => $imageTitle,
+            'ogTitle' => $socialTitle,
             'ogDescription' => $photoDescription,
             'work' => $work,
             'currentImage' => $currentImage,
