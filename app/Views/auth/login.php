@@ -67,7 +67,10 @@
 
                 <?php if (env('GOOGLE_CLIENT_ID') || env('google.clientId')): ?>
                     <div class="text-center my-3 text-muted">ou</div>
-                    <a href="<?= site_url('login/google') ?>" class="btn btn-outline-dark w-100">Continuar com Google</a>
+                    <a href="<?= site_url('login/google') ?>" class="btn btn-google w-100">
+                        <span class="btn-google-mark" aria-hidden="true">G</span>
+                        <span>Continuar com Google</span>
+                    </a>
                 <?php endif ?>
 
                 <?php if (setting('Auth.allowMagicLinkLogins')) : ?>
@@ -101,5 +104,32 @@ function togglePwd(inputId, btn) {
     }
 }
 </script>
+
+<style>
+    .btn-google {
+        align-items: center;
+        background: #fff;
+        border: 1px solid #d8d8d8;
+        border-radius: .375rem;
+        color: #202124;
+        display: flex;
+        font-weight: 500;
+        gap: .65rem;
+        justify-content: center;
+        min-height: 44px;
+        transition: background-color .15s ease, box-shadow .15s ease;
+    }
+    .btn-google:hover,
+    .btn-google:focus {
+        background: #f4f4f4;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, .25);
+        color: #202124;
+    }
+    .btn-google-mark {
+        color: #4285f4;
+        font-size: 1.15rem;
+        font-weight: 700;
+    }
+</style>
 
 <?= $this->endSection() ?>
