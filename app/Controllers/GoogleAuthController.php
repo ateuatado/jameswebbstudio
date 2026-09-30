@@ -25,8 +25,17 @@ class GoogleAuthController extends BaseController
     public function callback()
     {
         $state = (string) $this->request->getGet('state');
-        $expectedState = (string) session()->remove('google_oauth_state');
-        if ($state === '' || ! hash_equals($expectedState, $state)) return redirect()->to(site_url('login'))->with('error', 'Não foi possível validar o login Google. Tente novamente.');
+        $expectedState = (string) session()->get('google_oauth_state');
+        session()->remove('google_oauth_state');
+        if ($state === '' || $expectedState === '' || ! hash_equals($expectedState, $state)) {
+            log_message('warning', 'Google OAuth state mismatch: received_length={received}, expected_length={expected}, host={host}, uri={uri}', [
+                'received' => strlen($state),
+                'expected' => strlen($expectedState),
+                'host' => (string) $this->request->getUri()->getHost(),
+                'uri' => (string) $this->redirectUri(),
+            ]);
+            return redirect()->to(site_url('login'))->with('error', 'Não foi possível validar o login Google. Tente novamente.');
+        }
         if ($this->request->getGet('error')) return redirect()->to(site_url('login'))->with('error', 'O login Google foi cancelado.');
         $code = (string) $this->request->getGet('code');
         $clientId = $this->setting('GOOGLE_CLIENT_ID', 'google.clientId');
