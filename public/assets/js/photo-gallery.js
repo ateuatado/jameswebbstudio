@@ -28,7 +28,10 @@
         const cents = Number(selected?.value || 0);
         const formattedPrice = cents ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cents / 100) : '';
         if (buy) buy.href = whatsappUrl(`Olá! Quero comprar a edição "${photoName}" no tamanho ${size}${formattedPrice ? `, por ${formattedPrice}` : ''}. Link: ${photoShareUrl}`);
-        if (quote) quote.href = whatsappUrl(`Olá! Gostaria de pedir um orçamento para a fotografia "${photoName}". Link: ${photoShareUrl}`);
+        const quoteText = quote?.dataset.photoQuoteIntent === 'information'
+            ? `Olá! Gostaria de obter mais informações sobre a fotografia "${photoName}". Link: ${photoShareUrl}`
+            : `Olá! Gostaria de pedir um orçamento para a fotografia "${photoName}". Link: ${photoShareUrl}`;
+        if (quote) quote.href = whatsappUrl(quoteText);
     };
     const updateSpecifications = (selected) => {
         const values = {

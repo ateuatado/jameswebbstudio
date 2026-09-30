@@ -33,11 +33,11 @@
         <?php if (!empty($currentImage['is_for_sale'])): ?>
             <div class="photo-commerce-actions" aria-label="Ações de compra">
                 <?php if ($printOptions): ?><a class="photo-buy-button" data-photo-buy target="_blank" rel="noopener">Comprar pelo WhatsApp</a><?php endif ?>
-                <a class="photo-quote-button" data-photo-quote target="_blank" rel="noopener">Pedir orçamento</a>
+                <a class="photo-quote-button" data-photo-quote data-photo-quote-intent="quote" target="_blank" rel="noopener">Pedir orçamento</a>
             </div>
         <?php else: ?>
             <div class="photo-commerce-actions" aria-label="Informações sobre a fotografia">
-                <a class="photo-quote-button" data-photo-quote target="_blank" rel="noopener">Quero mais informação sobre esse quadro</a>
+                <a class="photo-quote-button" data-photo-quote data-photo-quote-intent="information" target="_blank" rel="noopener">Quero mais informação sobre esse quadro</a>
             </div>
         <?php endif ?>
         <section class="photo-share-control" aria-label="Compartilhar fotografia" data-share-url="<?= esc($shareUrl ?? '', 'attr') ?>" data-share-image="<?= esc(base_url($currentImage['image_path']), 'attr') ?>">
