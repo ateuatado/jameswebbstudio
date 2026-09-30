@@ -73,11 +73,15 @@ class PhotoGalleryController extends BaseController
             'imagem' => (int) $currentImage['id'],
             'compartilhar' => $shareVersion,
         ]) : null;
-        $workTitle = $currentImage['title'] ?: $work['title'];
-        $photoDescription = $currentImage['description'] ?: ($currentImage['alt_text'] ?: 'Conheça a obra ' . $workTitle . ' do James Webb Studio.');
+        // O cartão social deve identificar a fotografia compartilhada. O nome
+        // da galeria fica apenas como fallback para fotos sem título próprio.
+        $imageTitle = trim((string) ($currentImage['title'] ?? ''))
+            ?: trim((string) ($currentImage['alt_text'] ?? ''))
+            ?: $work['title'];
+        $photoDescription = $currentImage['description'] ?: ($currentImage['alt_text'] ?: 'Conheça a fotografia ' . $imageTitle . ' do James Webb Studio.');
         return view('photo_gallery/show', [
-            'title' => $workTitle . ' James Webb Studio',
-            'ogTitle' => $workTitle . ' James Webb Studio',
+            'title' => $imageTitle . ' | Fotos | James Webb Studio',
+            'ogTitle' => $imageTitle,
             'ogDescription' => $photoDescription,
             'work' => $work,
             'currentImage' => $currentImage,
