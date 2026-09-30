@@ -99,6 +99,7 @@ futuras.
 - Cada obra pública possui `title`, meta description e metadados Open Graph/Twitter; `Product`/`VisualArtwork` estruturado permanece previsto quando aplicável. Obras esgotadas continuam indexáveis; rascunhos não.
 - Toda imagem deve ter texto alternativo editável, *lazy loading*, dimensões reservadas para evitar salto de layout e navegação por teclado no lightbox.
 - O sitemap deve incluir apenas galerias publicadas. A exclusão deve remover referências de mídia e nunca afetar `heroes`, `photos` de ensaios ou galerias privadas de clientes.
+- O site publica as rotas `/politica-de-privacidade` e `/termos-de-servico`, usadas também no cadastro do login Google e vinculadas no rodapé.
 
 #### 9.7 Decisões de negócio pendentes
 - **Decidido:** a compra oferecerá retirada no estúdio e entrega por frete, cotada inicialmente pela API da Frenet para os serviços **PAC** e **SEDEX** dos Correios. A cotação não terá vencimento exibido, mas será revalidada obrigatoriamente antes do pagamento. A implementação deve cadastrar CEP/endereço e instruções de retirada nas configurações do estúdio.

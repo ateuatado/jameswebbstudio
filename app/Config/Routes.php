@@ -7,6 +7,8 @@ use CodeIgniter\Router\RouteCollection;
  */
 $routes->get('/', 'Home::index');
 $routes->get('sitemap.xml', 'Sitemap::index');
+$routes->get('politica-de-privacidade', 'LegalController::privacy');
+$routes->get('termos-de-servico', 'LegalController::terms');
 
 service('auth')->routes($routes);
 $routes->get('login/google', 'GoogleAuthController::start');

@@ -39,3 +39,5 @@ Este documento lista as tarefas pendentes de acordo com a regra de negócio esta
 - `[x]` **Histórico de navegação:** Registrar cada visualização por fotografia, usuário/token anônimo, data/hora e sequência, preservando repetições.
 - `[x]` **Login social:** Integrar Google OAuth/OIDC ao Shield, com associação segura de identidades, configuração por ambiente e retorno para a fotografia de origem. Falta apenas validar as credenciais e a URL de callback no VPS.
 - `[ ]` **Moderação e inteligência comercial:** Criar painel para moderar comentários, ferramentas antispam, consentimento de analytics e relatórios de recorrência por fotografia.
+- `[x]` **CTA de informação:** Exibir “Quero mais informação sobre esse quadro” nas fotografias sem edição à venda.
+- `[x]` **Páginas legais:** Publicar Política de Privacidade e Termos de Serviço em rotas públicas para o site e o login Google.

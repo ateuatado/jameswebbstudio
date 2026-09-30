@@ -245,6 +245,10 @@
         <p style="margin:0.4rem 0 0; font-family:'Inter',sans-serif; font-size:0.62rem; font-weight:300; letter-spacing:0.08em; color:rgba(197,160,89,0.4);">
             Reprodução proibida sem autorização expressa
         </p>
+        <p style="margin:0.8rem 0 0; font-family:'Inter',sans-serif; font-size:0.65rem;">
+            <a href="<?= site_url('politica-de-privacidade') ?>" style="color:rgba(255,255,255,.45); margin-right:1rem;">Política de Privacidade</a>
+            <a href="<?= site_url('termos-de-servico') ?>" style="color:rgba(255,255,255,.45);">Termos de Serviço</a>
+        </p>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

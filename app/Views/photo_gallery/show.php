@@ -35,6 +35,10 @@
                 <?php if ($printOptions): ?><a class="photo-buy-button" data-photo-buy target="_blank" rel="noopener">Comprar pelo WhatsApp</a><?php endif ?>
                 <a class="photo-quote-button" data-photo-quote target="_blank" rel="noopener">Pedir orçamento</a>
             </div>
+        <?php else: ?>
+            <div class="photo-commerce-actions" aria-label="Informações sobre a fotografia">
+                <a class="photo-quote-button" data-photo-quote target="_blank" rel="noopener">Quero mais informação sobre esse quadro</a>
+            </div>
         <?php endif ?>
         <section class="photo-share-control" aria-label="Compartilhar fotografia" data-share-url="<?= esc($shareUrl ?? '', 'attr') ?>">
             <button class="photo-share-trigger" type="button" data-share-trigger aria-expanded="false" aria-controls="photo-share-options">Compartilhar fotografia</button>
