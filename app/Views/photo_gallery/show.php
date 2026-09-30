@@ -102,6 +102,30 @@
             <?php endif ?>
         </aside>
     </div>
+
+    <?php if ($currentImage): ?>
+        <section class="photo-comments" id="photo-comments" aria-labelledby="photo-comments-title">
+            <h2 id="photo-comments-title">Comentários sobre esta fotografia</h2>
+            <?php if ($comments): ?>
+                <div class="photo-comments-list">
+                    <?php foreach ($comments as $comment): ?>
+                        <article class="photo-comment">
+                            <header><?= esc($comment['display_name'] ?: $comment['username'] ?: 'Visitante') ?> <time datetime="<?= esc($comment['created_at']) ?>"><?= esc(date('d/m/Y H:i', strtotime($comment['created_at']))) ?></time></header>
+                            <p><?= nl2br(esc($comment['body'])) ?></p>
+                        </article>
+                    <?php endforeach ?>
+                </div>
+            <?php else: ?>
+                <p class="photo-comments-empty">Seja a primeira pessoa a comentar esta imagem.</p>
+            <?php endif ?>
+            <form class="photo-comment-form" method="post" action="<?= site_url('fotos/' . $work['slug'] . '/imagem/' . (int) $currentImage['id'] . '/comentarios') ?>">
+                <?= csrf_field() ?>
+                <label for="photo-comment-body">O que esta fotografia desperta em você?</label>
+                <textarea id="photo-comment-body" name="body" rows="4" maxlength="2000" required placeholder="Escreva um comentário..."></textarea>
+                <button type="submit">Comentar</button>
+            </form>
+        </section>
+    <?php endif ?>
 </main>
 <?= $this->endSection() ?>
 

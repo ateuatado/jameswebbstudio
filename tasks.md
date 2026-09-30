@@ -24,14 +24,18 @@ Este documento lista as tarefas pendentes de acordo com a regra de negócio esta
 - `[ ]` **Refatoração do Checkout:** Mover a regra de negócios pesada do `PackageCheckout::buy()` (quase 200 linhas) para um ou mais Serviços (`PaymentService`, `OrderService`), diminuindo o acoplamento com o SDK do Mercado Pago.
 
 ## 7. Acervo Público e Edições Fotográficas
-- `[x]` **Modalidades de entrega:** Oferecer retirada no estúdio e entrega por frete; pedidos devem registrar a modalidade escolhida e endereço apenas quando aplicável.
-- `[x]` **Integração de frete:** Usar a API Frenet, inicialmente com serviços dos Correios; encapsular o provedor em um serviço de frete e manter a chave somente no servidor.
-- `[x]` **Serviços dos Correios:** Oferecer PAC e SEDEX quando disponíveis para o CEP de destino.
-- `[x]` **Revalidação de frete:** Manter a cotação exibida sem vencimento, mas recalcular obrigatoriamente antes de gerar o pagamento e pedir nova aceitação se houver alteração.
+- `[ ]` **Checkout e modalidades de entrega:** Implementar retirada no estúdio e entrega por frete; pedidos devem registrar a modalidade escolhida e endereço apenas quando aplicável.
+- `[ ]` **Integração de frete:** Usar a API Frenet, inicialmente com serviços dos Correios; encapsular o provedor em um serviço de frete e manter a chave somente no servidor.
+- `[ ]` **Serviços dos Correios:** Oferecer PAC e SEDEX quando disponíveis para o CEP de destino.
+- `[ ]` **Revalidação de frete:** Manter a cotação exibida sem vencimento, mas recalcular obrigatoriamente antes de gerar o pagamento e pedir nova aceitação se houver alteração.
 - `[ ]` **Decisões comerciais restantes:** Definir prazo de produção, política de reserva para Pix, obras únicas versus edições/reproduções e política de devolução.
-- `[ ]` **Schema do Acervo de Fotos:** Criar migrações e modelos para `photo_works` e `photo_work_images`, sem modificar `heroes` ou `photos` existentes.
-- `[ ]` **Admin de Fotos:** Criar CRUD em `/admin/fotos` com rascunho/publicação, título, narrativa/histórico, técnica, data/ano, local, coleção, créditos, texto alternativo, capa e ordenação.
+- `[x]` **Schema do Acervo de Fotos:** Criar migrações e modelos para `photo_works`, `photo_work_images` e `photo_print_options`, sem modificar `heroes` ou `photos` existentes; separar versão web e original privado.
+- `[x]` **Admin de Fotos:** Criar CRUD protegido em `/admin/fotos` com rascunho/publicação, título, narrativa/histórico, técnica, data/ano, local, coleção, créditos, texto alternativo, capa, ordenação, upload e CRUD de edições.
 - `[x]` **Galeria pública de Fotos:** Criar `/fotos` e `/fotos/{slug}` com uma capa por galeria, filtros, navegação anterior/próxima, moldura selecionável, metadados SEO e inclusão seletiva no sitemap.
 - `[x]` **Edições à venda:** Associar tamanhos, preço, disponibilidade e pedido de tamanho personalizado diretamente a cada fotografia, com CRUD completo das edições e sem catálogo comercial independente.
 - `[ ]` **Checkout de edições:** Implementar fluxo de pedido/snapshot da fotografia e do tamanho selecionado, reserva transacional quando aplicável, Mercado Pago, webhook idempotente, expiração/cancelamento e recuperação de estoque.
-- `[ ]` **Mídia, segurança e qualidade:** Validar MIME/dimensões, gerar derivados otimizados, restringir acesso aos originais de impressão, testar estoque concorrente, autorização admin, acessibilidade, SEO e fluxos de pagamento.
+- `[ ]` **Mídia, segurança e qualidade:** Completar derivados otimizados, testes de estoque concorrente, checkout/pagamento e auditoria final de acessibilidade/SEO. A autorização admin, a validação de upload, a prévia social e a separação do original privado já foram implementadas.
+- `[x]` **Comentários nas fotografias:** Criar comentários vinculados ao usuário, posicionados antes do rodapé, com retorno à fotografia após autenticação.
+- `[x]` **Histórico de navegação:** Registrar cada visualização por fotografia, usuário/token anônimo, data/hora e sequência, preservando repetições.
+- `[x]` **Login social:** Integrar Google OAuth/OIDC ao Shield, com associação segura de identidades, configuração por ambiente e retorno para a fotografia de origem. Falta apenas validar as credenciais e a URL de callback no VPS.
+- `[ ]` **Moderação e inteligência comercial:** Criar painel para moderar comentários, ferramentas antispam, consentimento de analytics e relatórios de recorrência por fotografia.

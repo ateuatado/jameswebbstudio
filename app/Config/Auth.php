@@ -478,6 +478,13 @@ class Auth extends ShieldAuth
      */
     public function registerRedirect(): string
     {
+        $session = session();
+        $url     = $session->getTempdata('beforeLoginUrl');
+
+        if ($url) {
+            return $this->getUrl($url);
+        }
+
         $url = setting('Auth.redirects')['register'];
 
         return $this->getUrl($url);

@@ -9,6 +9,8 @@ $routes->get('/', 'Home::index');
 $routes->get('sitemap.xml', 'Sitemap::index');
 
 service('auth')->routes($routes);
+$routes->get('login/google', 'GoogleAuthController::start');
+$routes->get('login/google/callback', 'GoogleAuthController::callback');
 
 // ─── Portal Routes (usuários externos com permissão search.global) ────────────
 $routes->group('portal', ['filter' => 'session'], static function ($routes) {
@@ -160,6 +162,7 @@ $routes->get('investimento', 'Pricing::index');
 // ─── Acervo público de fotografias ───────────────────────────────────────────
 $routes->get('fotos', 'PhotoGalleryController::index');
 $routes->get('fotos/(:segment)', 'PhotoGalleryController::show/$1');
+$routes->post('fotos/(:segment)/imagem/(:num)/comentarios', 'PhotoGalleryController::comment/$1/$2');
 
 // ─── Checkout de Pacotes (público) ───────────────────────────────────────────
 $routes->post('comprar-ensaio',        'PackageCheckout::buy');

@@ -114,3 +114,13 @@
     .art-card-info { padding: 0 10px 10px; }
     .art-card h2 { font-size: 1.15rem; }
 }
+.photo-comments { margin: 4rem auto 0; max-width: 860px; padding: 2rem 0 3rem; border-top: 1px solid rgba(197,160,89,.25); }
+.photo-comments h2 { color: #c5a059; font-size: 1.5rem; }
+.photo-comment { padding: 1rem 0; border-bottom: 1px solid rgba(255,255,255,.1); }
+.photo-comment header { color: #c5a059; font-size: .85rem; }
+.photo-comment time { color: rgba(255,255,255,.45); margin-left: .5rem; }
+.photo-comment p { color: rgba(255,255,255,.8); margin: .45rem 0 0; }
+.photo-comment-form { display: grid; gap: .7rem; margin-top: 1.5rem; }
+.photo-comment-form label { color: rgba(255,255,255,.75); }
+.photo-comment-form textarea { width: 100%; color: #fff; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.2); padding: .8rem; }
+.photo-comment-form button { justify-self: start; border: 0; background: #c5a059; color: #1b1512; padding: .65rem 1.2rem; cursor: pointer; }

@@ -65,6 +65,11 @@
                     <button type="submit" class="btn btn-primary btn-block">Entrar</button>
                 </div>
 
+                <?php if (env('GOOGLE_CLIENT_ID') || env('google.clientId')): ?>
+                    <div class="text-center my-3 text-muted">ou</div>
+                    <a href="<?= site_url('login/google') ?>" class="btn btn-outline-dark w-100">Continuar com Google</a>
+                <?php endif ?>
+
                 <?php if (setting('Auth.allowMagicLinkLogins')) : ?>
                     <p class="text-center small">
                         Esqueceu a senha? <a href="<?= url_to('magic-link') ?>">Acesse por link mágico</a>

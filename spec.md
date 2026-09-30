@@ -53,7 +53,11 @@ Um painel completo gerenciando:
 - **Configurações:** Studio Settings, Seções de Contrato e Seções de Guia.
 - **Usuários:** Gerenciamento de níveis de acesso e equipe (UserManagement).
 
-### 9. Acervo Público e Edições Fotográficas (em implementação)
+### 9. Acervo Público e Edições Fotográficas (fase 1 implementada)
+
+**Estado em 29/09/2026:** a fase editorial e administrativa está implementada. O
+checkout, a reserva de estoque, o pagamento e a cotação de frete ainda são etapas
+futuras.
 
 #### 9.1 Decisão de arquitetura
 - **Não reutilizar `heroes`/`photos`:** o módulo atual representa ensaios e landing pages com CTA para contratação. Ele deve permanecer intacto para evitar que regras de venda, estoque e metadados de obra contaminem o fluxo de ensaios.
@@ -62,14 +66,14 @@ Um painel completo gerenciando:
 - O menu público deve manter **Ensaios** (fluxo atual) e **Fotos**; a compra é descoberta dentro da fotografia.
 
 #### 9.2 Experiência pública — Fotos
-- Rotas propostas: `GET /fotos` (grade de galerias) e `GET /fotos/{slug}` (exploração de uma galeria).
+- Rotas implementadas: `GET /fotos` (grade de galerias) e `GET /fotos/{slug}` (exploração de uma galeria). A fotografia pode ser compartilhada por URL estável com o parâmetro de imagem.
 - Cada item da grade representa uma galeria, com uma única imagem de capa, título, ano/coleção e quantidade de fotografias. O clique abre a galeria, sem expor todas as imagens na página inicial.
 - A página da galeria deve apresentar uma fotografia por vez, com controles laterais de anterior/próxima, retorno para a capa do acervo e navegação por teclado. Ela deve informar título, descrição curta, histórico/narrativa, data ou ano, local, técnica/processo, coleção/tema e créditos quando aplicáveis.
 - A fotografia é apresentada com passe-partout e moldura. O visitante pode alternar localmente as variações cinza, preta, marrom e branca; a escolha não altera o cadastro da obra.
 - A navegação deve permitir avançar/voltar entre obras, retornar à grade e compartilhar uma URL estável. Modal/lightbox pode complementar a página, mas não substituí-la, para preservar SEO e acessibilidade.
 - Fotografias marcadas como vendáveis exibem o bloco **“Do pixel ao papel”**, com tamanhos padrão, preço de cada edição e o CTA para solicitar a edição. Fotos não vendáveis permanecem puramente editoriais.
 - A configuração deve oferecer tamanhos proporcionais à imagem, com uma prévia de corte e confirmação se algum formato exigir recorte. O pedido de tamanho personalizado é opcional por fotografia e deve deixar explícito que a proporção original será preservada.
-- O CTA comercial inicial registra o interesse na edição/tamanho selecionado. O checkout completo evoluirá no mesmo fluxo, sem criar uma área paralela de produtos.
+- O CTA comercial inicial apresenta a seleção e registra a intenção no contexto da fotografia; o checkout completo evoluirá no mesmo fluxo, sem criar uma área paralela de produtos.
 
 #### 9.3 Compra e entrega de edições
 - No checkout, o comprador escolherá obrigatoriamente entre **retirada no estúdio** e **entrega por frete**. Retirada não cobra frete e apresenta instruções/endereço após a confirmação; entrega exige CEP/endereço e só pode prosseguir após o valor/prazo do frete ser apresentado e aceito.
@@ -79,19 +83,20 @@ Um painel completo gerenciando:
 - O estoque deve ser reduzido ou reservado em transação no início do pagamento e devolvido quando o pagamento expirar/cancelar. Webhooks do Mercado Pago são a fonte de verdade para confirmação.
 
 #### 9.4 Administração
-- Criar um módulo protegido por `group:admin,superadmin`: **Acervo de Fotos** (`/admin/fotos`), com CRUD, rascunho/publicado, ordenação, imagem de capa, múltiplas fotografias, slug único, prévia pública, exclusão com confirmação e validação de upload (MIME real, tamanho e dimensão).
+- Módulo implementado e protegido por `group:admin,superadmin`: **Acervo de Fotos** (`/admin/fotos`), com CRUD, rascunho/publicado, ordenação, imagem de capa, múltiplas fotografias, slug único, prévia pública, exclusão com confirmação e validação de upload (MIME real, tamanho e dimensão).
 - No cadastro da galeria: título, slug, descrição, história/histórico, data/ano, local, técnica/processo, coleção/tema, créditos, texto alternativo, imagem de capa e ordem de exibição.
 - Para cada fotografia interna, o painel permite marcá-la para venda e cadastrar tamanhos padrão, dimensões, preço, disponibilidade, ordem e permissão/observação de tamanho personalizado. Estoque, produção, acabamento e frete serão acrescentados ao mesmo registro de edição quando o checkout for implementado.
 
 #### 9.5 Modelo de dados proposto
 - `photo_works`: metadados editoriais de uma galeria fotográfica; `slug` único, publicação e ordenação.
-- `photo_work_images`: fotografia de capa e fotografias internas de uma galeria, com texto alternativo, ordem e sinalização comercial opcional.
-- `photo_print_options`: tamanhos/edições vendáveis de uma fotografia, com dimensão, preço em centavos, disponibilidade e ordem.
+- `photo_work_images`: fotografia de capa e fotografias internas de uma galeria, com texto alternativo, ordem, sinalização comercial opcional, versão web e caminho do original privado.
+- `photo_print_options`: tamanhos/edições vendáveis de uma fotografia, com dimensão, preço em centavos, disponibilidade, ordem e especificações de impressão, moldura, fundo, proteção, peso e prazo de produção.
+- O catálogo legado independente de molduras (`frames`/`frame_images`) foi removido; a edição pertence diretamente à fotografia.
 - Futuras tabelas de pedido devem referenciar a fotografia e a edição selecionada, registrando comprador, modalidade (`pickup` ou `shipping`), endereço quando aplicável, frete, pagamento e o *snapshot* da edição no momento da compra.
 - A publicação usa duas cópias enviadas manualmente: uma versão web pública, preparada antes do upload para galeria e compartilhamento, e um original privado para impressão em `writable/`. O sistema não redimensiona, rotaciona ou converte imagens automaticamente.
 
 #### 9.6 SEO, acessibilidade e operação
-- Cada obra pública deve possuir `title`, meta description, Open Graph e `Product`/`VisualArtwork` estruturado quando aplicável. Obras esgotadas continuam indexáveis; rascunhos não.
+- Cada obra pública possui `title`, meta description e metadados Open Graph/Twitter; `Product`/`VisualArtwork` estruturado permanece previsto quando aplicável. Obras esgotadas continuam indexáveis; rascunhos não.
 - Toda imagem deve ter texto alternativo editável, *lazy loading*, dimensões reservadas para evitar salto de layout e navegação por teclado no lightbox.
 - O sitemap deve incluir apenas galerias publicadas. A exclusão deve remover referências de mídia e nunca afetar `heroes`, `photos` de ensaios ou galerias privadas de clientes.
 
@@ -100,6 +105,14 @@ Um painel completo gerenciando:
 - Definir se haverá obras únicas, séries limitadas numeradas, reproduções sob encomenda ou combinação dos três modelos.
 - Definir política de reserva durante Pix, prazo de produção, embalagem, devolução e atendimento pós-venda.
 - Definir política de preço, estoque/produção, acabamento, embalagem e pedido mínimo para tamanhos personalizados.
+
+#### 9.8 Comentários e inteligência de navegação
+- Cada fotografia possui, ao final da página e antes do rodapé, uma área de comentários vinculada ao usuário autenticado.
+- Ao tentar comentar sem sessão, o visitante é encaminhado ao login/cadastro e retorna à mesma galeria e fotografia após autenticar.
+- O histórico registra cada visualização individual, sem deduplicar repetições. Usuários autenticados são vinculados por `user_id`; visitantes anônimos recebem um token persistente no navegador até que façam login.
+- As visualizações devem preservar fotografia, data/hora e sequência, permitindo medir quais obras geram atenção recorrente e apoiar a venda sem confundir visualizações com intenção de compra.
+- A primeira versão publica comentários diretamente; a moderação administrativa, denúncia, antispam e consentimento de analytics ficam planejados antes de uma operação em escala.
+- O login social Google foi integrado ao CodeIgniter Shield por OAuth/OIDC, associando a identidade externa à conta existente sem duplicar usuários. As credenciais e a URL de retorno são configuradas por ambiente.
 
 ## User Scenarios Principais
 
@@ -118,7 +131,7 @@ Um painel completo gerenciando:
 **When** o cliente acessa seu portal
 **Then** ele consegue visualizar, curtir e selecionar as imagens desejadas para compor seu produto final.
 
-### User Story 4 - Descobrir Fotografia Autoral (Priority: P2 — Planejada)
+### User Story 4 - Descobrir Fotografia Autoral (Priority: P2 — Implementada)
 **Given** que uma fotografia está publicada no Acervo de Fotos
 **When** uma pessoa visita `/fotos` e abre a obra
 **Then** ela encontra a fotografia e seu contexto artístico em uma página pública, acessível e compartilhável.

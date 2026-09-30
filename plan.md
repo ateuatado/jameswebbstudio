@@ -48,6 +48,8 @@ As funcionalidades abaixo ainda precisam ser desenvolvidas ou aprimoradas em fut
 - **Fat Controller de Checkout:** A classe `PackageCheckout` acumula muita lógica de negócios e contato direto com SDK. Deve ser isolada em "Services" para facilitar manutenções futuras.
 
 ### 2.3 Acervo Público e Edições Fotográficas
+- **Fase editorial/admin concluída (29/09/2026):** migrações, modelos, CRUD protegido em `/admin/fotos`, upload separado entre versão web e original privado, galeria pública em `/fotos` e `/fotos/{slug}`, compartilhamento social, especificações das edições e remoção do catálogo legado de molduras.
+- **Próxima fase de relacionamento (30/09/2026):** comentários autenticados por fotografia, retorno à imagem após login/cadastro e trilha individual de visualizações com repetições preservadas. Login social será conectado após configurar as credenciais OAuth/OIDC do provedor escolhido.
 - **Propósito único:** o acervo de `heroes` permanece como portfólio de ensaios e páginas de copy. `Fotos` é o acervo artístico; toda oferta comercial nasce da fotografia e não de um catálogo independente.
 - **Fotos:** `/fotos` exibe uma capa por galeria. Cada galeria abre uma sequência navegável de fotografias, com narrativa/histórico, contexto técnico, retorno ao acervo, moldura selecionável e bloco “Do pixel ao papel” quando a fotografia tiver edições à venda.
 - **Administração:** `/admin/fotos` concentra publicação, upload seguro, ordenação, prévia e as opções comerciais de cada fotografia: tamanhos, preço, disponibilidade e tamanho personalizado.
