@@ -91,23 +91,36 @@
         setShareLink('[data-share-facebook]', `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(facebookShareUrl)}`);
         setShareLink('[data-share-x]', `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(xShareUrl)}`);
 
-        // Em celulares compatíveis, compartilha a própria foto como mídia.
-        // Assim o WhatsApp pode enviar a imagem grande, em vez de uma prévia
-        // pequena de link. O link wa.me continua como fallback.
-        if (whatsappButton && imageUrl) whatsappButton.addEventListener('click', async (event) => {
-            if (!navigator.share || !navigator.canShare) return;
-            event.preventDefault();
-            try {
-                const response = await fetch(imageUrl, { credentials: 'same-origin' });
-                if (!response.ok) throw new Error('Não foi possível carregar a fotografia.');
-                const blob = await response.blob();
-                const file = new File([blob], 'fotografia.jpg', { type: blob.type || 'image/jpeg' });
-                if (!navigator.canShare({ files: [file] })) throw new Error('Compartilhamento de arquivos não suportado.');
-                await navigator.share({ files: [file], title, text: `${text} ${whatsappShareUrl}` });
-            } catch (error) {
-                if (error?.name !== 'AbortError') window.open(whatsappLink, '_blank', 'noopener');
-            }
-        });
+        // Em celulares compatíveis, os botões de WhatsApp compartilham a
+        // própria foto como mídia. No desktop, o link wa.me continua sendo o
+        // fallback e aparece como uma prévia compacta.
+        const shareAsMedia = (button) => {
+            if (!button || !imageUrl) return;
+            button.addEventListener('click', async (event) => {
+                if (!navigator.share || !navigator.canShare) return;
+                event.preventDefault();
+                const fallbackUrl = button.href;
+                let shareText = text;
+                try {
+                    shareText = new URL(fallbackUrl).searchParams.get('text') || text;
+                } catch (_) {
+                    // Mantém o texto padrão se o link ainda não estiver pronto.
+                }
+                try {
+                    const response = await fetch(imageUrl, { credentials: 'same-origin' });
+                    if (!response.ok) throw new Error('Não foi possível carregar a fotografia.');
+                    const blob = await response.blob();
+                    const file = new File([blob], 'fotografia.jpg', { type: blob.type || 'image/jpeg' });
+                    if (!navigator.canShare({ files: [file] })) throw new Error('Compartilhamento de arquivos não suportado.');
+                    await navigator.share({ files: [file], title, text: shareText });
+                } catch (error) {
+                    if (error?.name !== 'AbortError') window.open(fallbackUrl, '_blank', 'noopener');
+                }
+            });
+        };
+        shareAsMedia(whatsappButton);
+        shareAsMedia(buy);
+        shareAsMedia(quote);
 
         shareTrigger.addEventListener('click', () => {
             const expanded = shareTrigger.getAttribute('aria-expanded') === 'true';
