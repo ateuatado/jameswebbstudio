@@ -211,6 +211,14 @@ class PhotoWorkController extends BaseController
             return redirect()->back()->withInput()->with('errors', $this->printOptions->errors());
         }
 
+        // Uma edição disponível é a oferta comercial da fotografia. Ative a
+        // fotografia ao criar a primeira edição para evitar que o cadastro
+        // fique salvo, mas invisível no site público por causa de uma segunda
+        // caixa de seleção esquecida.
+        if ($option['is_available']) {
+            $this->images->update($imageId, ['is_for_sale' => 1]);
+        }
+
         return redirect()->to(site_url("admin/fotos/{$workId}/imagens/{$imageId}/edicoes"))->with('message', 'Edição criada.');
     }
 
