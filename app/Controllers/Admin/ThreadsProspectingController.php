@@ -35,14 +35,31 @@ class ThreadsProspectingController extends BaseController
 
     public function new()
     {
-        return view('admin/threads/form', $this->formData(null));
+        return view('admin/threads/capture', ['title' => 'Nova captura do Threads']);
+    }
+
+    public function prepare()
+    {
+        $username = trim((string) $this->request->getPost('threads_username'));
+        $originalText = trim((string) $this->request->getPost('original_text'));
+        if ($username === '' || $originalText === '') {
+            return redirect()->back()->withInput()->with('error', 'Informe o perfil e o texto da publicação.');
+        }
+
+        $data = $this->formPayload();
+        $data['assigned_user_id'] = (int) ($data['assigned_user_id'] ?: auth()->id());
+        $data['page_token'] = bin2hex(random_bytes(32));
+        $data = $this->applyGeneratedDefaults($data);
+
+        return view('admin/threads/form', $this->formData(null, (object) $data, true));
     }
 
     public function create()
     {
         $model = new ThreadsOpportunityModel();
         $data = $this->formPayload();
-        $data['page_token'] = bin2hex(random_bytes(32));
+        $postedToken = trim((string) ($data['page_token'] ?? ''));
+        $data['page_token'] = preg_match('/^[a-f0-9]{64}$/', $postedToken) ? $postedToken : bin2hex(random_bytes(32));
         $data['assigned_user_id'] = (int) ($data['assigned_user_id'] ?: auth()->id());
         $data['last_action_at'] = date('Y-m-d H:i:s');
         $data = $this->applyGeneratedDefaults($data);
@@ -119,6 +136,7 @@ class ThreadsProspectingController extends BaseController
             'cta_url' => trim((string) $this->request->getPost('cta_url')) ?: null,
             'whatsapp_owner' => trim((string) $this->request->getPost('whatsapp_owner')) ?: null,
             'whatsapp_number' => trim((string) $this->request->getPost('whatsapp_number')) ?: null,
+            'page_token' => trim((string) $this->request->getPost('page_token')) ?: null,
             'is_page_active' => (int) ($this->request->getPost('is_page_active') ?? 1),
             'next_action_at' => trim((string) $this->request->getPost('next_action_at')) ?: null,
             'response_notes' => trim((string) $this->request->getPost('response_notes')) ?: null,
@@ -127,10 +145,10 @@ class ThreadsProspectingController extends BaseController
         ];
     }
 
-    private function formData(?object $opportunity): array
+    private function formData(?object $opportunity, ?object $draft = null, bool $isDraft = false): array
     {
         $settings = (new \App\Models\StudioSettingModel())->getAll();
-        return ['title' => $opportunity ? 'Editar oportunidade' : 'Nova oportunidade', 'opportunity' => $opportunity, 'statuses' => ThreadsOpportunityModel::STATUSES, 'categories' => ThreadsOpportunityModel::CATEGORIES, 'adminUsers' => $this->adminUsers(), 'whatsappContacts' => ['marco' => ['label' => 'Meu WhatsApp', 'number' => $settings['studio_phone'] ?? ''], 'wife' => ['label' => 'WhatsApp da minha esposa', 'number' => $settings['studio_whatsapp_wife'] ?? '']]];
+        return ['title' => $opportunity ? 'Editar oportunidade' : 'Revisar e personalizar', 'opportunity' => $opportunity, 'draft' => $draft, 'isDraft' => $isDraft, 'statuses' => ThreadsOpportunityModel::STATUSES, 'categories' => ThreadsOpportunityModel::CATEGORIES, 'adminUsers' => $this->adminUsers(), 'whatsappContacts' => ['marco' => ['label' => 'Meu WhatsApp', 'number' => $settings['studio_phone'] ?? ''], 'wife' => ['label' => 'WhatsApp da minha esposa', 'number' => $settings['studio_whatsapp_wife'] ?? '']]];
     }
 
     private function applyGeneratedDefaults(array $data, ?string $token = null): array

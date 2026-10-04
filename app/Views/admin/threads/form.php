@@ -1,12 +1,13 @@
 <?= $this->extend('admin/layout') ?>
-<?php $item = $opportunity; $v = static function (string $field, $fallback = '') use ($item) { return old($field, $item ? ($item->{$field} ?? $fallback) : $fallback); }; ?>
+<?php $item = $opportunity; $draft = $draft ?? null; $source = $item ?: $draft; $isDraft = $isDraft ?? false; $v = static function (string $field, $fallback = '') use ($source) { return old($field, $source ? ($source->{$field} ?? $fallback) : $fallback); }; ?>
 <?= $this->section('content') ?>
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <div><h2 class="text-danger fw-bold mb-1"><?= esc($title) ?></h2><p class="text-muted mb-0"><?= $item ? 'Revise os materiais ou copie o link pronto.' : 'Preencha o essencial. O restante será preparado automaticamente.' ?></p></div>
+    <div><h2 class="text-danger fw-bold mb-1"><?= esc($title) ?></h2><p class="text-muted mb-0"><?= $item ? 'Revise os materiais ou copie o link pronto.' : 'Confira a abordagem preparada antes de salvar.' ?></p></div>
     <a href="<?= site_url('admin/threads') ?>" class="btn btn-outline-secondary">Voltar</a>
 </div>
 
 <form method="post" action="<?= $item ? site_url('admin/threads/' . $item->id) : site_url('admin/threads') ?>">
+<?php if (!$item && $isDraft): ?><input type="hidden" name="page_token" value="<?= esc($v('page_token')) ?>"><?php endif ?>
 <div class="row g-4">
 <div class="col-lg-7">
 <div class="card bg-dark border-secondary mb-4"><div class="card-header d-flex justify-content-between align-items-center"><span>Comece por aqui</span><span class="badge bg-danger">mínimo necessário</span></div><div class="card-body row g-3">
@@ -29,7 +30,7 @@
 </div>
 
 <div class="col-lg-5">
-<?php if (!$item): ?>
+<?php if (!$item && !$isDraft): ?>
 <div class="card bg-dark border-danger mb-4"><div class="card-body"><h4 class="text-danger">Tudo pronto para começar</h4><p class="text-muted mb-0">Ao clicar no botão, o sistema cria a página, gera o link privado e prepara automaticamente o comentário e o direct.</p></div></div>
 <?php else: ?>
 <div class="card bg-dark border-secondary mb-4"><div class="card-header">Materiais gerados</div><div class="card-body">
@@ -44,7 +45,7 @@
     <input type="hidden" name="is_page_active" value="0"><div class="form-check mt-3"><input class="form-check-input" type="checkbox" name="is_page_active" value="1" id="page_active" <?= $v('is_page_active', 1) ? 'checked' : '' ?>><label class="form-check-label" for="page_active">Link da página ativo</label></div>
 </div></div>
 <?php endif ?>
-<button class="btn btn-danger btn-lg w-100"><?= $item ? 'Salvar alterações' : '✨ Criar página e gerar link' ?></button>
+<button class="btn btn-danger btn-lg w-100"><?= $item ? 'Salvar alterações' : '✨ Salvar e gerar link' ?></button>
 </div></div>
 </form>
 <?php if ($item): ?><div class="card bg-dark border-info mt-4"><div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3"><div><strong>Link para enviar no direct</strong><br><code id="private_link"><?= esc(site_url('convite/' . $item->page_token)) ?></code></div><div class="d-flex gap-2\"><button class="btn btn-sm btn-outline-light" type="button" onclick="copyField('private_link')">Copiar link</button><a href="<?= site_url('convite/' . $item->page_token) ?>" target="_blank" class="btn btn-sm btn-outline-info">Abrir página</a><form method="post" action="<?= site_url('admin/threads/' . $item->id . '/regenerate') ?>" onsubmit="return confirm('Regenerar o link? O anterior deixará de funcionar.')\"><button class="btn btn-sm btn-outline-warning">Regenerar</button></form></div></div></div><?php endif ?>

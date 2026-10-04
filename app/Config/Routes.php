@@ -146,6 +146,7 @@ $routes->group('admin', ['filter' => 'group:admin,superadmin'], static function 
     // ── Prospecção contextual no Threads ──────────────────────────────────────
     $routes->get( 'threads',                         'Admin\ThreadsProspectingController::index');
     $routes->get( 'threads/new',                    'Admin\ThreadsProspectingController::new');
+    $routes->post('threads/prepare',                'Admin\ThreadsProspectingController::prepare');
     $routes->post('threads',                        'Admin\ThreadsProspectingController::create');
     $routes->get( 'threads/(:num)/edit',             'Admin\ThreadsProspectingController::edit/$1');
     $routes->post('threads/(:num)',                  'Admin\ThreadsProspectingController::update/$1');
