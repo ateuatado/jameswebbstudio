@@ -152,6 +152,7 @@ $routes->group('admin', ['filter' => 'group:admin,superadmin'], static function 
     $routes->post('threads/(:num)',                  'Admin\ThreadsProspectingController::update/$1');
     $routes->post('threads/(:num)/status',           'Admin\ThreadsProspectingController::status/$1');
     $routes->post('threads/(:num)/regenerate',       'Admin\ThreadsProspectingController::regenerate/$1');
+    $routes->post('threads/(:num)/regenerate-copy', 'Admin\ThreadsProspectingController::regenerateCopy/$1');
 
 });
 
