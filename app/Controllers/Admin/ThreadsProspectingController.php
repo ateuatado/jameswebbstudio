@@ -40,13 +40,39 @@ class ThreadsProspectingController extends BaseController
 
     public function prepare()
     {
-        $username = trim((string) $this->request->getPost('threads_username'));
-        $originalText = trim((string) $this->request->getPost('original_text'));
-        if ($username === '' || $originalText === '') {
-            return redirect()->back()->withInput()->with('error', 'Informe o perfil e o texto da publicação.');
+        $sourceText = trim((string) $this->request->getPost('pasted_text'));
+        $parsed = $this->parsePastedThread($sourceText);
+        if (!$parsed['username'] || !$parsed['original_text']) {
+            return redirect()->back()->withInput()->with('error', 'Não consegui identificar o perfil e o texto da publicação. Cole a captura completa do Threads.');
         }
 
-        $data = $this->formPayload();
+        $data = [
+            'threads_username' => $parsed['username'],
+            'threads_post_url' => $parsed['post_url'],
+            'source_text' => $sourceText,
+            'published_relative' => $parsed['published_relative'],
+            'hashtags' => implode(', ', $parsed['hashtags']),
+            'original_text' => $parsed['original_text'],
+            'context_category' => $parsed['context_category'],
+            'priority' => $parsed['priority'],
+            'city' => null,
+            'status' => 'identified',
+            'assigned_user_id' => (int) auth()->id(),
+            'is_page_active' => 1,
+            'next_action_at' => null,
+            'response_notes' => '',
+            'proposal_value_cents' => null,
+            'closed_reason' => null,
+            'comment_copy' => null,
+            'direct_copy' => null,
+            'page_title' => null,
+            'page_intro' => null,
+            'offer_copy' => null,
+            'cta_label' => 'Quero conversar',
+            'cta_url' => null,
+            'whatsapp_owner' => 'marco',
+            'whatsapp_number' => null,
+        ];
         $data['assigned_user_id'] = (int) ($data['assigned_user_id'] ?: auth()->id());
         $data['page_token'] = bin2hex(random_bytes(32));
         $data = $this->applyGeneratedDefaults($data);
@@ -122,6 +148,9 @@ class ThreadsProspectingController extends BaseController
             'assigned_user_id' => (int) ($this->request->getPost('assigned_user_id') ?? 0) ?: null,
             'threads_username' => trim((string) $this->request->getPost('threads_username')),
             'threads_post_url' => trim((string) $this->request->getPost('threads_post_url')) ?: null,
+            'source_text' => trim((string) $this->request->getPost('source_text')) ?: null,
+            'published_relative' => trim((string) $this->request->getPost('published_relative')) ?: null,
+            'hashtags' => trim((string) $this->request->getPost('hashtags')) ?: null,
             'original_text' => trim((string) $this->request->getPost('original_text')),
             'context_category' => trim((string) $this->request->getPost('context_category')) ?: 'outro',
             'priority' => $this->request->getPost('priority') ?: 'medium',
@@ -179,6 +208,56 @@ class ThreadsProspectingController extends BaseController
         }
 
         return $data;
+    }
+
+    private function parsePastedThread(string $raw): array
+    {
+        $normalized = preg_replace('/\r\n?/', "\n", trim($raw));
+        $username = '';
+        $profileUrl = '';
+        $postUrl = '';
+        $publishedRelative = '';
+
+        if (preg_match('/\[\*\*([^*]+)\*\*\]\((https?:\/\/[^)]+)\)/u', $normalized, $match)) {
+            $username = trim($match[1]);
+            $profileUrl = trim($match[2]);
+        }
+        if (preg_match_all('/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/u', $normalized, $links, PREG_SET_ORDER)) {
+            foreach ($links as $link) {
+                if (str_contains($link[2], '/post/')) {
+                    $publishedRelative = trim($link[1]);
+                    $postUrl = trim($link[2]);
+                    break;
+                }
+            }
+        }
+
+        $hashtags = [];
+        if (preg_match_all('/(?:^|\s)#([\p{L}\p{N}_-]+)/u', $normalized, $tagMatches)) {
+            $hashtags = array_values(array_unique(array_map('strtolower', $tagMatches[1])));
+        }
+
+        $body = $normalized;
+        $body = preg_replace('/^.*?^More\s*$/ms', '', $body, 1);
+        $body = preg_split('/^\s*(?:Like|Reply|Repost|Share|Follow)\s*$/mi', $body, 2)[0] ?? $body;
+        $body = preg_replace('/(?:^|\s)#[\p{L}\p{N}_-]+/u', ' ', $body);
+        $body = trim(preg_replace('/[ \t]+/', ' ', $body));
+
+        $lowerTags = implode(' ', $hashtags);
+        $isProfessional = (bool) preg_match('/tatuadora|tattooartist|designer|nail|psic[oó]loga|fot[oó]grafa|m[eé]dica|dra\.|profissional|empreendedora/i', $lowerTags . ' ' . $body);
+        $isAesthetic = (bool) preg_match('/altgirl|alternative|goth|g[oó]tica|dark|metal|punk|alternativeaesthetic/i', $lowerTags . ' ' . $body);
+        $category = $isProfessional ? 'profissão' : ($isAesthetic ? 'afinidade estética' : 'outro');
+
+        return [
+            'username' => ltrim($username, '@'),
+            'profile_url' => $profileUrl,
+            'post_url' => $postUrl ?: ($profileUrl ?: null),
+            'published_relative' => $publishedRelative,
+            'hashtags' => $hashtags,
+            'original_text' => $body,
+            'context_category' => $category,
+            'priority' => $isProfessional ? 'high' : ($isAesthetic ? 'medium' : 'low'),
+        ];
     }
 
     private function adminUsers(): array

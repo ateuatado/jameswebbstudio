@@ -11,7 +11,7 @@ class ThreadsOpportunityModel extends Model
     protected $returnType = 'object';
     protected $useTimestamps = true;
     protected $allowedFields = [
-        'assigned_user_id', 'threads_username', 'threads_post_url', 'original_text',
+        'assigned_user_id', 'threads_username', 'threads_post_url', 'source_text', 'published_relative', 'hashtags', 'original_text',
         'context_category', 'priority', 'city', 'status', 'comment_copy', 'direct_copy',
         'page_title', 'page_intro', 'offer_copy', 'cta_label', 'cta_url', 'whatsapp_owner', 'whatsapp_number', 'page_token',
         'is_page_active', 'last_action_at', 'next_action_at', 'response_notes',
