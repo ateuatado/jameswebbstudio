@@ -206,13 +206,10 @@ class ThreadsProspectingController extends BaseController
             $category = 'recomeço';
             $data['context_category'] = $category;
         }
-        $quote = mb_substr(preg_replace('/\s+/', ' ', $original), 0, 280);
-        $quote = trim($quote, " \t\n\r\0\x0B\"“”");
-
         $data['comment_copy'] = $data['comment_copy'] ?: "{$handle}, a frase que você publicou ficou com a gente. Eu e minha esposa, do James Webb Studio, na Lapa (SP), preparamos uma surpresa a partir dela e te mandamos no direct. ✨";
         $data['direct_copy'] = $data['direct_copy'] ?: "Oi, {$handle}! Li sua publicação e preparei uma página especialmente a partir dela. Eu e minha esposa atendemos juntos no James Webb Studio, na Lapa (SP). Se fizer sentido, veja aqui: {$link}";
-        $data['page_title'] = $data['page_title'] ?: "{$handle}, a sua história merece ser vista";
-        $data['page_intro'] = $data['page_intro'] ?: "Você escreveu: “{$quote}”. Nós lemos essa frase como uma expressão de {$category}, identidade e presença. Esta página nasceu desse encontro entre o que você compartilhou e o que imaginamos criar com você.";
+        $data['page_title'] = $data['page_title'] ?: "{$handle}, vamos celebrar esta fase";
+        $data['page_intro'] = $data['page_intro'] ?: "Sua publicação sobre {$category} nos fez parar. Há momentos que merecem ser guardados não só na memória, mas também em imagens — com tempo, direção e cuidado.";
         $data['offer_copy'] = $data['offer_copy'] ?: "Gostaríamos de te convidar para conhecer uma experiência de ensaio no James Webb Studio, na Lapa (SP), pensada a partir do que você expressou. Um encontro para transformar essa história em imagens com tempo, direção e cuidado. O atendimento é feito por mim e minha esposa juntos, seguindo o protocolo de segurança e acolhimento do estúdio.";
         $data['cta_label'] = $data['cta_label'] ?: 'Quero conversar';
 
