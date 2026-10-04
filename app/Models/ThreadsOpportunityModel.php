@@ -20,9 +20,9 @@ class ThreadsOpportunityModel extends Model
 
     protected $validationRules = [
         'threads_username' => 'required|max_length[120]',
-        'threads_post_url' => 'required|valid_url_strict|max_length[512]',
+        'threads_post_url' => 'permit_empty|valid_url_strict|max_length[512]',
         'original_text' => 'required',
-        'context_category' => 'required|max_length[80]',
+        'context_category' => 'permit_empty|max_length[80]',
         'priority' => 'required|in_list[high,medium,low]',
         'status' => 'required|in_list[identified,drafting,ready,commented,direct_sent,replied,conversation,proposal_sent,scheduled,won,not_interested,do_not_contact,expired]',
         'page_token' => 'required|exact_length[64]',

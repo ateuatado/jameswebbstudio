@@ -45,6 +45,7 @@ class ThreadsProspectingController extends BaseController
         $data['page_token'] = bin2hex(random_bytes(32));
         $data['assigned_user_id'] = (int) ($data['assigned_user_id'] ?: auth()->id());
         $data['last_action_at'] = date('Y-m-d H:i:s');
+        $data = $this->applyGeneratedDefaults($data);
 
         if (!$model->insert($data)) {
             return redirect()->back()->withInput()->with('error', implode('<br>', $model->errors()));
@@ -70,6 +71,7 @@ class ThreadsProspectingController extends BaseController
         $data = $this->formPayload();
         $data['page_token'] = $existing->page_token;
         $data['last_action_at'] = date('Y-m-d H:i:s');
+        $data = $this->applyGeneratedDefaults($data, $existing->page_token);
         if (!$model->update($id, $data)) return redirect()->back()->withInput()->with('error', implode('<br>', $model->errors()));
         $this->event($id, 'updated');
         return redirect()->to(site_url('admin/threads/' . $id . '/edit'))->with('message', 'Oportunidade atualizada.');
@@ -102,9 +104,9 @@ class ThreadsProspectingController extends BaseController
         return [
             'assigned_user_id' => (int) ($this->request->getPost('assigned_user_id') ?? 0) ?: null,
             'threads_username' => trim((string) $this->request->getPost('threads_username')),
-            'threads_post_url' => trim((string) $this->request->getPost('threads_post_url')),
+            'threads_post_url' => trim((string) $this->request->getPost('threads_post_url')) ?: null,
             'original_text' => trim((string) $this->request->getPost('original_text')),
-            'context_category' => trim((string) $this->request->getPost('context_category')),
+            'context_category' => trim((string) $this->request->getPost('context_category')) ?: 'outro',
             'priority' => $this->request->getPost('priority') ?: 'medium',
             'city' => trim((string) $this->request->getPost('city')) ?: null,
             'status' => $this->request->getPost('status') ?: 'identified',
@@ -115,7 +117,7 @@ class ThreadsProspectingController extends BaseController
             'offer_copy' => trim((string) $this->request->getPost('offer_copy')) ?: null,
             'cta_label' => trim((string) $this->request->getPost('cta_label')) ?: 'Quero conversar',
             'cta_url' => trim((string) $this->request->getPost('cta_url')) ?: null,
-            'is_page_active' => (int) ($this->request->getPost('is_page_active') ?? 0),
+            'is_page_active' => (int) ($this->request->getPost('is_page_active') ?? 1),
             'next_action_at' => trim((string) $this->request->getPost('next_action_at')) ?: null,
             'response_notes' => trim((string) $this->request->getPost('response_notes')) ?: null,
             'proposal_value_cents' => $money,
@@ -126,6 +128,25 @@ class ThreadsProspectingController extends BaseController
     private function formData(?object $opportunity): array
     {
         return ['title' => $opportunity ? 'Editar oportunidade' : 'Nova oportunidade', 'opportunity' => $opportunity, 'statuses' => ThreadsOpportunityModel::STATUSES, 'categories' => ThreadsOpportunityModel::CATEGORIES, 'adminUsers' => $this->adminUsers()];
+    }
+
+    private function applyGeneratedDefaults(array $data, ?string $token = null): array
+    {
+        $username = ltrim(trim((string) ($data['threads_username'] ?? 'perfil')), '@');
+        $handle = '@' . $username;
+        $postUrl = $data['threads_post_url'] ?? null;
+        if (!$postUrl) $data['threads_post_url'] = 'https://www.threads.com/@' . rawurlencode($username);
+        $link = site_url('convite/' . ($token ?: $data['page_token']));
+        $category = $data['context_category'] ?: 'outro';
+
+        $data['comment_copy'] = $data['comment_copy'] ?: "{$handle}, sua publicação chamou nossa atenção de um jeito muito bonito. Preparamos uma surpresa pensando no que você escreveu e te mandamos no direct. ✨";
+        $data['direct_copy'] = $data['direct_copy'] ?: "Oi, {$handle}! Li sua publicação e preparei uma página especialmente a partir dela. Deixei o link aqui: {$link}";
+        $data['page_title'] = $data['page_title'] ?: 'Uma página preparada para você';
+        $data['page_intro'] = $data['page_intro'] ?: "Sua publicação sobre {$category} chamou nossa atenção. Imaginamos como essa presença poderia se transformar em imagens feitas com tempo, direção e cuidado.";
+        $data['offer_copy'] = $data['offer_copy'] ?: 'Gostaríamos de te convidar para conhecer uma experiência de ensaio no James Webb Studio — um encontro para registrar quem você é e o que deseja transmitir, sem pressa e sem obrigação.';
+        $data['cta_label'] = $data['cta_label'] ?: 'Quero conversar';
+
+        return $data;
     }
 
     private function adminUsers(): array
