@@ -117,6 +117,8 @@ class ThreadsProspectingController extends BaseController
             'offer_copy' => trim((string) $this->request->getPost('offer_copy')) ?: null,
             'cta_label' => trim((string) $this->request->getPost('cta_label')) ?: 'Quero conversar',
             'cta_url' => trim((string) $this->request->getPost('cta_url')) ?: null,
+            'whatsapp_owner' => trim((string) $this->request->getPost('whatsapp_owner')) ?: null,
+            'whatsapp_number' => trim((string) $this->request->getPost('whatsapp_number')) ?: null,
             'is_page_active' => (int) ($this->request->getPost('is_page_active') ?? 1),
             'next_action_at' => trim((string) $this->request->getPost('next_action_at')) ?: null,
             'response_notes' => trim((string) $this->request->getPost('response_notes')) ?: null,
@@ -127,7 +129,8 @@ class ThreadsProspectingController extends BaseController
 
     private function formData(?object $opportunity): array
     {
-        return ['title' => $opportunity ? 'Editar oportunidade' : 'Nova oportunidade', 'opportunity' => $opportunity, 'statuses' => ThreadsOpportunityModel::STATUSES, 'categories' => ThreadsOpportunityModel::CATEGORIES, 'adminUsers' => $this->adminUsers()];
+        $settings = (new \App\Models\StudioSettingModel())->getAll();
+        return ['title' => $opportunity ? 'Editar oportunidade' : 'Nova oportunidade', 'opportunity' => $opportunity, 'statuses' => ThreadsOpportunityModel::STATUSES, 'categories' => ThreadsOpportunityModel::CATEGORIES, 'adminUsers' => $this->adminUsers(), 'whatsappContacts' => ['marco' => ['label' => 'Meu WhatsApp', 'number' => $settings['studio_phone'] ?? ''], 'wife' => ['label' => 'WhatsApp da minha esposa', 'number' => $settings['studio_whatsapp_wife'] ?? '']]];
     }
 
     private function applyGeneratedDefaults(array $data, ?string $token = null): array
@@ -145,6 +148,17 @@ class ThreadsProspectingController extends BaseController
         $data['page_intro'] = $data['page_intro'] ?: "Sua publicação sobre {$category} chamou nossa atenção. Imaginamos como essa presença poderia se transformar em imagens feitas com tempo, direção e cuidado.";
         $data['offer_copy'] = $data['offer_copy'] ?: 'Gostaríamos de te convidar para conhecer uma experiência de ensaio no James Webb Studio, na Lapa (SP) — um encontro para registrar quem você é e o que deseja transmitir, sem pressa e sem obrigação. O atendimento é feito por mim e minha esposa juntos, seguindo o protocolo de segurança e acolhimento do estúdio.';
         $data['cta_label'] = $data['cta_label'] ?: 'Quero conversar';
+
+        $contacts = (new \App\Models\StudioSettingModel())->getAll();
+        $owner = $data['whatsapp_owner'] ?: 'marco';
+        $number = preg_replace('/\D+/', '', (string) ($data['whatsapp_number'] ?: ($owner === 'wife' ? ($contacts['studio_whatsapp_wife'] ?? '') : ($contacts['studio_phone'] ?? ''))));
+        $data['whatsapp_owner'] = $owner;
+        $data['whatsapp_number'] = $number ?: null;
+        if ($number) {
+            $message = rawurlencode("Olá! Vi o convite que vocês prepararam para mim no James Webb Studio.");
+            $data['cta_url'] = 'https://wa.me/' . $number . '?text=' . $message;
+            $data['cta_label'] = 'Conversar pelo WhatsApp';
+        }
 
         return $data;
     }
