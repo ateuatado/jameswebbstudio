@@ -139,11 +139,11 @@ class ThreadsProspectingController extends BaseController
         $link = site_url('convite/' . ($token ?: $data['page_token']));
         $category = $data['context_category'] ?: 'outro';
 
-        $data['comment_copy'] = $data['comment_copy'] ?: "{$handle}, sua publicação chamou nossa atenção de um jeito muito bonito. Preparamos uma surpresa pensando no que você escreveu e te mandamos no direct. ✨";
-        $data['direct_copy'] = $data['direct_copy'] ?: "Oi, {$handle}! Li sua publicação e preparei uma página especialmente a partir dela. Deixei o link aqui: {$link}";
+        $data['comment_copy'] = $data['comment_copy'] ?: "{$handle}, sua publicação chamou nossa atenção de um jeito muito bonito. Eu e minha esposa, do James Webb Studio, na Lapa (SP), preparamos uma surpresa pensando no que você escreveu e te mandamos no direct. ✨";
+        $data['direct_copy'] = $data['direct_copy'] ?: "Oi, {$handle}! Li sua publicação e preparei uma página especialmente a partir dela. Eu e minha esposa atendemos juntos no James Webb Studio, na Lapa (SP), como parte do nosso protocolo de segurança e acolhimento. Deixei o link aqui: {$link}";
         $data['page_title'] = $data['page_title'] ?: 'Uma página preparada para você';
         $data['page_intro'] = $data['page_intro'] ?: "Sua publicação sobre {$category} chamou nossa atenção. Imaginamos como essa presença poderia se transformar em imagens feitas com tempo, direção e cuidado.";
-        $data['offer_copy'] = $data['offer_copy'] ?: 'Gostaríamos de te convidar para conhecer uma experiência de ensaio no James Webb Studio — um encontro para registrar quem você é e o que deseja transmitir, sem pressa e sem obrigação.';
+        $data['offer_copy'] = $data['offer_copy'] ?: 'Gostaríamos de te convidar para conhecer uma experiência de ensaio no James Webb Studio, na Lapa (SP) — um encontro para registrar quem você é e o que deseja transmitir, sem pressa e sem obrigação. O atendimento é feito por mim e minha esposa juntos, seguindo o protocolo de segurança e acolhimento do estúdio.';
         $data['cta_label'] = $data['cta_label'] ?: 'Quero conversar';
 
         return $data;
