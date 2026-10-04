@@ -143,6 +143,15 @@ $routes->group('admin', ['filter' => 'group:admin,superadmin'], static function 
     $routes->post('tracking/(:num)/delete',     'Admin\TrackingLinkController::destroy/$1');
     $routes->post('tracking/(:num)/toggle',     'Admin\TrackingLinkController::toggleActive/$1');
 
+    // ── Prospecção contextual no Threads ──────────────────────────────────────
+    $routes->get( 'threads',                         'Admin\ThreadsProspectingController::index');
+    $routes->get( 'threads/new',                    'Admin\ThreadsProspectingController::new');
+    $routes->post('threads',                        'Admin\ThreadsProspectingController::create');
+    $routes->get( 'threads/(:num)/edit',             'Admin\ThreadsProspectingController::edit/$1');
+    $routes->post('threads/(:num)',                  'Admin\ThreadsProspectingController::update/$1');
+    $routes->post('threads/(:num)/status',           'Admin\ThreadsProspectingController::status/$1');
+    $routes->post('threads/(:num)/regenerate',       'Admin\ThreadsProspectingController::regenerate/$1');
+
 });
 
 // ─── Agenda Proxy (resolve CORS/SSL server-side) ──────────────────────────────
@@ -208,6 +217,9 @@ $routes->get('(:segment)/agendar', 'LandingPage::view/$1');
 
 // ─── Links Rastreados (redireciona e registra visita) ─────────────────────────
 $routes->get('r/(:segment)', 'TrackingController::redirect/$1');
+
+// ─── Página privada de convite do Threads ─────────────────────────────────────
+$routes->get('convite/(:segment)', 'ThreadsInvitationController::show/$1');
 
 // ─── Página pública do herói por slug (catch-all — deve ser a última) ─────────
 $routes->get('(:segment)', 'HeroPage::view/$1', ['priority' => 99]);

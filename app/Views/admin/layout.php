@@ -59,6 +59,9 @@
                         <a class="nav-link text-warning fw-semibold" href="<?= site_url('admin/tracking') ?>">🔗 Rastreamento</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link text-danger fw-semibold" href="<?= site_url('admin/threads') ?>">💬 Threads</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link text-info" href="<?= site_url('admin/studio') ?>">Estúdio</a>
                     </li>
                     <?php if (auth()->user()->inGroup('admin','superadmin') || auth()->user()->can('search.global')): ?>

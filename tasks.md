@@ -12,6 +12,15 @@ Este documento lista as tarefas pendentes de acordo com a regra de negócio esta
 ## 3. Gestão de Leads (Intention)
 - `[ ]` **Régua de Recuperação:** Desenhar fluxo para capturar clientes no `IntentionController` e integrá-los a um disparo de e-mails automático (ex: AWS SES) ou pipeline visível no Painel Admin para o time de vendas.
 
+## 3.1 Prospecção contextual no Threads
+- `[ ]` **Modelo de oportunidade:** Registrar perfil, URL e texto da publicação, contexto declarado, categoria, prioridade, responsável, observações e origem.
+- `[ ]` **Funil de prospecção:** Criar status, histórico, próxima ação, prevenção de duplicidade e fila compartilhada para a equipe.
+- `[ ]` **Gerador de abordagem:** Gerar rascunhos revisáveis de comentário público, direct e copy da página a partir de um único cadastro.
+- `[ ]` **Páginas personalizadas privadas:** Criar páginas com token aleatório, `noindex`, conteúdo contextual, CTA e possibilidade de invalidar/regenerar link. O link deve ser enviado no direct, nunca no comentário.
+- `[ ]` **Ações rápidas do painel:** Copiar comentário, copiar direct, abrir publicação, abrir página e avançar status, sem publicação/envio automático em redes sociais.
+- `[ ]` **Métricas do funil:** Medir abordagens, respostas, directs, páginas abertas, conversas, propostas, agendamentos, receita, tempo por etapa e pedidos de não contato.
+- `[ ]` **Governança e privacidade:** Aplicar regras para menores, não contato, dados mínimos, noindex, logs de alterações e conformidade com Política de Privacidade/LGPD.
+
 ## 4. Portal do Cliente
 - `[ ]` **Seleção de Fotos Avançada:** Refinar a interface onde o cliente escolhe as fotos (garantir que as requisições para a AWS sejam rápidas ou feitas através de links pré-assinados com cache).
 

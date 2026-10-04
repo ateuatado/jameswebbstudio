@@ -115,6 +115,84 @@ futuras.
 - A primeira versão publica comentários diretamente; a moderação administrativa, denúncia, antispam e consentimento de analytics ficam planejados antes de uma operação em escala.
 - O login social Google foi integrado ao CodeIgniter Shield por OAuth/OIDC, associando a identidade externa à conta existente sem duplicar usuários. As credenciais e a URL de retorno são configuradas por ambiente.
 
+## 10. Prospecção contextual no Threads (especificação inicial)
+
+### 10.1 Objetivo e posicionamento
+- Criar um módulo interno para organizar abordagens humanas a partir de publicações públicas no Threads e conduzir oportunidades qualificadas até conversa, proposta e agendamento.
+- O módulo registra apenas o contexto declarado na publicação (por exemplo: autocuidado, novo visual, aniversário, profissão, recomeço, intenção explícita de fazer ensaio ou afinidade estética), sem diagnosticar o estado emocional da pessoa.
+- A experiência deve ser pessoal e cuidadosa: o sistema prepara comentário, mensagem privada e página personalizada a partir de um único cadastro, mas a publicação e o envio permanecem sob revisão humana.
+- O objetivo é medir oportunidades qualificadas, conversas, agendamentos e faturamento; quantidade de comentários isoladamente não é métrica de sucesso.
+
+### 10.2 Fluxo operacional
+1. O operador identifica uma publicação pública e cadastra manualmente usuário, URL, texto e contexto declarado.
+2. O sistema sugere categoria, prioridade, tom, ensaio/proposta e chamada para ação.
+3. O sistema gera rascunhos de comentário público, mensagem privada e página personalizada.
+4. O operador revisa e publica o comentário no Threads.
+5. O operador envia o link da página pelo direct; o comentário pode apenas avisar que há uma mensagem privada.
+6. O operador atualiza status e próxima ação no painel.
+7. A oportunidade evolui para conversa, proposta, agendamento ou encerramento.
+
+### 10.3 Privacidade e links
+- O comentário público não deve conter o link da página personalizada nem expor o texto privado da abordagem.
+- A página deve usar token aleatório, não exigir nome de usuário na URL, possuir `noindex` e não aparecer no sitemap.
+- Token não é autenticação forte: a pessoa pode compartilhar o link. A primeira versão não deve exibir dados sensíveis nem interpretações psicológicas.
+- O sistema deve permitir invalidar/regenerar o link e registrar somente métricas necessárias, em conformidade com a Política de Privacidade e a LGPD.
+- Quando não for necessário personalizar, deve existir uma página pública genérica de campanha.
+
+### 10.4 Dados da oportunidade
+Uma oportunidade deve registrar:
+- usuário/perfil do Threads, URL da publicação, texto copiado e data aproximada da coleta;
+- categoria/contexto declarado, prioridade, cidade/região quando explicitamente disponível e responsável;
+- comentário, direct e copy da página em versões editáveis;
+- slug interno, token e URL da página personalizada;
+- status, última ação, próxima ação e observações;
+- resposta, conversa, proposta, agendamento e valor quando houver;
+- encerramento e motivo, inclusive pedido de não contato.
+
+Não devem ser armazenados rótulos como “carente”, “insegura” ou qualquer inferência clínica/psicológica.
+
+### 10.5 Status do funil
+- `identified`: oportunidade identificada;
+- `drafting`: materiais em preparação;
+- `ready`: materiais prontos para revisão;
+- `commented`: comentário público publicado;
+- `direct_sent`: link enviado no direct;
+- `replied`: pessoa respondeu;
+- `conversation`: conversa comercial iniciada;
+- `proposal_sent`: proposta/condição enviada;
+- `scheduled`: ensaio agendado;
+- `won`: oportunidade convertida;
+- `not_interested`: não houve interesse;
+- `do_not_contact`: não abordar novamente;
+- `expired`: oportunidade encerrada por prazo.
+
+O painel deve prevenir duplicidade por usuário e mostrar quais membros da equipe já atuaram sobre a oportunidade.
+
+### 10.6 Página personalizada
+- A abertura deve reconhecer o tema da publicação sem sugerir que o estúdio conhece a intimidade da pessoa.
+- Estrutura recomendada: reconhecimento do tema, transição para a proposta, portfólio/depoimento, experiência do ensaio, pacote/condição e CTA para conversar.
+- A página pode reutilizar componentes de landing pages existentes, mas deve permitir substituir título, abertura, imagens, depoimento, oferta e CTA por oportunidade.
+- A página deve identificar o Estúdio James Webb, localização, natureza comercial do convite e formas de contato.
+- O conteúdo deve ser revisado antes da publicação e nunca afirmar que a pessoa é insegura, carente ou precisa de validação.
+
+### 10.7 Operação compartilhada
+- O painel deve exibir filas por responsável (você ou sua esposa), com a próxima ação mais urgente.
+- Cada oportunidade deve possuir histórico de alterações e ações essenciais para evitar abordagem duplicada ou conflito entre operadores.
+- Ações rápidas: copiar comentário, copiar direct, abrir página, abrir publicação original e avançar status.
+- A automação não deve publicar comentários, enviar directs, seguir perfis ou reagir a publicações sem decisão humana explícita.
+
+### 10.8 Indicadores
+O dashboard deve filtrar por período, responsável, categoria e origem, exibindo oportunidades, abordagens, respostas, directs, páginas abertas, conversas, propostas, agendamentos, receita atribuída, tempo entre etapas e pedidos de não contato.
+
+As métricas de página são sinais operacionais, não prova de intenção. O sistema não deve criar perfis comportamentais invasivos.
+
+### 10.9 Segurança e qualidade
+- Não abordar perfis possivelmente menores de idade, contas suspeitas ou pessoas que pediram para não receber contato.
+- Não usar imagens da publicação em página personalizada sem base adequada; preferir contexto textual e portfólio próprio autorizado.
+- Não revelar publicamente o nome, texto ou oferta personalizada de outra pessoa.
+- Condições comerciais e descontos devem ser transparentes quando apresentados no direct ou na página.
+- O módulo deve respeitar os termos aplicáveis da plataforma e operar como apoio à abordagem manual, não como ferramenta de spam.
+
 ## User Scenarios Principais
 
 ### User Story 1 - Compra e Agendamento (Priority: P1)
