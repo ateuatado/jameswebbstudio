@@ -318,7 +318,9 @@ class ThreadsProspectingController extends BaseController
         $username = strtolower(ltrim(trim((string) ($data['threads_username'] ?? '')), '@'));
         $postUrl = trim((string) ($data['threads_post_url'] ?? ''));
         $model = new ThreadsOpportunityModel();
-        $query = $model->where('LOWER(threads_username) =', $username, false);
+        // A collation padrão do MySQL já trata o username sem diferenciar maiúsculas/minúsculas.
+        // Usamos o binding normal do Query Builder para manter o valor devidamente escapado.
+        $query = $model->where('threads_username', $username);
         if ($postUrl !== '') $query->where('threads_post_url', $postUrl);
         else $query->where('original_text', trim((string) ($data['original_text'] ?? '')));
         if ($ignoreId) $query->where('id !=', $ignoreId);
