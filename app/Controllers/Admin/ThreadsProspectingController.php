@@ -3,6 +3,7 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
+use App\Libraries\ThreadsCaptureParser;
 use App\Models\ThreadsOpportunityModel;
 
 class ThreadsProspectingController extends BaseController
@@ -41,7 +42,7 @@ class ThreadsProspectingController extends BaseController
     public function prepare()
     {
         $sourceText = trim((string) $this->request->getPost('pasted_text'));
-        $parsed = $this->parsePastedThread($sourceText);
+        $parsed = (new ThreadsCaptureParser())->parse($sourceText);
         if (!$parsed['username'] || !$parsed['original_text']) {
             return redirect()->back()->withInput()->with('error', 'Não consegui identificar o perfil e o texto da publicação. Cole a captura completa do Threads.');
         }
@@ -84,17 +85,24 @@ class ThreadsProspectingController extends BaseController
     {
         $model = new ThreadsOpportunityModel();
         $data = $this->formPayload();
+        if ($duplicate = $this->findDuplicate($data)) {
+            return redirect()->back()->withInput()->with('error', 'Esta publicação já está cadastrada na oportunidade #' . $duplicate->id . '. Revise o registro existente antes de criar outro.');
+        }
+        if ($data['status'] === 'do_not_contact' && !$data['closed_reason']) {
+            return redirect()->back()->withInput()->with('error', 'Informe o motivo antes de marcar a oportunidade como não contatar.');
+        }
         $postedToken = trim((string) ($data['page_token'] ?? ''));
         $data['page_token'] = preg_match('/^[a-f0-9]{64}$/', $postedToken) ? $postedToken : bin2hex(random_bytes(32));
         $data['assigned_user_id'] = (int) ($data['assigned_user_id'] ?: auth()->id());
         $data['last_action_at'] = date('Y-m-d H:i:s');
+        if ($data['status'] === 'do_not_contact') $data['do_not_contact_at'] = date('Y-m-d H:i:s');
         $data = $this->applyGeneratedDefaults($data);
 
         if (!$model->insert($data)) {
             return redirect()->back()->withInput()->with('error', implode('<br>', $model->errors()));
         }
         $id = (int) $model->getInsertID();
-        $this->event($id, 'created');
+        $this->event($id, 'created', ['status' => $data['status']]);
         return redirect()->to(site_url('admin/threads/' . $id . '/edit'))->with('message', 'Oportunidade criada. Revise os textos antes de usar.');
     }
 
@@ -112,11 +120,18 @@ class ThreadsProspectingController extends BaseController
         $existing = $model->find($id);
         if (!$existing) return redirect()->to(site_url('admin/threads'))->with('error', 'Oportunidade não encontrada.');
         $data = $this->formPayload();
+        if ($duplicate = $this->findDuplicate($data, $id)) {
+            return redirect()->back()->withInput()->with('error', 'Esta publicação já está cadastrada na oportunidade #' . $duplicate->id . '.');
+        }
+        if ($data['status'] === 'do_not_contact' && !$data['closed_reason']) {
+            return redirect()->back()->withInput()->with('error', 'Informe o motivo antes de marcar a oportunidade como não contatar.');
+        }
         $data['page_token'] = $existing->page_token;
         $data['last_action_at'] = date('Y-m-d H:i:s');
+        if ($data['status'] === 'do_not_contact' && !$existing->do_not_contact_at) $data['do_not_contact_at'] = date('Y-m-d H:i:s');
         $data = $this->applyGeneratedDefaults($data, $existing->page_token);
         if (!$model->update($id, $data)) return redirect()->back()->withInput()->with('error', implode('<br>', $model->errors()));
-        $this->event($id, 'updated');
+        $this->event($id, 'updated', ['status_from' => $existing->status, 'status_to' => $data['status']]);
         return redirect()->to(site_url('admin/threads/' . $id . '/edit'))->with('message', 'Oportunidade atualizada.');
     }
 
@@ -126,8 +141,13 @@ class ThreadsProspectingController extends BaseController
         $opportunity = $model->find($id);
         $newStatus = (string) $this->request->getPost('status');
         if (!$opportunity || !isset(ThreadsOpportunityModel::STATUSES[$newStatus])) return redirect()->back()->with('error', 'Status inválido.');
-        $model->update($id, ['status' => $newStatus, 'last_action_at' => date('Y-m-d H:i:s')]);
-        $this->event($id, 'status_' . $newStatus);
+        if ($newStatus === 'do_not_contact' && !$opportunity->closed_reason) {
+            return redirect()->back()->with('error', 'Edite a oportunidade e informe o motivo antes de marcar como não contatar.');
+        }
+        $changes = ['status' => $newStatus, 'last_action_at' => date('Y-m-d H:i:s')];
+        if ($newStatus === 'do_not_contact') $changes['do_not_contact_at'] = date('Y-m-d H:i:s');
+        $model->update($id, $changes);
+        $this->event($id, 'status_' . $newStatus, ['status_from' => $opportunity->status, 'status_to' => $newStatus]);
         return redirect()->back()->with('message', 'Status atualizado.');
     }
 
@@ -190,7 +210,7 @@ class ThreadsProspectingController extends BaseController
     private function formData(?object $opportunity, ?object $draft = null, bool $isDraft = false): array
     {
         $settings = (new \App\Models\StudioSettingModel())->getAll();
-        return ['title' => $opportunity ? 'Editar oportunidade' : 'Revisar e personalizar', 'opportunity' => $opportunity, 'draft' => $draft, 'isDraft' => $isDraft, 'statuses' => ThreadsOpportunityModel::STATUSES, 'categories' => ThreadsOpportunityModel::CATEGORIES, 'adminUsers' => $this->adminUsers(), 'whatsappContacts' => ['marco' => ['label' => 'Meu WhatsApp', 'number' => $settings['studio_phone'] ?? ''], 'wife' => ['label' => 'WhatsApp da minha esposa', 'number' => $settings['studio_whatsapp_wife'] ?? '']]];
+        return ['title' => $opportunity ? 'Editar oportunidade' : 'Revisar e personalizar', 'opportunity' => $opportunity, 'draft' => $draft, 'isDraft' => $isDraft, 'history' => $opportunity ? (new ThreadsOpportunityModel())->events((int) $opportunity->id) : [], 'statuses' => ThreadsOpportunityModel::STATUSES, 'categories' => ThreadsOpportunityModel::CATEGORIES, 'adminUsers' => $this->adminUsers(), 'whatsappContacts' => ['marco' => ['label' => 'Meu WhatsApp', 'number' => $settings['studio_phone'] ?? ''], 'wife' => ['label' => 'WhatsApp da minha esposa', 'number' => $settings['studio_whatsapp_wife'] ?? '']]];
     }
 
     private function applyGeneratedDefaults(array $data, ?string $token = null): array
@@ -293,13 +313,31 @@ class ThreadsProspectingController extends BaseController
         ];
     }
 
+    private function findDuplicate(array $data, ?int $ignoreId = null): ?object
+    {
+        $username = strtolower(ltrim(trim((string) ($data['threads_username'] ?? '')), '@'));
+        $postUrl = trim((string) ($data['threads_post_url'] ?? ''));
+        $model = new ThreadsOpportunityModel();
+        $query = $model->where('LOWER(threads_username) =', $username, false);
+        if ($postUrl !== '') $query->where('threads_post_url', $postUrl);
+        else $query->where('original_text', trim((string) ($data['original_text'] ?? '')));
+        if ($ignoreId) $query->where('id !=', $ignoreId);
+        return $query->first();
+    }
+
     private function adminUsers(): array
     {
         return \Config\Database::connect()->table('users')->select('users.id, users.username, users.display_name')->join('auth_groups_users', 'auth_groups_users.user_id = users.id')->whereIn('auth_groups_users.group', ['admin', 'superadmin'])->groupBy('users.id')->orderBy('users.username')->get()->getResult();
     }
 
-    private function event(int $id, string $type): void
+    private function event(int $id, string $type, array $details = []): void
     {
-        \Config\Database::connect()->table('threads_opportunity_events')->insert(['opportunity_id' => $id, 'event_type' => $type, 'created_at' => date('Y-m-d H:i:s')]);
+        \Config\Database::connect()->table('threads_opportunity_events')->insert([
+            'opportunity_id' => $id,
+            'event_type' => $type,
+            'actor_user_id' => auth()->id() ?: null,
+            'details' => $details ? json_encode($details, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) : null,
+            'created_at' => date('Y-m-d H:i:s'),
+        ]);
     }
 }

@@ -16,6 +16,7 @@ class ThreadsOpportunityModel extends Model
         'page_title', 'page_intro', 'offer_copy', 'cta_label', 'cta_url', 'whatsapp_owner', 'whatsapp_number', 'page_token',
         'is_page_active', 'last_action_at', 'next_action_at', 'response_notes',
         'proposal_value_cents', 'closed_reason',
+        'do_not_contact_at',
     ];
 
     protected $validationRules = [
@@ -53,5 +54,16 @@ class ThreadsOpportunityModel extends Model
     {
         return (int) $this->db->table('threads_opportunity_events')
             ->where('opportunity_id', $id)->where('event_type', 'page_view')->countAllResults();
+    }
+
+    public function events(int $id): array
+    {
+        return $this->db->table('threads_opportunity_events e')
+            ->select('e.*, u.username AS actor_username, u.display_name AS actor_display_name')
+            ->join('users u', 'u.id = e.actor_user_id', 'left')
+            ->where('e.opportunity_id', $id)
+            ->orderBy('e.created_at', 'DESC')
+            ->orderBy('e.id', 'DESC')
+            ->get()->getResult();
     }
 }
