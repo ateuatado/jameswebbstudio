@@ -224,6 +224,7 @@ $routes->get('r/(:segment)', 'TrackingController::redirect/$1');
 
 // ─── Página privada de convite do Threads ─────────────────────────────────────
 $routes->get('convite/(:segment)', 'ThreadsInvitationController::show/$1');
+$routes->post('convite/(:segment)/nao-quero-receber', 'ThreadsInvitationController::decline/$1');
 
 // ─── Página pública do herói por slug (catch-all — deve ser a última) ─────────
 $routes->get('(:segment)', 'HeroPage::view/$1', ['priority' => 99]);
