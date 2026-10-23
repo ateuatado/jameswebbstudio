@@ -27,7 +27,7 @@ class Filters extends BaseFilters
     public array $aliases = [
         'noindex'       => \App\Filters\NoIndex::class,
         'csrf'          => CSRF::class,
-        'toolbar'       => DebugToolbar::class,
+        'toolbar'       => \App\Filters\DevelopmentToolbar::class,
         'honeypot'      => Honeypot::class,
         'invalidchars'  => InvalidChars::class,
         'secureheaders' => SecureHeaders::class,

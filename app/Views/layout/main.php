@@ -6,12 +6,13 @@
     <title><?= esc($title ?? 'James Webb Studio') ?></title>
 
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="<?= base_url('assets/vendor/bootstrap/bootstrap-5.3.2.min.css') ?>" rel="stylesheet">
 
     <!-- Google Fonts: EB Garamond + Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"></noscript>
 
     <!-- Overrides de cor/fonte apenas — não altera layout Bootstrap -->
     <style>
@@ -193,7 +194,8 @@
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNav">
         <div class="container">
             <a class="navbar-brand" href="<?= site_url('/') ?>">
-                <img src="<?= base_url('assets/img/jws-logo-horizontal.png') ?>"
+                <img src="<?= base_url('assets/img/jws-logo-horizontal-small.webp') ?>"
+                     width="330" height="72"
                      alt="James Webb Studio"
                      style="height:36px; width:auto;">
             </a>
@@ -248,7 +250,7 @@
         </p>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="<?= base_url('assets/vendor/bootstrap/bootstrap-5.3.2.bundle.min.js') ?>"></script>
     <script>
         window.addEventListener('scroll', function () {
             document.getElementById('mainNav').classList.toggle('scrolled', window.scrollY > 50);

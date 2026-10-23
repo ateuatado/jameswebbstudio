@@ -258,7 +258,16 @@
         <?php foreach($heroes as $hero): ?>
             <a href="<?= site_url($hero['slug']) ?>" class="hero-card">
                 <?php if(!empty($hero['cover_image'])): ?>
-                    <img src="<?= base_url($hero['cover_image']) ?>" alt="<?= esc($hero['name']) ?>" loading="lazy">
+                    <?php
+                        $cover = (new \App\Libraries\ResponsiveCover())->describe($hero['cover_image']);
+                        $variants = $cover['variants'] ?? [];
+                        $coverSource = $variants ? reset($variants) : $hero['cover_image'];
+                        $coverSrcset = [];
+                        foreach ($variants as $width => $variant) $coverSrcset[] = base_url($variant) . ' ' . $width . 'w';
+                    ?>
+                    <img src="<?= esc(base_url($coverSource)) ?>" alt="<?= esc($hero['name']) ?>" loading="lazy" decoding="async"
+                         <?php if ($cover): ?>width="<?= $cover['width'] ?>" height="<?= $cover['height'] ?>"<?php endif; ?>
+                         <?php if ($coverSrcset): ?>srcset="<?= esc(implode(', ', $coverSrcset)) ?>" sizes="(max-width: 575px) 100vw, (max-width: 1050px) 50vw, (max-width: 1400px) 33vw, 466px"<?php endif; ?>>
                 <?php else: ?>
                     <div class="hero-card-empty">
                         <span class="placeholder-icon">📷</span>
