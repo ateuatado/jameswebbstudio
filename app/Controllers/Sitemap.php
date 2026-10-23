@@ -31,6 +31,19 @@ class Sitemap extends BaseController
         foreach ($photoWorks as $work) {
             $urls[] = ['loc' => site_url('fotos/' . $work['slug']), 'priority' => '0.7', 'changefreq' => 'monthly', 'lastmod' => date('Y-m-d', strtotime($work['updated_at'] ?? $work['created_at']))];
         }
+        if (config('ServicePages')->enabled) {
+            $editorial = new \App\Libraries\ServiceContent\Repository();
+            if ($editorial->ready()) {
+                $pages = $editorial->publicPages();
+                $families = [];
+                if ($pages) $urls[] = ['loc' => site_url('servicos'), 'priority' => '0.8', 'changefreq' => 'weekly'];
+                foreach ($pages as $page) {
+                    $families[$page['family_slug']] = true;
+                    $urls[] = ['loc' => site_url($editorial->path($page)), 'priority' => '0.8', 'changefreq' => 'monthly', 'lastmod' => date('Y-m-d', strtotime($page['published_at']))];
+                }
+                foreach (array_keys($families) as $slug) $urls[] = ['loc' => site_url('servicos/' . $slug), 'priority' => '0.7', 'changefreq' => 'weekly'];
+            }
+        }
         $this->response->setContentType('application/xml');
         $xml  = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
         $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";

@@ -4,14 +4,8 @@ namespace Tests\Controllers;
 
 use CodeIgniter\Test\CIUnitTestCase;
 
-class HeroPageTest extends CIUnitTestCase
+class HeroPageTest extends \Tests\Support\LocalWebTestCase
 {
-    use \CodeIgniter\Test\FeatureTestTrait;
-    use \CodeIgniter\Test\DatabaseTestTrait;
-
-    protected $refresh   = true;
-    protected $migrate   = true;
-    protected $namespace = 'App';
 
     public function testHeroPageLoadsCorrectly(): void
     {
@@ -20,6 +14,7 @@ class HeroPageTest extends CIUnitTestCase
             'name'  => 'Fake Athlete',
             'sport' => 'Test Runner',
             'slug'  => 'fake-athlete',
+            'published' => 1,
         ]);
 
         $result = $this->get('/fake-athlete');
@@ -33,5 +28,15 @@ class HeroPageTest extends CIUnitTestCase
     {
         $this->expectException(\CodeIgniter\Exceptions\PageNotFoundException::class);
         $this->get('/unknown-hero-1234');
+    }
+
+    public function testUnpublishedHeroIsNotPublic(): void
+    {
+        (new \App\Models\Hero())->insert([
+            'name' => 'Ensaio privado', 'sport' => 'Retrato',
+            'slug' => 'ensaio-privado', 'published' => 0,
+        ]);
+        $this->expectException(\CodeIgniter\Exceptions\PageNotFoundException::class);
+        $this->get('/ensaio-privado');
     }
 }

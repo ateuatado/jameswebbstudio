@@ -10,6 +10,11 @@ $routes->get('sitemap.xml', 'Sitemap::index');
 $routes->get('politica-de-privacidade', 'LegalController::privacy');
 $routes->get('termos-de-servico', 'LegalController::terms');
 
+// Editorial services are independent of package line-item services and Hero routes.
+$routes->get('servicos', 'ServicePages::index');
+$routes->get('servicos/(:segment)', 'ServicePages::index/$1');
+$routes->get('servicos/(:segment)/(:segment)', 'ServicePages::show/$1/$2');
+
 service('auth')->routes($routes);
 $routes->get('login/google', 'GoogleAuthController::start');
 $routes->get('login/google/callback', 'GoogleAuthController::callback');
@@ -22,6 +27,27 @@ $routes->group('portal', ['filter' => 'session'], static function ($routes) {
 // ─── Admin Routes ─────────────────────────────────────────────────────────────
 $routes->group('admin', ['filter' => 'group:admin,superadmin'], static function ($routes) {
     $routes->get('/', 'Admin\Dashboard::index');
+
+    $routes->group('paginas-servicos', ['filter' => 'permission:service-pages.read'], static function ($routes) {
+        $routes->get('/', 'Admin\ServicePagesController::index');
+        $routes->get('(:num)', 'Admin\ServicePagesController::edit/$1');
+        $routes->get('(:num)/previa', 'Admin\ServicePagesController::preview/$1');
+        $routes->group('', ['filter' => 'csrf'], static function ($routes) {
+            $routes->post('contexto', 'Admin\ServicePagesController::context');
+            $routes->post('familia', 'Admin\ServicePagesController::family');
+            $routes->post('preparar', 'Admin\ServicePagesController::prepare');
+            $routes->post('lote', 'Admin\ServicePagesController::batch');
+            $routes->post('(:num)/salvar', 'Admin\ServicePagesController::save/$1');
+            $routes->post('(:num)/publicar', 'Admin\ServicePagesController::publish/$1');
+            $routes->post('(:num)/arquivar', 'Admin\ServicePagesController::archive/$1');
+            $routes->post('(:num)/restaurar', 'Admin\ServicePagesController::restore/$1');
+            $routes->post('(:num)/gerar', 'Admin\ServicePagesController::generate/$1');
+            $routes->post('(:num)/endereco', 'Admin\ServicePagesController::rename/$1');
+            $routes->post('publicar-lote', 'Admin\ServicePagesController::publishBatch');
+            $routes->post('lotes/(:num)/cancelar', 'Admin\ServicePagesController::cancel/$1');
+            $routes->post('itens/(:num)/repetir', 'Admin\ServicePagesController::retry/$1');
+        });
+    });
 
     // Photos (heróis)
     $routes->get( 'heroes/(:num)/photos',              'Admin\HeroController::photos/$1');

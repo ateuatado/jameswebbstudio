@@ -23,6 +23,9 @@
                         <a class="nav-link" href="<?= site_url('admin/heroes') ?>">Estrelas</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="<?= site_url('admin/paginas-servicos') ?>">Páginas de serviços</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="<?= site_url('admin/intentions') ?>">Leads</a>
                     </li>
                     <li class="nav-item">

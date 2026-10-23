@@ -8,7 +8,7 @@ class PhotoModelTest extends CIUnitTestCase
 {
     use \CodeIgniter\Test\DatabaseTestTrait;
 
-    protected $refresh   = true;
+    protected $refresh   = false;
     protected $migrate   = true;
     protected $namespace = 'App';
 
@@ -18,7 +18,7 @@ class PhotoModelTest extends CIUnitTestCase
         $heroId = $heroModel->insert([
             'name'  => 'Test Hero',
             'sport' => 'Testing',
-            'slug'  => 'test-photo-hero',
+            'slug'  => 'test-photo-hero-' . bin2hex(random_bytes(5)),
         ]);
 
         $model = new \App\Models\Photo();

@@ -206,6 +206,9 @@
             
             <div class="collapse navbar-collapse" id="navPublic">
                 <ul class="navbar-nav ms-auto align-items-center gap-2">
+                    <?php if (config('ServicePages')->enabled && (new \App\Libraries\ServiceContent\Repository())->ready() && (new \App\Libraries\ServiceContent\Repository())->table('pages')->where('status', 'published')->where('published_revision_id >', 0)->countAllResults()): ?>
+                    <li class="nav-item"><a class="nav-link" href="<?= site_url('servicos') ?>">Serviços</a></li>
+                    <?php endif; ?>
                     <li class="nav-item">
                         <a class="nav-link" href="<?= site_url('fotos') ?>">Fotos</a>
                     </li>

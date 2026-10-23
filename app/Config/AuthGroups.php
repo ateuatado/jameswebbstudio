@@ -72,6 +72,10 @@ class AuthGroups extends ShieldAuthGroups
      * If a permission is not listed here it cannot be used.
      */
     public array $permissions = [
+        'service-pages.read' => 'Consultar páginas editoriais de serviços',
+        'service-pages.edit' => 'Editar páginas e contexto aprovado do estúdio',
+        'service-pages.generate' => 'Enfileirar geração assistida por IA',
+        'service-pages.publish' => 'Publicar e arquivar páginas de serviços',
         'admin.access'        => 'Can access the sites admin area',
         'admin.settings'      => 'Can access the main site settings',
         'users.manage-admins' => 'Can manage other admins',
@@ -93,11 +97,13 @@ class AuthGroups extends ShieldAuthGroups
      */
     public array $matrix = [
         'superadmin' => [
+            'service-pages.*',
             'admin.*',
             'users.*',
             'beta.*',
         ],
         'admin' => [
+            'service-pages.*',
             'admin.access',
             'users.create',
             'users.edit',

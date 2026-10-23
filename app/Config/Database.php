@@ -199,6 +199,19 @@ class Database extends Config
         // we don't overwrite live data on accident.
         if (ENVIRONMENT === 'testing') {
             $this->defaultGroup = 'tests';
+            // Tests must never migrate or truncate a configured application database.
+            $this->tests = array_replace($this->tests, [
+                'DSN' => '', 'hostname' => '', 'username' => '', 'password' => '',
+                'database' => ':memory:', 'DBDriver' => 'SQLite3',
+                'DBPrefix' => '', 'DBCollat' => '', 'foreignKeys' => true,
+            ]);
+            if (defined('JWS_DISPOSABLE_MYSQL') && JWS_DISPOSABLE_MYSQL === true) {
+                $this->tests = array_replace($this->tests, [
+                    'DBDriver' => 'MySQLi', 'hostname' => '127.0.0.1', 'port' => 33317,
+                    'username' => 'jws_validation', 'database' => 'jws_validation_only',
+                    'charset' => 'utf8mb4', 'DBCollat' => 'utf8mb4_general_ci',
+                ]);
+            }
         }
     }
 }

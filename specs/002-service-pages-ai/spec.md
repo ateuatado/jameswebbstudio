@@ -1,6 +1,6 @@
 # Spec 002 — Páginas de serviços com geração assistida por IA
 
-Data: 23/10/2026. Estado: requisitos elicitados e plano proposto; módulo não implementado.
+Data: 23/10/2026. Estado: versão inicial implementada e validada localmente; piloto editorial e publicação no VPS pendentes. Ver [operação e limites](quickstart.md).
 
 ## Objetivo
 Ampliar a apresentação e a descoberta dos serviços reais do James Webb Studio além dos ensaios: fotografia de produtos/still, imóveis, moda e modalidades relacionadas. Permitir criação e edição de páginas em lote com contexto do negócio, IA, portfólio autorizado e contato contextual pelo WhatsApp.

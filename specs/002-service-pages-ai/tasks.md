@@ -1,38 +1,38 @@
 # Tarefas de implementação
 
-Todas as tarefas abaixo estão pendentes; esta entrega é documental.
+Versão inicial implementada localmente. Checklist abaixo distingue entregas realizadas das dependências de piloto e expansões. Operação/limites em quickstart.md.
 
 ## F0 — Definição
-- [ ] T001 Inventariar rotas, permissões, StudioSettings e vínculos de mídia.
+- [x] T001 Inventariar rotas, permissões, StudioSettings e vínculos de mídia.
 - [ ] T002 Confirmar três serviços piloto, WhatsApp e fatos comerciais.
 - [ ] T003 Escolher fornecedor/modelo, teto de custos e retenção; manter falso até configuração.
 - [ ] T004 Revisar modelo/contratos e critérios com a spec; registrar decisões posteriores.
 
 ## F1 — Editorial
-- [ ] T005 Criar migrations aditivas e testar em MariaDB descartável.
-- [ ] T006 Models, validação de hierarquia/slugs e snapshots de contexto/revisão.
-- [ ] T007 Permissões granulares, filtros e CSRF em mutações novas.
-- [ ] T008 CRUD, editor, prévia autenticada e controle de concorrência.
+- [x] T005 Criar migrations aditivas e testar em MariaDB descartável.
+- [x] T006 Repositório de domínio, validação de famílias/slugs e snapshots de contexto/revisão.
+- [x] T007 Permissões granulares, filtros e CSRF em mutações novas.
+- [x] T008 CRUD, editor, prévia autenticada e controle de concorrência.
 
 ## F2 — Site
-- [ ] T009 Templates de famílias e modalidades com layout e acessibilidade existentes.
-- [ ] T010 Publicação/revisão/restauração/arquivamento transacionais.
-- [ ] T011 Rotas antes do catch-all, redirecionamentos e 404/410.
-- [ ] T012 Navegação/hubs, canonical, metadados e sitemap seletivo.
-- [ ] T013 Mídia autorizada responsiva e CTA WhatsApp real sem dependência JS.
+- [x] T009 Templates de famílias e modalidades com layout e acessibilidade existentes.
+- [x] T010 Publicação/revisão/restauração/arquivamento transacionais e com controle de versão.
+- [x] T011 Rotas antes do catch-all, redirecionamentos e 404/410.
+- [x] T012 Navegação/hubs, canonical, metadados e sitemap seletivo.
+- [x] T013 Mídia de ensaios publicados com conferência humana de autorização e CTA WhatsApp sem JS.
 
 ## F3 — IA
-- [ ] T014 Provedor falso e interface independente de fornecedor.
-- [ ] T015 Prompt/contexto versionados, contrato JSON e validação de fatos/saída.
-- [ ] T016 Adaptador real com timeouts, segredo no ambiente e erros sanitizados.
-- [ ] T017 Testes de conteúdo hostil, alucinação, resposta inválida e preservação de edição.
+- [x] T014 Interface independente e provedores falsos nos testes.
+- [x] T015 Contexto versionado, contrato JSON v1 e prompt restritivo; fatos exigem revisão humana.
+- [x] T016 DeepSeek com timeouts, segredo no ambiente e erros sanitizados; smoke real aprovado.
+- [ ] T017 Ampliar testes de respostas HTTP/JSON truncado e revisão de alucinações; HTML e preservação de edição já testados.
 
 ## F4 — Lotes
 - [ ] T018 Entrada por linhas, normalização, sugestão de agrupamento/duplicatas e revisão.
-- [ ] T019 Jobs/worker CLI, claims atômicos, leases, heartbeat e cancelamento.
-- [ ] T020 Limites/reserva de custo, idempotência e retentativas limitadas.
-- [ ] T021 Painel de progresso/falhas e novas revisões sem sobrescrever publicação.
-- [ ] T022 Aprovação explícita e validação individual para publicação coletiva.
+- [x] T019 Jobs/worker CLI, claims atômicos, lease de 180s e cancelamento; chamada limitada a 65s dispensa heartbeat nesta versão.
+- [x] T020 Limites/reserva de custo/tokens, idempotência e repetição manual limitada.
+- [x] T021 Painel de progresso/falhas e novas revisões sem sobrescrever publicação.
+- [x] T022 Aprovação explícita e validação individual para publicação coletiva.
 
 ## F5 — Piloto e entrega
 - [ ] T023 Executar matriz de validação e regressões legadas em ambiente isolado.

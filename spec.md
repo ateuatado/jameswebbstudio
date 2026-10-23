@@ -1,6 +1,6 @@
 # Spec: Sistema James Webb Studio
 
-Novo módulo proposto (23/10/2026): [páginas de serviços com IA — Spec 002](specs/002-service-pages-ai/spec.md). Requisitos elicitados; implementação pendente.
+Novo módulo (23/10/2026): [páginas de serviços com IA — Spec 002](specs/002-service-pages-ai/spec.md). Versão inicial implementada localmente; [operação e limites](specs/002-service-pages-ai/quickstart.md). Piloto e publicação no VPS pendentes.
 
 Atualização SEO (23/10/2026): [spec](specs/001-seo-studio/spec.md), [plano](specs/001-seo-studio/plan.md), [tarefas](specs/001-seo-studio/tasks.md).
 

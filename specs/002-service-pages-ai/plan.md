@@ -1,6 +1,6 @@
 # Plano técnico — módulo editorial de serviços
 
-Estado: proposto, sem execução de migrations ou alterações de produto nesta entrega documental.
+Estado: versão inicial implementada e validada localmente. Migração aditiva aplicada somente ao banco local com backup; VPS não alterado. Operação e diferenças de escopo em quickstart.md.
 
 ## Arquitetura
 Novo módulo no monólito CodeIgniter. Controllers finos, Models/validação e serviços de domínio para geração, revisão, publicação e links de contato. Views públicas reutilizam layout; painel reutiliza admin/layout. Não acoplar conteúdo editorial ao significado financeiro de services nem migrar heroes para novo modelo.

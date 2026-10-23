@@ -8,18 +8,19 @@ class HeroModelTest extends CIUnitTestCase
 {
     use \CodeIgniter\Test\DatabaseTestTrait;
 
-    protected $refresh   = true;
+    protected $refresh   = false;
     protected $migrate   = true;
     protected $namespace = 'App';
 
     public function testInsertAndRetrieveHero(): void
     {
         $model = new \App\Models\Hero();
+        $testSlug = 'test-hero-' . bin2hex(random_bytes(5));
         
         $heroId = $model->insert([
             'name'  => 'Test Hero',
             'sport' => 'Testing',
-            'slug'  => 'test-hero',
+            'slug'  => $testSlug,
         ]);
 
         $this->assertIsInt($heroId);
@@ -27,6 +28,6 @@ class HeroModelTest extends CIUnitTestCase
 
         $saved = $model->find($heroId);
         $this->assertEquals('Test Hero', $saved['name']);
-        $this->assertEquals('test-hero', $saved['slug']);
+        $this->assertEquals($testSlug, $saved['slug']);
     }
 }

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit bootstrap="tests/bootstrap-mysql-local.php" colors="true" failOnWarning="true" cacheDirectory="build/.phpunit.mysql.cache">
+    <testsuites><testsuite name="Disposable MySQL migrations"><directory>tests/Models</directory><directory>tests/Integration</directory></testsuite></testsuites>
+    <php>
+        <server name="app.baseURL" value="http://example.com/" force="true"/>
+        <const name="HOMEPATH" value="./"/>
+        <const name="CONFIGPATH" value="./app/Config/"/>
+        <const name="PUBLICPATH" value="./public/"/>
+    </php>
+</phpunit>
