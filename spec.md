@@ -1,5 +1,7 @@
 # Spec: Sistema James Webb Studio
 
+Atualização SEO (23/10/2026): [spec](specs/001-seo-studio/spec.md), [plano](specs/001-seo-studio/plan.md), [tarefas](specs/001-seo-studio/tasks.md).
+
 **Criado**: 18 de Julho de 2026
 **Status**: Documentação de Arquitetura Existente
 

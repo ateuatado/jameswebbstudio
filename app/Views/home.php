@@ -61,6 +61,41 @@
         transform: translateY(-2px);
     }
 
+    .home-hero-investment {
+        margin: 14px 0 0;
+    }
+    .home-hero-investment-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-height: 44px;
+        max-width: 100%;
+        padding: 10px 12px;
+        color: #C5A059;
+        font-family: 'Inter', sans-serif;
+        font-size: .68rem;
+        font-weight: 400;
+        line-height: 1.7;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+        text-decoration: none;
+        transition: color .2s;
+    }
+    .home-hero-investment-link::after {
+        content: '\2192';
+        font-size: 1rem;
+    }
+    .home-hero-investment-link:hover {
+        color: #e0bd77;
+        text-decoration: underline;
+        text-underline-offset: 5px;
+    }
+    .home-hero-investment-link:focus-visible {
+        outline: 2px solid #C5A059;
+        outline-offset: 4px;
+    }
+
     /* ── Section Title ── */
     .section-title-block {
         text-align: center;
@@ -201,12 +236,13 @@
 <!-- ── Hero Section ── -->
 <section class="home-hero">
     <div class="home-hero-content">
-        <span class="home-hero-eyebrow">James Webb Studio</span>
+        <span class="home-hero-eyebrow">Estúdio fotográfico na Lapa, São Paulo</span>
         <h1 class="home-hero-title">A imagem que <em>revela</em> quem você é</h1>
         <p class="home-hero-sub">
             Ensaios fotográficos com luz dramática e direção artística para profissionais, atletas e artistas que precisam de uma imagem à altura da sua história.
         </p>
         <a href="#ensaios" class="home-hero-cta">Ver ensaios realizados</a>
+        <p class="home-hero-investment"><a class="home-hero-investment-link" href="<?= site_url('investimento') ?>">Consultar pacotes e valores de ensaios</a></p>
     </div>
 </section>
 

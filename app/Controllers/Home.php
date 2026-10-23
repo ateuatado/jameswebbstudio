@@ -37,6 +37,8 @@ class Home extends BaseController
         }
         unset($h);
         
+        $data['title'] = 'Estúdio fotográfico na Lapa, São Paulo | James Webb Studio';
+        $data['metaDescription'] = 'Ensaios fotográficos na Lapa, São Paulo, com luz dramática e direção artística para profissionais, atletas e artistas. Conheça o James Webb Studio.';
         return view('home', $data);
     }
 }

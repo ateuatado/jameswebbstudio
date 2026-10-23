@@ -37,7 +37,7 @@
     background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.75) 100%);
 }
 .lp-headline-content { position: relative; z-index: 2; max-width: 820px; }
-.lp-headline-content h1 {
+.lp-headline-content h2 {
     font-family: 'EB Garamond', Georgia, serif;
     font-size: clamp(2.4rem, 7vw, 5rem);
     font-weight: 500;
@@ -216,7 +216,7 @@
         <div class="lp-headline-overlay"></div>
         <div class="lp-headline-content">
             <?php if (!empty($c['title'])): ?>
-                <h1><?= esc($c['title']) ?></h1>
+                <h2><?= esc($c['title']) ?></h2>
             <?php endif; ?>
             <?php if (!empty($c['subtitle'])): ?>
                 <p><?= esc($c['subtitle']) ?></p>

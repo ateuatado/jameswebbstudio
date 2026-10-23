@@ -25,6 +25,7 @@ class Filters extends BaseFilters
      * or [filter_name => [classname1, classname2, ...]]
      */
     public array $aliases = [
+        'noindex'       => \App\Filters\NoIndex::class,
         'csrf'          => CSRF::class,
         'toolbar'       => DebugToolbar::class,
         'honeypot'      => Honeypot::class,
@@ -111,5 +112,11 @@ class Filters extends BaseFilters
      *
      * @var array<string, array<string, list<string>>>
      */
-    public array $filters = [];
+    public array $filters = [
+        'noindex' => ['after' => [
+            'admin', 'admin/*', 'client', 'client/*', 'portal', 'portal/*',
+            'login', 'login/*', 'register', 'logout', 'auth/*',
+            'cortesia/*', 'convite/*', 'ensaio/*', '*/agendar',
+        ]],
+    ];
 }

@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin/
 Disallow: /api/
 
-Sitemap: https://hero.marcosantofoto.com.br/sitemap.xml
+Sitemap: https://jameswebbstudio.com.br/sitemap.xml

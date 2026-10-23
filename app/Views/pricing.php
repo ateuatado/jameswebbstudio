@@ -128,7 +128,7 @@
 <section class="pricing-hero">
     <div class="lp-divider mb-4"></div>
     <span class="pricing-eyebrow">INVESTIMENTO</span>
-    <h1 class="pricing-title">Seu ensaio, do <em>seu</em> jeito</h1>
+    <h1 class="pricing-title">Pacotes de <em>ensaios fotográficos</em></h1>
     <p class="pricing-sub">
         Conheça nossos pacotes e escolha a experiência ideal para registrar quem você é.
         Cada detalhe é planejado para que a sua imagem fale por você.

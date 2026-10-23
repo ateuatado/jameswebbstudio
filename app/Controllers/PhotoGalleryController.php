@@ -29,6 +29,7 @@ class PhotoGalleryController extends BaseController
 
         return view('photo_gallery/index', [
             'title' => 'Fotos Autorais | James Webb Studio',
+            'metaDescription' => 'Explore o acervo de fotografias autorais do James Webb Studio. Conheça as coleções, as histórias das obras e as opções de impressão disponíveis.',
             'works' => $works,
             'collections' => $collections,
             'selectedCollection' => $collection,
@@ -88,6 +89,7 @@ class PhotoGalleryController extends BaseController
         $photoDescription = $currentImage['description'] ?: 'Um quadro de MarcoSanto';
         return view('photo_gallery/show', [
             'title' => $imageTitle . ' | Fotos | James Webb Studio',
+            'metaDescription' => trim((string) $work['short_description']) ?: 'Conheça a galeria ' . $work['title'] . ' e suas fotografias autorais no James Webb Studio.',
             'ogTitle' => $socialTitle,
             'ogDescription' => $photoDescription,
             'work' => $work,

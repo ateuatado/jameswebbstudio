@@ -1,5 +1,7 @@
 # Tasks: Evolução do James Webb Studio
 
+Atualização SEO (23/10/2026): [tarefas e validações](specs/001-seo-studio/tasks.md).
+
 Este documento lista as tarefas pendentes de acordo com a regra de negócio estabelecida e requisitos futuros.
 
 ## 1. Checkout e Pagamentos

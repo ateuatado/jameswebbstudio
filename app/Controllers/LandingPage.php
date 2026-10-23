@@ -25,6 +25,8 @@ class LandingPage extends BaseController
 
         return view('landing_page', [
             'hero'   => $hero,
+            'metaRobots' => 'noindex, follow',
+            'metaDescription' => 'Consulte as opções para realizar seu ensaio no James Webb Studio, na Lapa, São Paulo.',
             'cta'    => $cta,
             'blocks' => $blocks,
             'title'  => ($cta['title'] ?? $hero['name']) . ' | James Webb Studio',

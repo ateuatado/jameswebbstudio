@@ -15,15 +15,15 @@ class Sitemap extends BaseController
 
         $urls = [
             ['loc' => site_url('/'),       'priority' => '1.0', 'changefreq' => 'weekly'],
-            ['loc' => site_url('pacotes'), 'priority' => '0.9', 'changefreq' => 'weekly'],
+            ['loc' => site_url('investimento'), 'priority' => '0.9', 'changefreq' => 'weekly'],
         ];
 
         foreach ($heroes as $hero) {
             $urls[] = [
-                'loc'        => site_url($hero->slug),
+                'loc'        => site_url($hero['slug']),
                 'priority'   => '0.8',
                 'changefreq' => 'monthly',
-                'lastmod'    => date('Y-m-d', strtotime($hero->updated_at ?? $hero->created_at)),
+                'lastmod'    => date('Y-m-d', strtotime($hero['updated_at'] ?? $hero['created_at'])),
             ];
         }
 

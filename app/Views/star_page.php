@@ -410,9 +410,10 @@
 <?php if(!empty($photos)): ?>
 <div class="swiper mySwiper">
     <div class="swiper-wrapper">
-        <?php foreach($photos as $photo): ?>
+        <?php foreach($photos as $photoIndex => $photo): ?>
         <div class="swiper-slide">
-            <img src="<?= base_url($photo['image_path']) ?>" alt="<?= esc($hero['name']) ?>"
+            <img src="<?= base_url($photo['image_path']) ?>" alt="<?= esc(trim((string) ($photo['caption'] ?? '')) ?: 'Ensaio de ' . $hero['name']) ?>"
+                 loading="<?= $photoIndex === 0 ? 'eager' : 'lazy' ?>" fetchpriority="<?= $photoIndex === 0 ? 'high' : 'auto' ?>"
                  onclick="openLightbox(this.src)" title="Clique para ver em tela cheia">
             <?php if(!empty($photo['caption'])): ?>
             <div class="photo-caption">

@@ -1,5 +1,7 @@
 # Planejamento e Alinhamento: James Webb Studio
 
+Atualização SEO (23/10/2026): [plano específico](specs/001-seo-studio/plan.md).
+
 **Data**: 18 de Julho de 2026
 **Objetivo**: Mapear detalhadamente o que já está implementado no sistema e o que são tarefas futuras (não implementadas).
 

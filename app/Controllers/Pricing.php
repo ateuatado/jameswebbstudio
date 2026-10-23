@@ -41,7 +41,8 @@ class Pricing extends BaseController
         }
 
         return view('pricing', [
-            'title'      => 'Investimento | James Webb Studio',
+            'title'      => 'Pacotes de ensaios fotográficos em São Paulo | James Webb Studio',
+            'metaDescription' => 'Consulte os pacotes, serviços e valores dos ensaios fotográficos do James Webb Studio, na Lapa, São Paulo. Escolha a opção para o seu projeto.',
             'grouped'    => $grouped,
             'catDescMap' => $catDescMap,
         ]);

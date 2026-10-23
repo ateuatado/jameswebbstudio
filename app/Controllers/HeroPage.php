@@ -14,7 +14,7 @@ class HeroPage extends BaseController
     public function view($slug)
     {
         $heroModel = new Hero();
-        $hero = $heroModel->where('slug', $slug)->first();
+        $hero = $heroModel->where('slug', $slug)->where('published', 1)->first();
 
         if (!$hero) throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
 
@@ -86,6 +86,7 @@ class HeroPage extends BaseController
         $data['otherPackages'] = $otherPackages;
         $data['heroCatName']   = $catMap[$heroCatId ?? 0] ?? 'Ensaio Fotográfico';
         $data['title']         = $hero['name'] . ' | ' . $hero['sport'] . ' | James Webb Studio';
+        $data['metaDescription'] = 'Conheça o ensaio de ' . $hero['name'] . ' no James Webb Studio, na Lapa, São Paulo. Veja as fotografias e consulte os pacotes para o seu ensaio.';
 
         return view('star_page', $data);
     }

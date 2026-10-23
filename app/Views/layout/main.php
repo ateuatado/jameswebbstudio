@@ -82,8 +82,8 @@
     <!-- SEO: Meta Tags -->
     <meta name="description" content="<?= esc($metaDescription ?? 'Estúdio fotográfico na Lapa, São Paulo. Ensaios de branding pessoal, retratos profissionais e fotografia autoral. Pacotes personalizados com entrega digital em alta resolução.') ?>">
     <meta name="author" content="James Webb Studio">
-    <meta name="robots" content="index, follow">
-    <link rel="canonical" href="<?= current_url() ?>">
+    <meta name="robots" content="<?= esc($metaRobots ?? 'index, follow') ?>">
+    <link rel="canonical" href="<?= esc($canonicalUrl ?? current_url()) ?>">
 
     <!-- SEO: Geo Tags (Local) -->
     <meta name="geo.region" content="BR-SP">
@@ -120,7 +120,7 @@
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
-        "@type": ["LocalBusiness", "PhotographAction"],
+        "@type": "LocalBusiness",
         "@id": "https://jameswebbstudio.com.br/#business",
         "name": "James Webb Studio",
         "alternateName": "JWS",
@@ -138,12 +138,9 @@
             "addressLocality": "São Paulo",
             "addressRegion": "SP",
             "postalCode": "05075-010",
-            "addressCountry": "BR",
-            "areaServed": {
-                "@type": "City",
-                "name": "São Paulo"
-            }
+            "addressCountry": "BR"
         },
+        "areaServed": {"@type": "City", "name": "São Paulo"},
         "geo": {
             "@type": "GeoCoordinates",
             "latitude": -23.5205,
@@ -186,14 +183,7 @@
         "sameAs": [
             "https://www.instagram.com/jameswebbstudio",
             "https://www.jameswebbstudio.com.br"
-        ],
-        "aggregateRating": {
-            "@type": "AggregateRating",
-            "ratingValue": "5",
-            "bestRating": "5",
-            "worstRating": "1",
-            "ratingCount": "1"
-        }
+        ]
     }
     </script>
 
