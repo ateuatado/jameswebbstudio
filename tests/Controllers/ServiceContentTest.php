@@ -70,6 +70,36 @@ class ServiceContentTest extends LocalWebTestCase
         $preview->assertSee('noindex, follow');
     }
 
+    public function testAiFillsSeoAndContactFieldsWithoutManualForm(): void
+    {
+        $id = $this->repo->createPage($this->family, 'Ensaio de Dia das Mães', 1);
+        $this->administrator();
+        $editor = $this->get('/admin/paginas-servicos/' . $id);
+        $editor->assertSee('Criar página completa com IA');
+        $editor->assertSee('Ajustes opcionais');
+        $content = $this->content();
+        $content['keywords'] = ['ensaio de dia das mães', 'fotografia de mães e filhos'];
+        $content['search_intent'] = 'Encontrar um ensaio para celebrar o Dia das Mães.';
+        $content['cta_label'] = 'Conversar sobre meu ensaio';
+        $provider = new class($content) implements Provider {
+            public function __construct(private array $data) {}
+            public function generate(string $topic, string $family, string $facts): array {
+                return ['content' => $this->data, 'input_tokens' => 200, 'output_tokens' => 400, 'model' => 'fake'];
+            }
+        };
+        $this->repo->batch($this->family, ['Ensaio de Dia das Mães'], bin2hex(random_bytes(16)), 1, true, $id);
+        (new Worker($this->repo, $provider))->once();
+        $revision = $this->repo->revision((int) $this->repo->page($id)['current_revision_id']);
+        $this->assertSame($content['keywords'], $revision['data']['keywords']);
+        $result = $this->get('/admin/paginas-servicos/' . $id);
+        $result->assertSee('Página pronta para revisão');
+        $result->assertSee('fotografia de mães e filhos');
+        $this->repo->publish($id, 1, 1);
+        $public = $this->get('/servicos/fotografia-de-produtos/ensaio-de-dia-das-maes');
+        $public->assertStatus(200); $public->assertSee('Conversar sobre meu ensaio');
+        $public->assertDontSee('name="keywords"');
+    }
+
     public function testAdminMutationRejectsMissingCsrf(): void
     {
         $this->administrator();

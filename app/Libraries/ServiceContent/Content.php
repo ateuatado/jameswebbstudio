@@ -21,6 +21,11 @@ class Content
             $result[$field] = self::text($data[$field] ?? null, $max, $field);
         }
         $result['sections'] = [];
+        $result['keywords'] = [];
+        if (! is_array($data['keywords'] ?? [])) throw new InvalidArgumentException('Palavras-chave inválidas.');
+        foreach (array_slice($data['keywords'] ?? [], 0, 15) as $keyword) $result['keywords'][] = self::text($keyword, 120, 'palavra-chave');
+        $result['search_intent'] = self::text($data['search_intent'] ?? '', 400, 'intenção de busca', false);
+        $result['cta_label'] = self::text($data['cta_label'] ?? 'Solicitar orçamento pelo WhatsApp', 90, 'chamada para contato');
         if (! is_array($data['sections'] ?? null) || count($data['sections']) < 1 || count($data['sections']) > 10) {
             throw new InvalidArgumentException('Informe entre 1 e 10 seções.');
         }

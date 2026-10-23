@@ -116,7 +116,10 @@ class ServicePagesController extends BaseController
         $repo = $this->repo(); $page = $repo->page($id);
         $revision = $repo->revision((int) $page['current_revision_id']);
         $default = ['title' => $page['topic'], 'h1' => $page['topic'], 'introduction' => '', 'meta_description' => '', 'whatsapp_message' => 'Olá! Gostaria de um orçamento para ' . $page['topic'] . '.', 'sections' => [], 'faq' => [], 'photo_ids' => [], 'fact_warnings' => []];
-        return view('admin/service_pages/edit', ['title' => 'Editar página', 'page' => $page, 'content' => $revision['data'] ?? $default,
+        $content = array_replace(['keywords' => [], 'search_intent' => '', 'cta_label' => 'Solicitar orçamento pelo WhatsApp'], $revision['data'] ?? $default);
+        return view('admin/service_pages/edit', ['title' => 'Editar página', 'page' => $page, 'content' => $content,
+            'generation' => $repo->table('jobs')->where('page_id', $id)->orderBy('id', 'desc')->get(1)->getRowArray(),
+            'hasContext' => $repo->context() !== null, 'aiEnabled' => config('ServicePages')->generationEnabled,
             'revisions' => $repo->table('revisions')->where('page_id', $id)->orderBy('id', 'desc')->get(20)->getResultArray(),
             'photos' => $repo->db->table('photos')->select('photos.id, heroes.name, photos.caption')->join('heroes', 'heroes.id = photos.hero_id')->where('heroes.published', 1)->orderBy('photos.id', 'desc')->get(200)->getResultArray(),
             'path' => $repo->path($page), 'key' => bin2hex(random_bytes(16))]);
@@ -132,6 +135,7 @@ class ServicePagesController extends BaseController
             $faqs = [];
             foreach ((array) ($data['faq'] ?? []) as $row) if (trim($row['question'] ?? '') || trim($row['answer'] ?? '')) $faqs[] = $row;
             $data['sections'] = $sections; $data['faq'] = $faqs;
+            $data['keywords'] = array_values(array_filter(array_map('trim', preg_split('/[,\n\r]+/', (string) ($data['keyword_list'] ?? '')))));
             $data['fact_warnings'] = array_values(array_filter(array_map('trim', preg_split('/\R/', (string) ($data['warnings'] ?? '')))));
             $this->repo()->edit($id, (int) $data['version'], $data, $this->actor());
         }, 'admin/paginas-servicos/' . $id);
