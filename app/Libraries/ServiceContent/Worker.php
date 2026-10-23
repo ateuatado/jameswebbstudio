@@ -48,25 +48,40 @@ class Worker
             return true;
         }
         try {
-            $page = $r->page((int) $job['page_id']);
-            $family = $r->family((int) $page['family_id']);
-            $context = $r->table('contexts')->where('id', $batch['context_id'])->get()->getRowArray();
-            $result = $this->provider->generate($page['topic'], $family['name'], $context['facts']);
+            $contextDraft = (int) $job['page_id'] === 0;
+            if ($contextDraft) {
+                $proposal = $r->table('context_drafts')->where('batch_id', $batch['id'])->get()->getRowArray();
+                if (! $proposal) throw new RuntimeException('Proposta de contexto não encontrada.');
+                $result = $this->provider->generate('Base editorial reutilizável do estúdio: serviços, aplicações, processo, entregas e condições a combinar', 'Apresentação do estúdio', $proposal['seed_facts']);
+            } else {
+                $page = $r->page((int) $job['page_id']);
+                $family = $r->family((int) $page['family_id']);
+                $context = $r->table('contexts')->where('id', $batch['context_id'])->get()->getRowArray();
+                $result = $this->provider->generate($page['topic'], $family['name'], $context['facts']);
+            }
             $r->db->transException(true)->transBegin();
             try {
                 // Own the lease before accepting an external result.
                 $r->table('jobs')->where(['id' => $job['id'], 'state' => 'running', 'lease_token' => $token])->update(['state' => 'succeeded', 'input_tokens' => max(0, (int) $result['input_tokens']), 'output_tokens' => max(0, (int) $result['output_tokens'])]);
                 if ($r->db->affectedRows() !== 1) throw new RuntimeException('Lease encerrado.');
-                $revision = $r->addRevision((int) $page['id'], (int) $context['id'], $result['content'], (int) $batch['created_by'], 'ai', $result['model']);
+                $revision = 0;
+                if ($contextDraft) {
+                    $data = Content::validate($result['content']);
+                    $facts = $data['introduction'];
+                    foreach ($data['sections'] as $section) $facts .= "\n\n" . $section['heading'] . "\n" . $section['body'];
+                    $r->table('context_drafts')->where('batch_id', $batch['id'])->update(['facts' => Content::text($facts, 10000, 'contexto proposto'), 'warnings' => Content::encode($data['fact_warnings'])]);
+                } else {
+                    $revision = $r->addRevision((int) $page['id'], (int) $context['id'], $result['content'], (int) $batch['created_by'], 'ai', $result['model']);
+                }
                 $r->table('jobs')->where('id', $job['id'])->update(['revision_id' => $revision]);
                 $liveBatch = $r->table('batches')->where('id', $batch['id'])->get()->getRowArray();
-                if ($liveBatch['status'] !== 'cancelled') {
+                if (! $contextDraft && $liveBatch['status'] !== 'cancelled') {
                     $r->table('pages')->where(['id' => $page['id'], 'lock_version' => $job['base_version']])->set('current_revision_id', $revision)->set('lock_version', 'lock_version + 1', false)->update();
                 }
                 $r->table('batches')->where('id', $batch['id'])->set('used_tokens', 'used_tokens + ' . (max(0, (int) $result['input_tokens']) + max(0, (int) $result['output_tokens'])), false)->update();
                 $estimatedCost = (int) ceil(max(0, (int) $result['input_tokens']) * $config->inputUsdPerMillion + max(0, (int) $result['output_tokens']) * $config->outputUsdPerMillion);
                 $r->table('batches')->where('id', $batch['id'])->set('used_microusd', 'used_microusd + ' . $estimatedCost, false)->update();
-                $r->audit((int) $page['id'], 'ai_draft_created', (int) $batch['created_by'], $revision);
+                $r->audit((int) $job['page_id'], $contextDraft ? 'context_suggestion_ready' : 'ai_draft_created', (int) $batch['created_by'], $revision);
                 $r->db->transCommit();
             } catch (\Throwable $error) { $r->db->transRollback(); throw $error; }
         } catch (\Throwable $error) {

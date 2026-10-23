@@ -7,7 +7,7 @@ Configuração pública e geração vêm DESATIVADAS por padrão no código. O a
 
 ## Primeiro uso local
 1. Entrar em /admin/paginas-servicos. O menu "Páginas de serviços" é distinto dos serviços comerciais de pacotes.
-2. Abrir "Contexto aprovado e WhatsApp". Informar somente fatos reais e número com DDI, conferir e salvar. Não há número de contato fictício cadastrado pelo agente.
+2. Clicar "Gerar informações do estúdio com IA". Após processamento, conferir a proposta preenchida, confirmar WhatsApp e aprovar uma vez. Ajustes manuais são opcionais. Não há número de contato fictício cadastrado pelo agente. Ver context-assistance.md.
 3. Quatro famílias iniciais já foram criadas localmente: ensaios, produtos, imóveis e moda. Editoriais ainda não publicados não aparecem no menu público ou sitemap.
 4. Escolher família e inserir um ou mais temas, um por linha (até 25). Revisar lista, duplicatas exatas e endereços; confirmar criação. Marcar a opção IA se desejar enfileirar rascunhos.
 5. Processar localmente com `php spark service-pages:work 1` (um item) ou `php spark service-pages:work 25` (até 25). O painel não chama a API na requisição HTTP; sem worker os itens aguardam na fila.

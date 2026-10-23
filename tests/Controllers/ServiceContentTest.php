@@ -17,6 +17,9 @@ class ServiceContentTest extends LocalWebTestCase
         require_once APPPATH . 'Database/Migrations/2026-10-23-130000_CreateServiceContent.php';
         $migration = new \App\Database\Migrations\CreateServiceContent(\Config\Database::forge());
         $migration->down(); $migration->up();
+        require_once APPPATH . 'Database/Migrations/2026-10-23-140000_CreateServiceContextDrafts.php';
+        $contextMigration = new \App\Database\Migrations\CreateServiceContextDrafts(\Config\Database::forge());
+        $contextMigration->down(); $contextMigration->up();
         $this->repo = new Repository();
         $this->repo->saveContext('O estúdio oferece fotografia de produtos. O atendimento depende de briefing. Não há preços públicos nesta modalidade.', '5511999999999', 1);
         $this->repo->createFamily('Fotografia de produtos', 'Fotografias para apresentar produtos e suas características.', 1);
@@ -211,6 +214,21 @@ class ServiceContentTest extends LocalWebTestCase
         (new Worker($this->repo, $this->fakeProvider(true)))->once();
         $job = $this->repo->table('jobs')->get()->getRowArray();
         $this->assertSame('cancelled', $job['state']); $this->assertSame(0, (int) $job['attempts']);
+    }
+
+    public function testAiCanProposeContextWithoutManualFactsOrPublication(): void
+    {
+        $this->repo->table('contexts')->emptyTable();
+        $key = bin2hex(random_bytes(16));
+        $batch = $this->repo->suggestContext($key, 1);
+        $this->assertSame($batch, $this->repo->suggestContext($key, 1));
+        $this->assertTrue((new Worker($this->repo, $this->fakeProvider()))->once());
+        $draft = $this->repo->table('context_drafts')->get()->getRowArray();
+        $this->assertNotEmpty($draft['facts']);
+        $this->assertSame(0, (int) $draft['approved_context_id']);
+        $this->assertNull($this->repo->context());
+        $this->assertSame(0, $this->repo->table('pages')->countAllResults());
+        $this->assertSame(0, $this->repo->table('revisions')->countAllResults());
     }
 
     public function testExpiredLeaseIsNotAutomaticallyBilledAgain(): void

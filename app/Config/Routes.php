@@ -34,6 +34,7 @@ $routes->group('admin', ['filter' => 'group:admin,superadmin'], static function 
         $routes->get('(:num)/previa', 'Admin\ServicePagesController::preview/$1');
         $routes->group('', ['filter' => 'csrf'], static function ($routes) {
             $routes->post('contexto', 'Admin\ServicePagesController::context');
+            $routes->post('contexto/sugerir', 'Admin\ServicePagesController::suggestContext');
             $routes->post('familia', 'Admin\ServicePagesController::family');
             $routes->post('preparar', 'Admin\ServicePagesController::prepare');
             $routes->post('lote', 'Admin\ServicePagesController::batch');

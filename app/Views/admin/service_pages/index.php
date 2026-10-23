@@ -3,14 +3,17 @@
 <h1>Páginas de serviços</h1>
 <p>Crie páginas de ofertas reais, revise o conteúdo e publique. A geração por IA cria somente rascunhos.</p>
 <p class="text-muted">Páginas públicas: <?= $configuration->enabled ? 'habilitadas' : 'desabilitadas no ambiente' ?> · Geração: <?= $configuration->generationEnabled ? 'habilitada' : 'desabilitada' ?>. Limites diários reservados: <?= (int) $configuration->dailyTokenLimit ?> tokens e US$ <?= number_format($configuration->dailyUsdLimit, 2) ?>. Estimativas conservadoras; confira a cobrança na conta do fornecedor.</p>
-<details class="card p-3 mb-4"><summary>Contexto aprovado e WhatsApp</summary>
+<section class="card p-3 mb-4"><h2 class="h4">A IA prepara, você aprova</h2><p>Não precisa escrever a apresentação do estúdio. Gere uma proposta a partir dos serviços cadastrados, confira e aprove uma vez. Essa base será reutilizada em todas as páginas; a IA também preenche títulos, textos, perguntas e metadados de cada tema.</p>
+<form method="post" action="<?= site_url('admin/paginas-servicos/contexto/sugerir') ?>"><?= csrf_field() ?><input type="hidden" name="key" value="<?= esc($contextKey) ?>"><button class="btn btn-primary" <?= $configuration->generationEnabled ? '' : 'disabled' ?>>Gerar informações do estúdio com IA</button></form><p class="small mt-2 mb-0">A proposta aparecerá abaixo quando o processamento terminar. Você só precisa confirmar o WhatsApp e aprovar as informações.</p></section>
+<details class="card p-3 mb-4" <?= $suggestion ? 'open' : '' ?>><summary><?= $suggestion ? 'Proposta da IA pronta para sua aprovação' : 'Informações do estúdio e WhatsApp' ?></summary>
 <form method="post" action="<?= site_url('admin/paginas-servicos/contexto') ?>" class="mt-3">
 <?= csrf_field() ?>
-<label for="facts" class="form-label">Fatos do estúdio: serviços, regiões, processo, entregas e limites. Não inclua dados privados ou credenciais.</label>
-<textarea id="facts" name="facts" rows="8" maxlength="10000" class="form-control" required><?= esc($context['facts'] ?? '') ?></textarea>
+<?php if ($suggestion): ?><input type="hidden" name="suggestion_id" value="<?= (int) $suggestion['id'] ?>"><?php $proposalWarnings = json_decode($suggestion['warnings'] ?? '[]', true) ?? []; if ($proposalWarnings): ?><div class="alert alert-info">Pontos para conferir: <?= esc(implode(' · ', $proposalWarnings)) ?></div><?php endif; ?><?php endif; ?>
+<label for="facts" class="form-label">Base reutilizável para as páginas — ajustes são opcionais</label>
+<textarea id="facts" name="facts" rows="8" maxlength="10000" class="form-control" required><?= esc($suggestion['facts'] ?? $context['facts'] ?? '') ?></textarea>
 <label for="whatsapp" class="form-label mt-3">WhatsApp com DDI</label>
 <input id="whatsapp" name="whatsapp" class="form-control" value="<?= esc($context['whatsapp'] ?? '') ?>" placeholder="5511999999999" required>
-<p class="mt-2">Salvar cria uma versão do contexto. Páginas publicadas não mudam automaticamente.</p><button class="btn btn-primary">Salvar contexto aprovado</button>
+<p class="mt-2">Aprovar uma vez permite reutilizar esta base em centenas de páginas. Páginas já publicadas não mudam automaticamente.</p><?php if ($suggestion): ?><label class="d-block mb-3"><input type="checkbox" name="approved" value="1" required> Conferi e aprovo esta proposta como informações do estúdio.</label><?php endif; ?><button class="btn btn-success"><?= $suggestion ? 'Aprovar e usar em todas as próximas páginas' : 'Salvar informações aprovadas' ?></button>
 </form></details>
 <details class="card p-3 mb-4"><summary>Adicionar família de serviços</summary>
 <form method="post" action="<?= site_url('admin/paginas-servicos/familia') ?>" class="mt-3"><?= csrf_field() ?>

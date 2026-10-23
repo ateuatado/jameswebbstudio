@@ -34,6 +34,10 @@ class ServicePagesController extends BaseController
         $repo = new Repository();
         if (! $repo->ready()) return view('admin/service_pages/setup', ['title' => 'Páginas de serviços']);
         $pageNumber = max(1, min(100000, (int) $this->request->getGet('pagina')));
+        $suggestion = null;
+        if ($repo->db->tableExists('service_content_context_drafts')) {
+            $suggestion = $repo->db->table('service_content_context_drafts d')->select('d.*')->join('service_content_batches b', 'b.id = d.batch_id')->where('d.approved_context_id', 0)->where('d.facts IS NOT NULL', null, false)->where('b.status !=', 'cancelled')->orderBy('d.id', 'desc')->get(1)->getRowArray();
+        }
         return view('admin/service_pages/index', [
             'title' => 'Páginas de serviços', 'context' => $repo->context(),
             'families' => $repo->table('families')->orderBy('name')->get()->getResultArray(),
@@ -42,19 +46,37 @@ class ServicePagesController extends BaseController
             'jobs' => $repo->table('jobs')->orderBy('id', 'desc')->get(50)->getResultArray(),
             'batches' => $repo->table('batches')->orderBy('id', 'desc')->get(20)->getResultArray(),
             'preview' => $preview, 'configuration' => config('ServicePages'),
+            'suggestion' => $suggestion,
+            'contextKey' => bin2hex(random_bytes(16)),
         ]);
     }
 
     public function context()
     {
         $this->permit('edit');
-        return $this->execute(fn () => $this->repo()->saveContext((string) $this->request->getPost('facts'), preg_replace('/\D/', '', (string) $this->request->getPost('whatsapp')), $this->actor()));
+        return $this->execute(function () {
+            $r = $this->repo();
+            if ($this->request->getPost('suggestion_id') && $this->request->getPost('approved') !== '1') throw new \RuntimeException('Confirme a aprovação da proposta.');
+            $r->saveContext((string) $this->request->getPost('facts'), preg_replace('/\D/', '', (string) $this->request->getPost('whatsapp')), $this->actor());
+            if ($this->request->getPost('suggestion_id') && $r->db->tableExists('service_content_context_drafts')) {
+                $r->table('context_drafts')->where('id', (int) $this->request->getPost('suggestion_id'))->update(['approved_context_id' => $r->context()['id']]);
+            }
+        });
     }
 
     public function family()
     {
         $this->permit('edit');
         return $this->execute(fn () => $this->repo()->createFamily((string) $this->request->getPost('name'), (string) $this->request->getPost('description'), $this->actor()));
+    }
+
+    public function suggestContext()
+    {
+        $this->permit('generate');
+        return $this->execute(function () {
+            if (! config('ServicePages')->generationEnabled) throw new \RuntimeException('Geração desativada no ambiente.');
+            $this->repo()->suggestContext((string) $this->request->getPost('key'), $this->actor());
+        });
     }
 
     public function prepare()

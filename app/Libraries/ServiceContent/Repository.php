@@ -30,6 +30,27 @@ class Repository
         return $this->table('contexts')->orderBy('id', 'desc')->get(1)->getRowArray();
     }
 
+    public function suggestContext(string $key, int $actor): int
+    {
+        if (! preg_match('/^[a-f0-9]{32,64}$/', $key)) throw new RuntimeException('Solicitação inválida.');
+        if (! $this->db->tableExists('service_content_context_drafts')) throw new RuntimeException('Atualize a instalação do módulo.');
+        $existing = $this->table('batches')->where('request_key', $key)->get()->getRowArray();
+        if ($existing) return (int) $existing['id'];
+        $families = $this->table('families')->orderBy('name')->get()->getResultArray();
+        $seed = 'Nome do negócio: James Webb Studio. Serviços cadastrados pelo estúdio: ' . implode('; ', array_column($families, 'name')) . '. ';
+        $seed .= $this->context()['facts'] ?? 'Preços, prazos, quantidade de fotos, equipamentos e regiões não foram confirmados. Quando não houver informação, apresentar como condição a combinar no briefing, sem inventar dados. Produzir uma base editorial reutilizável para todos os serviços cadastrados.';
+        $this->db->transException(true)->transBegin();
+        try {
+            $this->table('batches')->insert(['request_key' => $key, 'context_id' => 0, 'created_by' => $actor, 'token_limit' => (config('ServicePages')->maxInputTokens + config('ServicePages')->maxOutputTokens) * config('ServicePages')->maxAttempts, 'created_at' => date('Y-m-d H:i:s')]);
+            $batch = (int) $this->db->insertID();
+            $this->table('context_drafts')->insert(['batch_id' => $batch, 'seed_facts' => $seed]);
+            $this->table('jobs')->insert(['batch_id' => $batch, 'page_id' => 0, 'base_version' => 0, 'created_at' => date('Y-m-d H:i:s')]);
+            $this->audit(0, 'context_suggestion_queued', $actor);
+            $this->db->transCommit();
+            return $batch;
+        } catch (\Throwable $error) { $this->db->transRollback(); throw $error; }
+    }
+
     public function audit(int $page, string $action, int $actor, int $revision = 0): void
     {
         $this->table('audit')->insert(['page_id' => $page, 'actor_id' => $actor, 'action' => $action, 'revision_id' => $revision, 'created_at' => date('Y-m-d H:i:s')]);
