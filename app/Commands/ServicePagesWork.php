@@ -18,7 +18,9 @@ class ServicePagesWork extends BaseCommand
         $repo = new Repository();
         $config = config('ServicePages');
         if (! $repo->ready() || ! $config->generationEnabled || $config->apiKey === '') {
-            CLI::error('Instale o módulo e configure a geração/chave no ambiente.');
+            if (! $repo->ready()) CLI::error('Tabelas editoriais ausentes/incompletas neste banco. Execute service-pages:install.');
+            if (! $config->generationEnabled) CLI::error('Geração desabilitada: defina servicepages.generationEnabled = true no .env.');
+            if (trim($config->apiKey) === '') CLI::error('Chave não carregada: defina servicepages.apiKey no .env (não envie o valor no chat).');
             return EXIT_ERROR;
         }
         $worker = new Worker($repo, new DeepSeekProvider());
