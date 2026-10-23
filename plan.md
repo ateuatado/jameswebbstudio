@@ -1,5 +1,7 @@
 # Planejamento e Alinhamento: James Webb Studio
 
+Novo módulo proposto: [plano de páginas de serviços com IA](specs/002-service-pages-ai/plan.md).
+
 Atualização SEO (23/10/2026): [plano específico](specs/001-seo-studio/plan.md).
 
 **Data**: 18 de Julho de 2026
