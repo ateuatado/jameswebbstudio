@@ -19,7 +19,7 @@ class DeepSeekProvider implements Provider
             $response = service('curlrequest')->post('https://api.deepseek.com/chat/completions', [
                 'headers' => ['Authorization' => 'Bearer ' . $config->apiKey, 'Content-Type' => 'application/json'],
                 'json' => ['model' => $config->model, 'messages' => [['role' => 'system', 'content' => $prompt], ['role' => 'user', 'content' => $input]], 'response_format' => ['type' => 'json_object'], 'max_tokens' => $config->maxOutputTokens, 'thinking' => ['type' => 'disabled'], 'stream' => false],
-                'timeout' => 65, 'connect_timeout' => 10, 'http_errors' => false, 'allow_redirects' => false,
+                'timeout' => 40, 'connect_timeout' => 10, 'http_errors' => false, 'allow_redirects' => false,
             ]);
         } catch (\Throwable $error) {
             // Never propagate request objects, headers, provider bodies or credentials.
@@ -31,6 +31,7 @@ class DeepSeekProvider implements Provider
             if (($body['choices'][0]['finish_reason'] ?? '') !== 'stop') throw new RuntimeException();
             $content = json_decode($body['choices'][0]['message']['content'] ?? '', true, 16, JSON_THROW_ON_ERROR);
             $content = Content::validate($content);
+            if (! $content['keywords'] || $content['search_intent'] === '' || count($content['sections']) < 2) throw new RuntimeException('Incomplete generated fields.');
         } catch (\Throwable $error) {
             throw new RuntimeException('Resposta incompleta ou inválida da IA. Revise antes de repetir; consumo pode ter ocorrido.');
         }

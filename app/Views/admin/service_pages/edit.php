@@ -6,7 +6,8 @@
 <p>A IA prepara título, palavras-chave, descrição, apresentação, seções, perguntas frequentes e chamada para o WhatsApp a partir deste tema. Você não precisa preencher o formulário.</p>
 <?php if (! $hasContext): ?><p class="alert alert-info">Primeiro, gere e aprove as informações do estúdio <a href="<?= site_url('admin/paginas-servicos') ?>">na tela inicial</a>. Essa etapa é feita uma vez para todos os temas.</p><?php endif; ?>
 <?php $pending = $generation && in_array($generation['state'], ['queued', 'running'], true); ?>
-<?php if ($pending): ?><p class="alert alert-info" role="status"><?= $generation['state'] === 'running' ? 'A IA está preparando sua página.' : 'Sua página está na fila para geração por IA.' ?> O conteúdo aparecerá aqui quando terminar.</p><a class="btn btn-outline-primary" href="<?= current_url() ?>">Atualizar resultado</a>
+<?php if ($pending): ?><p class="alert alert-info" role="status"><?= $generation['state'] === 'running' ? 'A IA está preparando sua página.' : 'Sua página está na fila. Você também pode gerar e preencher agora.' ?></p>
+<?php if ($generation['state'] === 'queued'): ?><form method="post" action="<?= site_url('admin/paginas-servicos/' . $page['id'] . '/gerar') ?>"><?= csrf_field() ?><input type="hidden" name="key" value="<?= esc($key) ?>"><button class="btn btn-primary btn-lg">Gerar agora e preencher todos os campos</button></form><?php else: ?><a class="btn btn-outline-primary" href="<?= current_url() ?>">Atualizar resultado</a><?php endif; ?>
 <?php else: ?>
 <?php if ($generation && $generation['state'] === 'failed'): ?><p class="alert alert-warning">A geração não terminou: <?= esc($generation['error']) ?> Confira a fila na tela inicial antes de repetir, pois pode haver consumo.</p><?php endif; ?>
 <form method="post" action="<?= site_url('admin/paginas-servicos/' . $page['id'] . '/gerar') ?>"><?= csrf_field() ?><input type="hidden" name="key" value="<?= esc($key) ?>"><button class="btn btn-primary btn-lg" <?= $hasContext && $aiEnabled ? '' : 'disabled' ?>><?= $page['current_revision_id'] ? 'Gerar nova versão completa com IA' : 'Criar página completa com IA' ?></button></form>
@@ -23,6 +24,7 @@
 <a class="btn btn-outline-primary" href="<?= site_url('admin/paginas-servicos/' . $page['id'] . '/previa') ?>" target="_blank" rel="noopener">Ver página montada</a>
 <?php if ($content['fact_warnings']): ?><p class="alert alert-warning mt-3">Pontos a conferir: <?= esc(implode(' · ', $content['fact_warnings'])) ?>. Resolva em “Ajustes opcionais” antes de publicar.</p><?php endif; ?>
 </section><?php endif; ?>
+<?php if ($content['sections']): ?>
 <details class="card p-3 mb-4" id="manual-editor"><summary>Ajustes opcionais — textos, fotos e SEO</summary>
 <form method="post" action="<?= site_url('admin/paginas-servicos/' . $page['id'] . '/salvar') ?>">
 <?= csrf_field() ?><input type="hidden" name="version" value="<?= (int) $page['lock_version'] ?>">
@@ -37,7 +39,8 @@
 <h2 class="h4 mt-4">Perguntas frequentes</h2><?php for ($i = 0; $i < min(8, max(3, count($content['faq']) + 1)); $i++): ?><div class="card p-3 my-2"><label for="question-<?= $i ?>">Pergunta <?= $i + 1 ?></label><input id="question-<?= $i ?>" name="faq[<?= $i ?>][question]" class="form-control mb-2" value="<?= esc($content['faq'][$i]['question'] ?? '') ?>"><label for="answer-<?= $i ?>">Resposta</label><textarea id="answer-<?= $i ?>" name="faq[<?= $i ?>][answer]" class="form-control"><?= esc($content['faq'][$i]['answer'] ?? '') ?></textarea></div><?php endfor; ?>
 <label for="photos" class="form-label mt-3">Portfólio autorizado (até 12 fotografias de ensaios publicados)</label><select multiple id="photos" name="photo_ids[]" class="form-select" size="6"><?php foreach ($photos as $photo): ?><option value="<?= (int) $photo['id'] ?>" <?= in_array((int) $photo['id'], $content['photo_ids']) ? 'selected' : '' ?>>#<?= (int) $photo['id'] ?> — <?= esc($photo['name'] . ' ' . ($photo['caption'] ?? '')) ?></option><?php endforeach; ?></select>
 <label for="warnings" class="form-label mt-3">Fatos pendentes — resolva e remova somente após conferir</label><textarea id="warnings" name="warnings" class="form-control" rows="3"><?= esc(implode("\n", $content['fact_warnings'])) ?></textarea>
-<button class="btn btn-primary my-4">Salvar ajustes do rascunho</button></form></details>
+<button class="btn btn-primary my-4">Salvar e completar campos faltantes com IA</button></form></details>
+<?php endif; ?>
 <?php if ($page['current_revision_id']): ?>
 <div class="card p-3 mb-4"><h2 class="h4">Aprovar e publicar</h2><p>Confira a página montada e aprove o conteúdo. Nenhum preenchimento manual é necessário se a proposta estiver correta.</p><form method="post" action="<?= site_url('admin/paginas-servicos/' . $page['id'] . '/publicar') ?>"><?= csrf_field() ?><input type="hidden" name="version" value="<?= (int) $page['lock_version'] ?>"><label><input type="checkbox" name="reviewed" value="1" required> Revisei e aprovo o conteúdo salvo e as imagens.</label><button class="btn btn-success ms-3">Aprovar e publicar página</button></form>
 <form method="post" action="<?= site_url('admin/paginas-servicos/' . $page['id'] . '/arquivar') ?>" class="mt-3"><?= csrf_field() ?><input type="hidden" name="version" value="<?= (int) $page['lock_version'] ?>"><button class="btn btn-outline-danger">Arquivar página</button></form></div>

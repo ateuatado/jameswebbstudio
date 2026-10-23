@@ -10,13 +10,15 @@ class Worker
     {
     }
 
-    public function once(): bool
+    public function once(?int $pageId = null): bool
     {
         $r = $this->repo;
         $now = date('Y-m-d H:i:s');
         // Expired calls are not replayed automatically: provider may have billed them.
         $r->table('jobs')->where('state', 'running')->where('lease_expires_at <', $now)->update(['state' => 'failed', 'error' => 'Worker interrompido. Consumo desconhecido; revise antes de repetir.']);
-        $job = $r->table('jobs')->where('state', 'queued')->groupStart()->where('available_at', null)->orWhere('available_at <=', $now)->groupEnd()->orderBy('id')->get(1)->getRowArray();
+        $query = $r->table('jobs')->where('state', 'queued')->groupStart()->where('available_at', null)->orWhere('available_at <=', $now)->groupEnd();
+        if ($pageId !== null) $query->where('page_id', $pageId);
+        $job = $query->orderBy('id')->get(1)->getRowArray();
         if (! $job) return false;
         $batch = $r->table('batches')->where('id', $job['batch_id'])->get()->getRowArray();
         if (! $batch || $batch['status'] === 'cancelled') {

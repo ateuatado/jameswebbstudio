@@ -76,7 +76,7 @@ class ServiceContentTest extends LocalWebTestCase
         $this->administrator();
         $editor = $this->get('/admin/paginas-servicos/' . $id);
         $editor->assertSee('Criar página completa com IA');
-        $editor->assertSee('Ajustes opcionais');
+        $editor->assertDontSee('id="manual-editor"');
         $content = $this->content();
         $content['keywords'] = ['ensaio de dia das mães', 'fotografia de mães e filhos'];
         $content['search_intent'] = 'Encontrar um ensaio para celebrar o Dia das Mães.';
@@ -121,6 +121,40 @@ class ServiceContentTest extends LocalWebTestCase
         $result = $this->withSession(session()->get())->post('/admin/paginas-servicos/familia', [csrf_token() => $hash, 'name' => 'Moda', 'description' => 'Fotografia de moda.']);
         $result->assertRedirect();
         $this->assertSame(1, $this->repo->table('families')->where('slug', 'moda')->countAllResults());
+    }
+
+    public function testSaveAutomaticallyFillsMissingSectionsAndSeoWithoutLosingText(): void
+    {
+        $id = $this->draft(); $this->administrator();
+        $generated = $this->content();
+        $generated['sections'][] = ['heading' => 'Como pedir orçamento', 'body' => 'Converse sobre o projeto pelo WhatsApp.'];
+        $generated['keywords'] = ['fotografia de joias', 'fotos de produtos'];
+        $generated['search_intent'] = 'Contratar fotografia de joias.';
+        $provider = new class($generated) implements Provider {
+            public function __construct(private array $data) {}
+            public function generate(string $topic, string $family, string $facts): array {
+                return ['content' => $this->data, 'input_tokens' => 100, 'output_tokens' => 300, 'model' => 'fake'];
+            }
+        };
+        \Config\Services::injectMock('serviceContentProvider', $provider);
+        $previous = config('ServicePages')->generationEnabled;
+        config('ServicePages')->generationEnabled = true;
+        try {
+            $this->get('/admin/paginas-servicos/' . $id);
+            $data = $this->content('Título que escrevi');
+            $data['version'] = 1; $data['sections'] = []; $data['keyword_list'] = ''; $data['search_intent'] = '';
+            $data[csrf_token()] = csrf_hash();
+            $this->withSession(session()->get())->post('/admin/paginas-servicos/' . $id . '/salvar', $data)->assertRedirect();
+            $revision = $this->repo->revision((int) $this->repo->page($id)['current_revision_id']);
+            $this->assertSame('Título que escrevi', $revision['data']['title']);
+            $this->assertCount(2, $revision['data']['sections']);
+            $this->assertSame($generated['keywords'], $revision['data']['keywords']);
+            $this->assertSame($generated['search_intent'], $revision['data']['search_intent']);
+            $this->assertSame(0, (int) $this->repo->page($id)['published_revision_id']);
+        } finally {
+            config('ServicePages')->generationEnabled = $previous;
+            \Config\Services::resetSingle('serviceContentProvider');
+        }
     }
 
     public function testPublishedSnapshotSurvivesEditingAndSitemapExcludesDrafts(): void

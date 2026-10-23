@@ -19,6 +19,11 @@ use CodeIgniter\Config\BaseService;
  */
 class Services extends BaseService
 {
+    public static function serviceContentProvider(bool $getShared = true): \App\Libraries\ServiceContent\Provider
+    {
+        if ($getShared) return static::getSharedInstance('serviceContentProvider');
+        return new \App\Libraries\ServiceContent\DeepSeekProvider();
+    }
     /*
      * public static function example($getShared = true)
      * {

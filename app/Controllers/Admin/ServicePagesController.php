@@ -137,7 +137,22 @@ class ServicePagesController extends BaseController
             $data['sections'] = $sections; $data['faq'] = $faqs;
             $data['keywords'] = array_values(array_filter(array_map('trim', preg_split('/[,\n\r]+/', (string) ($data['keyword_list'] ?? '')))));
             $data['fact_warnings'] = array_values(array_filter(array_map('trim', preg_split('/\R/', (string) ($data['warnings'] ?? '')))));
-            $this->repo()->edit($id, (int) $data['version'], $data, $this->actor());
+            $r = $this->repo();
+            $version = (int) $data['version'];
+            if (! $sections || ! $data['keywords'] || trim((string) ($data['search_intent'] ?? '')) === '') {
+                $this->permit('generate');
+                if ((int) $r->page($id)['lock_version'] !== $version) throw new \RuntimeException('A página mudou. Recarregue antes de completar.');
+                $generated = $this->generateNow($id, bin2hex(random_bytes(16)));
+                foreach (['title', 'h1', 'introduction', 'meta_description', 'whatsapp_message', 'search_intent', 'cta_label'] as $field) {
+                    if (trim((string) ($data[$field] ?? '')) === '') $data[$field] = $generated[$field];
+                }
+                if (! $data['sections']) $data['sections'] = $generated['sections'];
+                if (! $data['keywords']) $data['keywords'] = $generated['keywords'];
+                if (! $data['faq']) $data['faq'] = $generated['faq'];
+                $data['fact_warnings'] = array_values(array_unique(array_merge($data['fact_warnings'], $generated['fact_warnings'])));
+                $version++;
+            }
+            $r->edit($id, $version, $data, $this->actor());
         }, 'admin/paginas-servicos/' . $id);
     }
 
@@ -165,11 +180,24 @@ class ServicePagesController extends BaseController
     public function generate(int $id)
     {
         $this->permit('generate');
-        return $this->execute(function () use ($id) {
-            if (! config('ServicePages')->generationEnabled) throw new \RuntimeException('Geração desativada.');
-            $r = $this->repo(); $page = $r->page($id);
-            $r->batch((int) $page['family_id'], [$page['topic']], (string) $this->request->getPost('key'), $this->actor(), true, $id);
-        }, 'admin/paginas-servicos/' . $id);
+        return $this->execute(fn () => $this->generateNow($id, (string) $this->request->getPost('key')), 'admin/paginas-servicos/' . $id);
+    }
+
+    private function generateNow(int $id, string $key): array
+    {
+        if (! config('ServicePages')->generationEnabled) throw new \RuntimeException('Geração desativada.');
+        $r = $this->repo(); $page = $r->page($id);
+        $pending = $r->table('jobs')->where('page_id', $id)->whereIn('state', ['queued', 'running'])->orderBy('id')->get(1)->getRowArray();
+        if ($pending && $pending['state'] === 'running') throw new \RuntimeException('A IA já está processando esta página. Atualize em alguns instantes.');
+        if (! $pending) $r->batch((int) $page['family_id'], [$page['topic']], $key, $this->actor(), true, $id);
+        (new \App\Libraries\ServiceContent\Worker($r, service('serviceContentProvider')))->once($id);
+        $updated = $r->page($id);
+        $job = $r->table('jobs')->where('page_id', $id)->orderBy('id', 'desc')->get(1)->getRowArray();
+        if ((int) $updated['lock_version'] !== (int) $page['lock_version'] + 1 || (int) $updated['current_revision_id'] !== (int) ($job['revision_id'] ?? 0)) {
+            throw new \RuntimeException($job['error'] ?? 'Não foi possível aplicar o resultado agora. Confira a fila e o histórico.');
+        }
+        $revision = $r->revision((int) $updated['current_revision_id']);
+        return $revision['data'];
     }
 
     public function cancel(int $id)

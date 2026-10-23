@@ -10,7 +10,7 @@ Configuração pública e geração vêm DESATIVADAS por padrão no código. O a
 2. Clicar "Gerar informações do estúdio com IA". Após processamento, conferir a proposta preenchida, confirmar WhatsApp e aprovar uma vez. Ajustes manuais são opcionais. Não há número de contato fictício cadastrado pelo agente. Ver context-assistance.md.
 3. Quatro famílias iniciais já foram criadas localmente: ensaios, produtos, imóveis e moda. Editoriais ainda não publicados não aparecem no menu público ou sitemap.
 4. Escolher família e inserir um ou mais temas, um por linha (até 25). Revisar lista, duplicatas exatas e endereços; confirmar criação. Marcar a opção IA se desejar enfileirar rascunhos.
-5. Processar localmente com `php spark service-pages:work 1` (um item) ou `php spark service-pages:work 25` (até 25). O painel não chama a API na requisição HTTP; sem worker os itens aguardam na fila.
+5. Para página individual, clicar em criar/gerar no editor: o painel processa uma chamada limitada a 40s e retorna os campos preenchidos, sem terminal. Para lotes, executar `php spark service-pages:work 25` ou configurar worker periódico; visitas públicas nunca chamam a API. Detalhes em complete-fields.md.
 6. Reabrir o editor e revisar textos, avisos e direitos das fotografias. Salvar, abrir prévia e confirmar publicação. Avisos não resolvidos impedem publicação. Restaurar uma revisão não muda a versão pública até nova publicação.
 
 ## Configuração de ambiente (sem segredo de exemplo real)
