@@ -36,6 +36,9 @@ class ServicePagesStatus extends BaseCommand
                 CLI::write('Tokens contabilizados/protegidos hoje: ' . (int) ($budget['reserved_tokens'] ?? 0));
                 CLI::write('USD contabilizados/protegidos hoje: ' . number_format((int) ($budget['reserved_microusd'] ?? 0) / 1000000, 6));
             }
+            if (! in_array('jobs', $missing, true)) {
+                foreach ($db->table('service_content_jobs')->select('state, COUNT(*) AS total')->groupBy('state')->get()->getResultArray() as $row) CLI::write('Fila ' . $row['state'] . ': ' . $row['total']);
+            }
         } catch (\Throwable $error) {
             CLI::error('Banco inacessível. Confira as configurações do ambiente; detalhes omitidos para proteger credenciais.');
             return EXIT_ERROR;

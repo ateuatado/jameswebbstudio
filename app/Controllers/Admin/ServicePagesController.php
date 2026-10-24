@@ -44,7 +44,7 @@ class ServicePagesController extends BaseController
             'pages' => $repo->table('pages')->orderBy('id', 'desc')->get(50, ($pageNumber - 1) * 50)->getResultArray(),
             'pageNumber' => $pageNumber, 'totalPages' => $repo->table('pages')->countAllResults(),
             'jobs' => $repo->table('jobs')->orderBy('id', 'desc')->get(50)->getResultArray(),
-            'batches' => $repo->table('batches')->orderBy('id', 'desc')->get(20)->getResultArray(),
+            'batches' => $repo->batches(),
             'preview' => $preview, 'configuration' => config('ServicePages'),
             'suggestion' => $suggestion,
             'contextKey' => bin2hex(random_bytes(16)),
@@ -209,6 +209,30 @@ class ServicePagesController extends BaseController
             $r->table('jobs')->where(['batch_id' => $id, 'state' => 'queued'])->update(['state' => 'cancelled']);
             $r->audit(0, 'batch_cancelled', $this->actor());
         });
+    }
+
+    public function processBatch(int $id)
+    {
+        $this->permit('generate');
+        $error = null; $processed = false;
+        try {
+            if (! config('ServicePages')->generationEnabled) throw new \RuntimeException('Geração desativada neste ambiente.');
+            $r = $this->repo();
+            $batch = $r->table('batches')->where('id', $id)->get()->getRowArray();
+            if (! $batch || $batch['status'] === 'cancelled') throw new \RuntimeException('Lote inexistente ou cancelado.');
+            if ($r->table('jobs')->where(['batch_id' => $id, 'state' => 'running'])->countAllResults()) throw new \RuntimeException('Há um item deste lote em processamento. Aguarde e atualize.');
+            $candidate = $r->table('jobs')->where(['batch_id' => $id, 'state' => 'queued'])->groupStart()->where('available_at', null)->orWhere('available_at <=', date('Y-m-d H:i:s'))->groupEnd()->orderBy('id')->get(1)->getRowArray();
+            if ($candidate) {
+                $processed = (new \App\Libraries\ServiceContent\Worker($r, service('serviceContentProvider')))->once(null, $id);
+                $result = $r->table('jobs')->where('id', $candidate['id'])->get()->getRowArray();
+                if ($result['state'] === 'failed') $error = $result['error'];
+            }
+        } catch (\RuntimeException $failure) { $error = $failure->getMessage(); }
+        catch (\Throwable $failure) { $error = 'Falha ao processar o item. Atualize o painel antes de repetir.'; }
+        $this->response->setHeader('Cache-Control', 'private, no-store');
+        $summary = null;
+        if (isset($r)) foreach ($r->batches() as $item) if ((int) $item['id'] === $id) $summary = $item;
+        return $this->response->setJSON(['processed' => $processed, 'error' => $error, 'summary' => $summary, 'csrf_name' => csrf_token(), 'csrf_hash' => csrf_hash()]);
     }
 
     public function rename(int $id)

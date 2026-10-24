@@ -46,6 +46,7 @@ $routes->group('admin', ['filter' => 'group:admin,superadmin'], static function 
             $routes->post('(:num)/endereco', 'Admin\ServicePagesController::rename/$1');
             $routes->post('publicar-lote', 'Admin\ServicePagesController::publishBatch');
             $routes->post('lotes/(:num)/cancelar', 'Admin\ServicePagesController::cancel/$1');
+            $routes->post('lotes/(:num)/processar', 'Admin\ServicePagesController::processBatch/$1');
             $routes->post('itens/(:num)/repetir', 'Admin\ServicePagesController::retry/$1');
         });
     });

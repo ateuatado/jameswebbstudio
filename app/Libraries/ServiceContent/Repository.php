@@ -79,6 +79,23 @@ class Repository
         return $this->table('families')->where('id', $id)->get()->getRowArray() ?? throw new RuntimeException('Família não encontrada.');
     }
 
+    public function batches(): array
+    {
+        $batches = $this->table('batches')->orderBy('id', 'desc')->get(20)->getResultArray();
+        if (! $batches) return [];
+        $counts = [];
+        foreach ($this->table('jobs')->select('batch_id, state, COUNT(*) AS total')->whereIn('batch_id', array_column($batches, 'id'))->groupBy(['batch_id', 'state'])->get()->getResultArray() as $row) $counts[$row['batch_id']][$row['state']] = (int) $row['total'];
+        foreach ($batches as &$batch) {
+            $states = $counts[$batch['id']] ?? [];
+            $batch['pending'] = ($states['queued'] ?? 0) + ($states['running'] ?? 0);
+            $batch['done'] = $states['succeeded'] ?? 0;
+            $batch['failed'] = $states['failed'] ?? 0;
+            if ($batch['status'] !== 'cancelled') $batch['status'] = ($states['running'] ?? 0) ? 'running' : (($states['queued'] ?? 0) ? 'queued' : (($states['failed'] ?? 0) ? 'failed' : 'completed'));
+        }
+        unset($batch);
+        return $batches;
+    }
+
     public function page(int $id): array
     {
         return $this->table('pages')->where('id', $id)->get()->getRowArray() ?? throw new RuntimeException('Página não encontrada.');

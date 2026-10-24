@@ -10,7 +10,7 @@ class Worker
     {
     }
 
-    public function once(?int $pageId = null): bool
+    public function once(?int $pageId = null, ?int $batchId = null): bool
     {
         $r = $this->repo;
         $now = date('Y-m-d H:i:s');
@@ -18,6 +18,7 @@ class Worker
         $r->table('jobs')->where('state', 'running')->where('lease_expires_at <', $now)->update(['state' => 'failed', 'error' => 'Worker interrompido. Consumo desconhecido; revise antes de repetir.']);
         $query = $r->table('jobs')->where('state', 'queued')->groupStart()->where('available_at', null)->orWhere('available_at <=', $now)->groupEnd();
         if ($pageId !== null) $query->where('page_id', $pageId);
+        if ($batchId !== null) $query->where('batch_id', $batchId);
         $job = $query->orderBy('id')->get(1)->getRowArray();
         if (! $job) return false;
         $batch = $r->table('batches')->where('id', $job['batch_id'])->get()->getRowArray();

@@ -34,6 +34,47 @@
 <h2 class="h4">Páginas</h2><p><?= (int) $totalPages ?> cadastradas · página <?= (int) $pageNumber ?>. <?php if ($pageNumber > 1): ?><a href="<?= site_url('admin/paginas-servicos') . '?pagina=' . ($pageNumber - 1) ?>">Anterior</a><?php endif; ?> <?php if ($pageNumber * 50 < $totalPages): ?><a href="<?= site_url('admin/paginas-servicos') . '?pagina=' . ($pageNumber + 1) ?>">Próxima</a><?php endif; ?></p><div class="table-responsive"><table class="table"><thead><tr><th>Tema</th><th>Estado</th><th>Revisão pública</th><th>Ação</th></tr></thead><tbody>
 <?php foreach ($pages as $p): ?><tr><td><?= esc($p['topic']) ?></td><td><?= esc($p['status']) ?></td><td><?= (int) $p['published_revision_id'] ?></td><td><a href="<?= site_url('admin/paginas-servicos/' . $p['id']) ?>">Editar e revisar</a></td></tr><?php endforeach; ?></tbody></table></div>
 <details class="card p-3 mb-4"><summary>Publicar páginas revisadas em lote</summary><form method="post" action="<?= site_url('admin/paginas-servicos/publicar-lote') ?>" class="mt-3"><?= csrf_field() ?><?php foreach ($pages as $p): if (! $p['current_revision_id']) continue; ?><label class="d-block mb-2"><input type="checkbox" name="pages[<?= (int) $p['id'] ?>]" value="<?= (int) $p['lock_version'] ?>"> <?= esc($p['topic']) ?> (revisão <?= (int) $p['current_revision_id'] ?>)</label><?php endforeach; ?><label class="d-block my-3"><input type="checkbox" name="reviewed" value="1" required> Revisei e aprovo individualmente o conteúdo, as imagens e a oferta das páginas selecionadas.</label><button class="btn btn-success">Publicar selecionadas</button></form></details>
-<h2 class="h4">Lotes recentes</h2><div class="table-responsive"><table class="table"><thead><tr><th>Lote</th><th>Estado</th><th>Consumo + proteção / teto</th><th>Consumo informado</th><th>Ação</th></tr></thead><tbody><?php foreach ($batches as $b): ?><tr><td><?= (int) $b['id'] ?></td><td><?= esc($b['status']) ?></td><td><?= (int) $b['reserved_tokens'] ?> / <?= (int) $b['token_limit'] ?></td><td><?= (int) $b['used_tokens'] ?></td><td><form method="post" action="<?= site_url('admin/paginas-servicos/lotes/' . $b['id'] . '/cancelar') ?>"><?= csrf_field() ?><button class="btn btn-sm btn-outline-danger">Cancelar pendentes</button></form></td></tr><?php endforeach; ?></tbody></table></div>
+<h2 class="h4">Lotes recentes</h2><p>Os números de consumo são históricos. Para gerar os rascunhos pendentes, use “Processar lote”. Mantenha esta tela aberta enquanto processa; nada será publicado.</p><a href="<?= site_url('admin/paginas-servicos') ?>" class="btn btn-outline-secondary mb-3">Atualizar painel</a>
+<div class="table-responsive"><table class="table"><thead><tr><th>Lote</th><th>Progresso</th><th>Consumo + proteção / teto</th><th>Tokens informados</th><th>Ações</th></tr></thead><tbody><?php foreach ($batches as $b): ?><tr><td><?= (int) $b['id'] ?></td><td data-progress><?= esc(['queued' => 'Aguardando', 'running' => 'Processando', 'completed' => 'Concluído', 'failed' => 'Com falhas', 'cancelled' => 'Cancelado'][$b['status']] ?? $b['status']) ?><br><?= (int) $b['done'] ?> prontos · <?= (int) $b['pending'] ?> pendentes · <?= (int) $b['failed'] ?> falhas</td><td data-budget><?= (int) $b['reserved_tokens'] ?> / <?= (int) $b['token_limit'] ?></td><td data-used><?= (int) $b['used_tokens'] ?></td><td>
+<?php if ($b['pending'] && $b['status'] !== 'cancelled'): ?><form class="process-batch mb-2" method="post" action="<?= site_url('admin/paginas-servicos/lotes/' . $b['id'] . '/processar') ?>" data-pending="<?= (int) $b['pending'] ?>"><?= csrf_field() ?><button name="quantity" value="25" class="btn btn-sm btn-primary">Processar lote com IA</button> <button name="quantity" value="1" class="btn btn-sm btn-outline-primary">Processar um</button><button type="button" class="stop-batch btn btn-sm btn-outline-warning d-none">Parar após este item</button><p class="batch-progress small mt-2" role="status"></p></form><?php endif; ?>
+<?php if ($b['pending'] && $b['status'] !== 'cancelled'): ?><form method="post" action="<?= site_url('admin/paginas-servicos/lotes/' . $b['id'] . '/cancelar') ?>"><?= csrf_field() ?><button class="btn btn-sm btn-outline-danger">Cancelar pendentes</button></form><?php endif; ?></td></tr><?php endforeach; ?></tbody></table></div>
 <h2 class="h4">Fila de geração</h2><p>Atualize a tela para acompanhar. Itens aguardam execução do worker pelo operador. Reservas são conservadoras; falhas podem ter consumo não informado.</p><div class="table-responsive"><table class="table"><thead><tr><th>Item/página</th><th>Estado</th><th>Resultado</th><th>Repetição</th></tr></thead><tbody><?php foreach ($jobs as $j): ?><tr><td>#<?= (int) $j['id'] ?> / <a href="<?= site_url('admin/paginas-servicos/' . $j['page_id']) ?>"><?= (int) $j['page_id'] ?></a></td><td><?= esc($j['state']) ?></td><td><?= esc($j['error'] ?? '') ?><?= $j['revision_id'] ? ' Revisão #' . (int) $j['revision_id'] : '' ?></td><td><?php if ($j['state'] === 'failed'): ?><form method="post" action="<?= site_url('admin/paginas-servicos/itens/' . $j['id'] . '/repetir') ?>"><?= csrf_field() ?><label><input type="checkbox" name="confirm_cost" value="1" required> Aceito novo consumo</label><button class="btn btn-sm btn-outline-warning">Repetir</button></form><?php endif; ?></td></tr><?php endforeach; ?></tbody></table></div>
+<?= $this->endSection() ?>
+<?= $this->section('scripts') ?>
+<script>
+document.querySelectorAll('.process-batch').forEach(form => {
+    let stop = false;
+    form.querySelector('.stop-batch').addEventListener('click', () => { stop = true; });
+    form.addEventListener('submit', async event => {
+        event.preventDefault();
+        const limit = Math.min(Number(event.submitter?.value || 1), Number(form.dataset.pending), 25);
+        const output = form.querySelector('.batch-progress');
+        const stopButton = form.querySelector('.stop-batch');
+        const buttons = [...document.querySelectorAll('button[type="submit"], button:not([type])')];
+        const disabledBefore = buttons.map(button => button.disabled);
+        buttons.forEach(button => button.disabled = true);
+        stop = false; stopButton.classList.remove('d-none');
+        try {
+            for (let count = 0; count < limit && !stop; count++) {
+                output.textContent = `A IA está gerando o item ${count + 1} de até ${limit}…`;
+                const response = await fetch(form.action, { method: 'POST', body: new FormData(form), credentials: 'same-origin', headers: { Accept: 'application/json' } });
+                if (!response.ok || !(response.headers.get('content-type') || '').includes('application/json')) throw new Error('A sessão ou a requisição expirou. Atualize o painel antes de continuar.');
+                const result = await response.json();
+                document.querySelectorAll('input[type="hidden"]').forEach(input => { if (input.name === result.csrf_name) input.value = result.csrf_hash; });
+                if (result.summary) {
+                    const row = form.closest('tr'), summary = result.summary;
+                    row.querySelector('[data-progress]').textContent = `${summary.done} prontos · ${summary.pending} pendentes · ${summary.failed} falhas`;
+                    row.querySelector('[data-budget]').textContent = `${summary.reserved_tokens} / ${summary.token_limit}`;
+                    row.querySelector('[data-used]').textContent = summary.used_tokens;
+                    form.dataset.pending = summary.pending;
+                }
+                if (result.error) throw new Error(result.error);
+                if (!result.processed) { output.textContent = 'Não há item pronto para processar agora. Repetições podem aguardar 30 segundos.'; return; }
+                output.textContent = `${count + 1} item(ns) processado(s). Atualize o painel para abrir os resultados.`;
+            }
+        } catch (error) { output.textContent = error.message || 'Falha de conexão. Confira o resultado antes de repetir.'; }
+        finally { buttons.forEach((button, index) => button.disabled = disabledBefore[index]); stopButton.classList.add('d-none'); }
+    });
+});
+</script>
 <?= $this->endSection() ?>

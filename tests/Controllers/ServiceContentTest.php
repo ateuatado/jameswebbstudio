@@ -272,6 +272,41 @@ class ServiceContentTest extends LocalWebTestCase
         } finally { config('ServicePages')->dailyTokenLimit = $previous; }
     }
 
+    public function testPanelProcessesOnlySelectedBatchAndUpdatesProgress(): void
+    {
+        $this->administrator();
+        $first = $this->repo->batch($this->family, ['Joias A'], bin2hex(random_bytes(16)), 1, true);
+        $second = $this->repo->batch($this->family, ['Joias B', 'Joias C'], bin2hex(random_bytes(16)), 1, true);
+        $old = config('ServicePages')->generationEnabled;
+        config('ServicePages')->generationEnabled = true;
+        \Config\Services::injectMock('serviceContentProvider', $this->fakeProvider());
+        try {
+            $this->get('/admin/paginas-servicos');
+            $response = $this->withSession(session()->get())->post('/admin/paginas-servicos/lotes/' . $second . '/processar', [csrf_token() => csrf_hash()]);
+            $response->assertStatus(200);
+            $data = json_decode($response->response()->getBody(), true);
+            $this->assertTrue($data['processed']);
+            $this->assertNull($data['error']);
+            $this->assertSame(1, $data['summary']['done']);
+            $this->assertSame(1, $data['summary']['pending']);
+            $this->assertSame(1, $this->repo->table('jobs')->where(['batch_id' => $first, 'state' => 'queued'])->countAllResults());
+            $this->assertCount(0, $this->repo->publicPages());
+        } finally {
+            config('ServicePages')->generationEnabled = $old;
+            \Config\Services::resetSingle('serviceContentProvider');
+        }
+    }
+
+    public function testBatchSummaryDoesNotKeepFinishedJobsQueued(): void
+    {
+        $batch = $this->repo->batch($this->family, ['Joias'], bin2hex(random_bytes(16)), 1, true);
+        $this->repo->table('jobs')->where('batch_id', $batch)->update(['state' => 'failed']);
+        $summary = $this->repo->batches()[0];
+        $this->assertSame('failed', $summary['status']);
+        $this->assertSame(0, $summary['pending']);
+        $this->assertSame(1, $summary['failed']);
+    }
+
     public function testHtmlIsRejected(): void
     {
         $content = $this->content(); $content['introduction'] = '<script>alert(1)</script>';
