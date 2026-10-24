@@ -254,6 +254,24 @@ class ServiceContentTest extends LocalWebTestCase
         $this->assertSame(0, $this->repo->table('revisions')->countAllResults());
     }
 
+    public function testSuccessfulUsageReplacesWorstCaseReservation(): void
+    {
+        $previous = config('ServicePages')->dailyTokenLimit;
+        config('ServicePages')->dailyTokenLimit = 21000;
+        try {
+            $batch = $this->repo->batch($this->family, ['Joias', 'Alimentos'], bin2hex(random_bytes(16)), 1, true);
+            $worker = new Worker($this->repo, $this->fakeProvider());
+            $worker->once(); $worker->once();
+            $this->assertSame(2, $this->repo->table('jobs')->where('state', 'succeeded')->countAllResults());
+            $budget = $this->repo->table('budgets')->where('budget_day', date('Y-m-d'))->get()->getRowArray();
+            $this->assertSame(1200, (int) $budget['reserved_tokens']);
+            $this->assertSame(1080, (int) $budget['reserved_microusd']);
+            $row = $this->repo->table('batches')->where('id', $batch)->get()->getRowArray();
+            $this->assertSame(1200, (int) $row['reserved_tokens']);
+            $this->assertSame(1200, (int) $row['used_tokens']);
+        } finally { config('ServicePages')->dailyTokenLimit = $previous; }
+    }
+
     public function testHtmlIsRejected(): void
     {
         $content = $this->content(); $content['introduction'] = '<script>alert(1)</script>';

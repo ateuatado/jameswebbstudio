@@ -34,19 +34,30 @@ class Worker
         $day = date('Y-m-d');
         $r->table('budgets')->ignore(true)->insert(['budget_day' => $day, 'reserved_tokens' => 0]);
         $token = bin2hex(random_bytes(16));
+        $rejection = null;
         $r->db->transException(true)->transBegin();
         try {
             $r->table('jobs')->where(['id' => $job['id'], 'state' => 'queued'])->set(['state' => 'running', 'lease_token' => $token, 'lease_expires_at' => date('Y-m-d H:i:s', time() + 180)])->set('attempts', 'attempts + 1', false)->update();
             if ($r->db->affectedRows() !== 1) { $r->db->transRollback(); return true; }
             $r->table('batches')->where('id', $batch['id'])->where('status !=', 'cancelled')->where('reserved_tokens <=', (int) $batch['token_limit'] - $reservation)->set('reserved_tokens', 'reserved_tokens + ' . $reservation, false)->update();
-            if ($r->db->affectedRows() !== 1) throw new RuntimeException('Lote cancelado ou limite do lote atingido.');
+            if ($r->db->affectedRows() !== 1) {
+                $liveBatch = $r->table('batches')->where('id', $batch['id'])->get()->getRowArray();
+                $rejection = ! $liveBatch || $liveBatch['status'] === 'cancelled' ? 'Este lote foi cancelado. Crie uma nova geração.' : 'Teto de tokens deste lote atingido. Crie uma nova geração para a página.';
+                throw new RuntimeException($rejection);
+            }
             $r->table('budgets')->where('budget_day', $day)->where('reserved_tokens <=', $config->dailyTokenLimit - $reservation)->where('reserved_microusd <=', (int) floor($config->dailyUsdLimit * 1000000) - $costReserve)->set('reserved_tokens', 'reserved_tokens + ' . $reservation, false)->set('reserved_microusd', 'reserved_microusd + ' . $costReserve, false)->update();
-            if ($r->db->affectedRows() !== 1) throw new RuntimeException('Limite diário reservado atingido. Reavalie o orçamento.');
+            if ($r->db->affectedRows() !== 1) {
+                $budget = $r->table('budgets')->where('budget_day', $day)->get()->getRowArray();
+                $rejection = ((int) ($budget['reserved_tokens'] ?? 0) + $reservation > $config->dailyTokenLimit)
+                    ? 'Limite diário de tokens deste ambiente atingido: ' . $config->dailyTokenLimit . '. Ajuste servicepages.dailyTokenLimit no .env deste servidor.'
+                    : 'Limite diário financeiro deste ambiente atingido: US$ ' . number_format($config->dailyUsdLimit, 2) . '. Ajuste servicepages.dailyUsdLimit no .env deste servidor.';
+                throw new RuntimeException($rejection);
+            }
             $r->table('batches')->where('id', $batch['id'])->set('reserved_microusd', 'reserved_microusd + ' . $costReserve, false)->update();
             $r->db->transCommit();
         } catch (\Throwable $error) {
             $r->db->transRollback();
-            $r->table('jobs')->where(['id' => $job['id'], 'state' => 'queued'])->update(['state' => 'failed', 'error' => 'Limite de consumo atingido ou lote cancelado.']);
+            $r->table('jobs')->where(['id' => $job['id'], 'state' => 'queued'])->update(['state' => 'failed', 'error' => $rejection ?? 'Falha técnica ao reservar consumo. Nenhuma chamada à IA foi iniciada.']);
             return true;
         }
         try {
@@ -83,6 +94,18 @@ class Worker
                 $r->table('batches')->where('id', $batch['id'])->set('used_tokens', 'used_tokens + ' . (max(0, (int) $result['input_tokens']) + max(0, (int) $result['output_tokens'])), false)->update();
                 $estimatedCost = (int) ceil(max(0, (int) $result['input_tokens']) * $config->inputUsdPerMillion + max(0, (int) $result['output_tokens']) * $config->outputUsdPerMillion);
                 $r->table('batches')->where('id', $batch['id'])->set('used_microusd', 'used_microusd + ' . $estimatedCost, false)->update();
+                // A confirmed successful call replaces its worst-case reservation
+                // with reported usage; uncertain/failed calls retain protection.
+                $actualTokens = max(0, (int) $result['input_tokens']) + max(0, (int) $result['output_tokens']);
+                if ($actualTokens > 0) {
+                    $refundTokens = max(0, $reservation - $actualTokens);
+                    $refundCost = max(0, $costReserve - $estimatedCost);
+                    foreach (['batches' => ['id' => $batch['id']], 'budgets' => ['budget_day' => $day]] as $table => $where) {
+                        $r->table($table)->where($where)
+                            ->set('reserved_tokens', 'CASE WHEN reserved_tokens >= ' . $refundTokens . ' THEN reserved_tokens - ' . $refundTokens . ' ELSE reserved_tokens END', false)
+                            ->set('reserved_microusd', 'CASE WHEN reserved_microusd >= ' . $refundCost . ' THEN reserved_microusd - ' . $refundCost . ' ELSE reserved_microusd END', false)->update();
+                    }
+                }
                 $r->audit((int) $job['page_id'], $contextDraft ? 'context_suggestion_ready' : 'ai_draft_created', (int) $batch['created_by'], $revision);
                 $r->db->transCommit();
             } catch (\Throwable $error) { $r->db->transRollback(); throw $error; }
